@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../context/authContext";
 
 const Profile = () => {
   const { signOut } = useAuth();

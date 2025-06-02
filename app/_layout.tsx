@@ -1,6 +1,6 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { AuthProvider } from "../context/authContext";
+import { AuthProvider } from "./context/authContext";
 import "./globals.css";
 
 export default function RootLayout() {

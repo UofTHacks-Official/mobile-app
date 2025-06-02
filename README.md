@@ -2,49 +2,49 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+## Getting Started: Project Initialization & Setup
 
-1. Install dependencies
+### 1. Prerequisites
+- **Node.js**: Make sure you have Node.js installed. [Download Node.js](https://nodejs.org/)
+- **Expo CLI (optional but recommended):**
+  ```bash
+  npm install -g expo-cli
+  ```
+- **Expo Go app**: Install on your mobile device ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent))
+- **iOS Simulator**: Requires Xcode (macOS only)
+- **Android Emulator**: Requires Android Studio
 
-   ```bash
-   npm install
-   ```
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-2. Start the app
+### 3. Start the Development Server
+```bash
+npx expo start
+```
+This will open the Expo Dev Tools in your browser. You can:
+- Press `i` to open in iOS Simulator (macOS only)
+- Press `a` to open in Android Emulator
+- Scan the QR code with the Expo Go app on your device
 
-   ```bash
-   npx expo start
-   ```
+### 4. Project Structure
+- Main code lives in the **app** directory
+- Uses [file-based routing](https://docs.expo.dev/router/introduction/): files in `app/` become routes
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 5. Start Fresh (Optional)
+To reset the project and start with a blank app directory:
 ```bash
 npm run reset-project
 ```
-
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+### 6. Learn More
+- [Expo documentation](https://docs.expo.dev/): Fundamentals & advanced guides
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Step-by-step project tutorial
+- [Expo on GitHub](https://github.com/expo/expo): Open source platform
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Happy coding! If you need help with simulators, emulators, or development builds, check the Expo docs or ask in the community.

@@ -5,7 +5,7 @@ import {
   getAuthTokens,
   removeAuthTokens,
   storeAuthTokens
-} from "../util/tokens/secureStorage";
+} from "../../util/tokens/secureStorage";
 
 export const AuthContext = createContext();
 

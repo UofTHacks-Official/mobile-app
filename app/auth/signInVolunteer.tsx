@@ -1,16 +1,12 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
-import { isValidEmail } from "../../utils/regex";
 
 const SignInVolunteer = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSignIn = () => {
-    if (!isValidEmail(email)) {
-      return;
-    }
     router.replace("/volunteer");
   };
 
