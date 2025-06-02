@@ -22,11 +22,11 @@ export default function AdminLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#f6f6f1", // cloud color from your theme
-          borderTopColor: "#121212", // gravel color from your theme
+          backgroundColor: "#F6F6F6", // uoft_white
+          borderTopColor: "#181818", // uoft_black
         },
-        tabBarActiveTintColor: "#FF7F32", // clementine color from your theme
-        tabBarInactiveTintColor: "#121212", // gravel color from your theme
+        tabBarActiveTintColor: "#FF6F51", // uoft_secondary_orange
+        tabBarInactiveTintColor: "#181818", // uoft_black
       }}
     >
       <Tabs.Screen

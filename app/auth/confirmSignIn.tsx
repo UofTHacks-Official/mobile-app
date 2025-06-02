@@ -8,8 +8,8 @@ const SignIn = () => {
   const [showEmailPicker, setShowEmailPicker] = useState(false);
 
   return (
-    <SafeAreaView className="flex-1 bg-cloud">
-      <View className="flex-1 px-6 text-black">
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 px-6 text-uoft_black">
         <Text className="text-3xl mt-24 text-center font-['PPObjectSans-Heavy']">
           Verify your email
         </Text>
@@ -31,7 +31,7 @@ const SignIn = () => {
 
       <View className="items-center space-y-4 mb-6 mt-auto pt-4 px-12">
         <Pressable
-          className="bg-clementine py-4 px-6 w-full"
+          className="bg-uoft_secondary_orange py-4 px-6 w-full"
           android_ripple={null}
           style={({ pressed }) => ({
             opacity: 1,
@@ -40,16 +40,16 @@ const SignIn = () => {
             setShowEmailPicker(true);
           }}
         >
-          <Text className="text-snow text-center font-pp text-lg font-bold">
+          <Text className="text-uoft_white text-center font-pp text-lg font-bold">
             Check my inbox
           </Text>
         </Pressable>
       </View>
 
       <View className="items-center space-y-4 mb-6 mt-auto px-12">
-        <Pressable className="bg-gravel py-4 px-6 w-full">
+        <Pressable className="bg-uoft_black py-4 px-6 w-full">
           <Text
-            className="text-snow text-center font-pp text-lg font-bold"
+            className="text-uoft_white text-center font-pp text-lg font-bold"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             }}

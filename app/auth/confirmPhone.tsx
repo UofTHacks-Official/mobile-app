@@ -42,8 +42,8 @@ const ConfirmPhone = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cloud">
-      <View className="flex-1 text-black pt-12">
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 text-uoft_black pt-12">
         <View className="px-12 flex-col mt-24 mb-12">
           <Text className="font-['PPObjectSans-Heavy'] text-2xl font-bold mb-4">
             Verify your phone number
@@ -54,8 +54,8 @@ const ConfirmPhone = () => {
           <View className="flex-row justify-between w-full">
             <TextInput
               ref={firstInput}
-              className="w-[70px] h-[70px] border border-gravel rounded-lg font-pp text-2xl text-clementine text-center"
-              placeholderTextColor="rock"
+              className="w-[70px] h-[70px] border border-uoft_black rounded-lg font-pp text-2xl text-uoft_secondary_orange text-center"
+              placeholderTextColor="uoft_grey_medium"
               keyboardType="numeric"
               maxLength={1}
               value={code[1]}
@@ -66,8 +66,8 @@ const ConfirmPhone = () => {
             />
             <TextInput
               ref={secondInput}
-              className="w-[70px] h-[70px] border border-gravel rounded-lg font-pp text-2xl text-clementine text-center"
-              placeholderTextColor="rock"
+              className="w-[70px] h-[70px] border border-uoft_black rounded-lg font-pp text-2xl text-uoft_secondary_orange text-center"
+              placeholderTextColor="uoft_grey_medium"
               keyboardType="numeric"
               maxLength={1}
               value={code[2]}
@@ -77,8 +77,8 @@ const ConfirmPhone = () => {
             />
             <TextInput
               ref={thirdInput}
-              className="w-[70px] h-[70px] border border-gravel rounded-lg font-pp text-2xl text-clementine text-center"
-              placeholderTextColor="rock"
+              className="w-[70px] h-[70px] border border-uoft_black rounded-lg font-pp text-2xl text-uoft_secondary_orange text-center"
+              placeholderTextColor="uoft_grey_medium"
               keyboardType="numeric"
               maxLength={1}
               value={code[3]}
@@ -88,8 +88,8 @@ const ConfirmPhone = () => {
             />
             <TextInput
               ref={fourthInput}
-              className="w-[70px] h-[70px] border border-gravel rounded-lg font-pp text-2xl text-clementine text-center"
-              placeholderTextColor="rock"
+              className="w-[70px] h-[70px] border border-uoft_black rounded-lg font-pp text-2xl text-uoft_secondary_orange text-center"
+              placeholderTextColor="uoft_grey_medium"
               keyboardType="numeric"
               maxLength={1}
               value={code[4]}
@@ -100,9 +100,9 @@ const ConfirmPhone = () => {
           </View>
         </View>
         <View className="w-full px-12 ">
-          <Pressable className="bg-gravel py-4 w-full mt-8">
+          <Pressable className="bg-uoft_black py-4 w-full mt-8">
             <Text
-              className="text-snow text-center font-pp text-lg font-bold"
+              className="text-uoft_white text-center font-pp text-lg font-bold"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               }}

@@ -11,8 +11,8 @@ const SignInVolunteer = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cloud">
-      <View className="flex-1 text-black pt-12">
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 text-uoft_black pt-12">
         <View className="px-12 flex-col mt-36 mb-12">
           <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-4">
             Volunteer Sign In
@@ -24,9 +24,9 @@ const SignInVolunteer = () => {
 
         <View className="space-y-4 px-12">
           <TextInput
-            className="w-full border-b border-gravel py-3 font-pp text-lg text-clementine mb-1"
+            className="w-full border-b border-uoft_black py-3 font-pp text-lg text-uoft_secondary_orange mb-1"
             placeholder="Email"
-            placeholderTextColor="rock"
+            placeholderTextColor="uoft_grey_medium"
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -37,9 +37,9 @@ const SignInVolunteer = () => {
           />
 
           <TextInput
-            className="w-full border-b border-gravel py-3 font-pp text-lg text-clementine mb-1"
+            className="w-full border-b border-uoft_black py-3 font-pp text-lg text-uoft_secondary_orange mb-1"
             placeholder="Password"
-            placeholderTextColor="rock"
+            placeholderTextColor="uoft_grey_medium"
             secureTextEntry
             autoCapitalize="none"
             autoComplete="password"
@@ -52,10 +52,10 @@ const SignInVolunteer = () => {
 
         <View className="w-full px-12">
           <Pressable
-            className="bg-gravel py-4 w-full mt-8"
+            className="bg-uoft_black py-4 w-full mt-8"
             onPress={handleSignIn}
           >
-            <Text className="text-snow text-center font-pp text-lg font-bold">
+            <Text className="text-uoft_white text-center font-pp text-lg font-bold">
               Sign In
             </Text>
           </Pressable>

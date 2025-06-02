@@ -6,8 +6,8 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
 
   return (
-    <SafeAreaView className="flex-1 bg-cloud">
-      <View className="flex-1 text-black pt-12">
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 text-uoft_black pt-12">
         <View className="px-12 flex-col mt-36 mb-12">
           <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-4">
             Sign up
@@ -19,9 +19,9 @@ const SignUp = () => {
 
         <View className="space-y-2 flex-row items-center px-12">
           <TextInput
-            className="w-full border-b border-gravel py-3 font-pp text-lg text-clementine  mb-1"
+            className="w-full border-b border-uoft_black py-3 font-pp text-lg text-uoft_secondary_orange  mb-1"
             placeholder="Email"
-            placeholderTextColor="rock"
+            placeholderTextColor="uoft_grey_medium"
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -32,9 +32,9 @@ const SignUp = () => {
           />
         </View>
         <View className="w-full px-12 ">
-          <Pressable className="bg-gravel py-4 w-full mt-8">
+          <Pressable className="bg-uoft_black py-4 w-full mt-8">
             <Text
-              className="text-snow text-center font-pp text-lg font-bold"
+              className="text-uoft_white text-center font-pp text-lg font-bold"
               onPress={() => {
                 router.push("/auth/confirmSignIn");
                 router.setParams({
@@ -46,12 +46,14 @@ const SignUp = () => {
             </Text>
           </Pressable>
           <View className="flex-row mt-3">
-            <Text className="font-pp text-gravel">
+            <Text className="font-pp text-uoft_black">
               Already have an account?{" "}
             </Text>
             <Link href="/" asChild>
               <Pressable>
-                <Text className="font-pp text-gravel underline">Sign in</Text>
+                <Text className="font-pp text-uoft_black underline">
+                  Sign in
+                </Text>
               </Pressable>
             </Link>
           </View>

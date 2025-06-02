@@ -1,4 +1,4 @@
-# Welcome to your Expo app 👋
+# Uoft Hacks Mobile App
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
@@ -32,19 +32,20 @@ This will open the Expo Dev Tools in your browser. You can:
 - Main code lives in the **app** directory
 - Uses [file-based routing](https://docs.expo.dev/router/introduction/): files in `app/` become routes
 
-### 5. Start Fresh (Optional)
-To reset the project and start with a blank app directory:
-```bash
-npm run reset-project
-```
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 5. Color Palette
+The project uses a custom color palette defined in `tailwind.config.js`. Available colors include:
+- Primary: `uoft_primary_blue` (#2A398C)
+- Secondary: `uoft_secondary_orange` (#FF6F51)
+- Accents: 
+  - `uoft_accent_purple` (#E9B6F7)
+  - `uoft_accent_red` (#F85C5C)
+  - `uoft_accent_cream` (#F3E7E3)
+- Neutrals:
+  - `uoft_black` (#181818)
+  - `uoft_white` (#F6F6F6)
+  - `uoft_stark_white` (#FFFFFF)
+  - `uoft_grey_light` (#C6C6C6)
+  - `uoft_grey_medium` (#A0A0A0)
+  - `uoft_grey_lighter` (#E0E0E0)
 
-### 6. Learn More
-- [Expo documentation](https://docs.expo.dev/): Fundamentals & advanced guides
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Step-by-step project tutorial
-- [Expo on GitHub](https://github.com/expo/expo): Open source platform
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions
-
----
-
-Happy coding! If you need help with simulators, emulators, or development builds, check the Expo docs or ask in the community.
+Figma link: [Figma](https://www.figma.com/design/JAjBHJM4XPAmJBVFqFRMdb/admin-portal?node-id=153-2066&t=nNqdgXeCxlmdAdlw-1)

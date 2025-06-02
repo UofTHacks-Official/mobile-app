@@ -11,8 +11,8 @@ const SelectRole = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cloud">
-      <View className="flex-1 px-6 text-black">
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 px-6 text-uoft_black">
         <Text className="text-3xl mt-24 text-center font-['PPObjectSans-Heavy']">
           Select your role
         </Text>
@@ -22,7 +22,7 @@ const SelectRole = () => {
 
         <View className="mt-12 flex-row justify-center">
           <Pressable
-            className="bg-clementine w-[150px] h-[150px] items-center justify-center rounded-lg mr-4"
+            className="bg-uoft_secondary_orange w-[150px] h-[150px] items-center justify-center rounded-lg mr-4"
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,
@@ -34,13 +34,13 @@ const SelectRole = () => {
               size={48}
               color="white"
             />
-            <Text className="text-snow text-center font-pp text-lg font-bold mt-2">
+            <Text className="text-uoft_white text-center font-pp text-lg font-bold mt-2">
               Admin
             </Text>
           </Pressable>
 
           <Pressable
-            className="bg-gravel w-[150px] h-[150px] items-center justify-center rounded-lg"
+            className="bg-uoft_black w-[150px] h-[150px] items-center justify-center rounded-lg"
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,
@@ -52,7 +52,7 @@ const SelectRole = () => {
               size={48}
               color="white"
             />
-            <Text className="text-snow text-center font-pp text-lg font-bold mt-2">
+            <Text className="text-uoft_white text-center font-pp text-lg font-bold mt-2">
               Volunteer
             </Text>
           </Pressable>
