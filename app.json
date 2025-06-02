@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "native",
+    "slug": "native",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "native",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey":"AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
+        }
+    },
+    "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
+        }
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "fonts": [
+      {
+        "PPObjectSans-Slanted": "./assets/fonts/PPObjectSans-Slanted.otf",
+        "PPObjectSans-Regular": "./assets/fonts/PPObjectSans-Regular.otf",
+        "PPObjectSans-Medium": "./assets/fonts/PPObjectSans-Medium.otf",
+        "PPObjectSans-HeavySlanted": "./assets/fonts/PPObjectSans-HeavySlanted.otf",
+        "PPObjectSans-Heavy": "./assets/fonts/PPObjectSans-Heavy.otf",
+        "PPObjectSans-Bold": "./assets/fonts/PPObjectSans-Bold.otf",
+        "SpaceMono": "./assets/fonts/SpaceMono-Regular.ttf"
+      }
+    ]
+  }
+}
