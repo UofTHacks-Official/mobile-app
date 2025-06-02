@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
-import { adminLogin } from "../../requests/admin";
 import { useAuth } from "../context/authContext";
+import { adminLogin } from "../requests/admin";
 
 const SignInAdmin = () => {
   const [email, setEmail] = useState("");
