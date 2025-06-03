@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "googleMapsApiKey":"AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
+        "googleMapsApiKey": "AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
       },
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes."
@@ -53,7 +53,8 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "react-native-vision-camera"
     ],
     "experiments": {
       "typedRoutes": true

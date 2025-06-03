@@ -64,6 +64,12 @@ export default function AdminLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="qr"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
