@@ -22,7 +22,7 @@ Tokens are stored securely using Expo's SecureStore:
 
 ## Important Files
 
-- `app/utils/api/axiosConfig.ts`: Manages API requests and token refresh
+- `app/requests/axiosConfig.ts`: Manages API requests and token refresh
 - `app/utils/tokens/secureStorage.ts`: Handles secure token storage
 - `app/requests/admin.ts`: Contains API endpoints for authentication
 
