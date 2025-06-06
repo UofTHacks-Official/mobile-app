@@ -6,11 +6,14 @@ import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
 import DayColumn from "../components/schedule/DayColumn";
 import EventModal from "../components/schedule/EventModal";
 
+type EventType = 'networking' | 'food' | 'activity';
+
 interface Event {
   title: string;
   startTime: string;
   endTime: string;
   date: Date;
+  type: EventType;
 }
 
 const Schedule = () => {
@@ -62,7 +65,7 @@ const Schedule = () => {
 
         <View className="flex-1">
           <ScrollView className="flex-1">
-            <View className="flex-row h-[1920px]">
+            <View className="flex-row h-[1536px]">
               {dates.map((date, index) => (
                 <DayColumn
                   key={index}

@@ -1,11 +1,14 @@
 import { Text, View } from 'react-native';
 import Event from './Event';
 
+type EventType = 'networking' | 'food' | 'activity';
+
 interface Event {
   title: string;
   startTime: string;
   endTime: string;
   date: Date;
+  type: EventType;
 }
 
 interface TimeSlotProps {
@@ -50,6 +53,7 @@ const TimeSlot = ({ hour, isCurrentHour, events, hourHeight }: TimeSlotProps) =>
               startTime={event.startTime}
               endTime={event.endTime}
               hourHeight={hourHeight}
+              type={event.type}
               style={{
                 width: `${eventWidth}%`,
                 left: shouldShareSpace ? `${eventWidth * index}%` : '0%',

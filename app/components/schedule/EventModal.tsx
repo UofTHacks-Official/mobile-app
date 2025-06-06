@@ -2,10 +2,18 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
+type EventType = 'networking' | 'food' | 'activity';
+
 interface EventModalProps {
   visible: boolean;
   onClose: () => void;
-  onAddEvent: (event: { title: string; startTime: string; endTime: string; date: Date }) => void;
+  onAddEvent: (event: { 
+    title: string; 
+    startTime: string; 
+    endTime: string; 
+    date: Date;
+    type: EventType;
+  }) => void;
   dates: Date[];
 }
 
@@ -114,6 +122,7 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
   const [endTime, setEndTime] = useState({ hour: 10, minute: 0, isPM: false });
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [selectedType, setSelectedType] = useState<EventType>('activity');
 
   const formatTimeForStorage = (time: { hour: number; minute: number; isPM: boolean }) => {
     let hours = time.hour;
@@ -135,11 +144,18 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
       startTime: formatTimeForStorage(startTime),
       endTime: formatTimeForStorage(endTime),
       date: selectedDate,
+      type: selectedType,
     });
     setTitle("");
     setStartTime({ hour: 9, minute: 0, isPM: false });
     setEndTime({ hour: 10, minute: 0, isPM: false });
     onClose();
+  };
+
+  const eventTypeColors = {
+    networking: '#F4CCFE', // Purple
+    food: '#FF6F51',      // Orange
+    activity: '#2A398C',  // Dark Blue
   };
 
   return (
@@ -156,6 +172,35 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
             <Pressable onPress={onClose}>
               <MaterialCommunityIcons name="close" size={24} color="black" />
             </Pressable>
+          </View>
+
+          {/* Event Type Selection */}
+          <View className="mb-6">
+            <Text className="text-gray-600 mb-2 font-pp">Event Type</Text>
+            <View className="flex-row space-x-2">
+              {(['networking', 'food', 'activity'] as EventType[]).map((type) => (
+                <Pressable
+                  key={type}
+                  onPress={() => setSelectedType(type)}
+                  className={`flex-1 py-3 rounded-lg border ${
+                    selectedType === type
+                      ? 'border-transparent'
+                      : 'border-gray-300'
+                  }`}
+                  style={{
+                    backgroundColor: selectedType === type ? eventTypeColors[type] : 'transparent'
+                  }}
+                >
+                  <Text
+                    className={`text-center font-pp capitalize ${
+                      selectedType === type ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    {type}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
 
           {/* Date Selection */}

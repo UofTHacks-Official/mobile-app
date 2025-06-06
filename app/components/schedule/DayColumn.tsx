@@ -1,11 +1,14 @@
 import { Text, View } from "react-native";
 import TimeSlot from "./TimeSlot";
 
+type EventType = 'networking' | 'food' | 'activity';
+
 interface Event {
   title: string;
   startTime: string;
   endTime: string;
   date: Date;
+  type: EventType;
 }
 
 interface DayColumnProps {

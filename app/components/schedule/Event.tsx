@@ -1,14 +1,23 @@
 import { StyleProp, Text, View, ViewStyle } from "react-native";
 
+type EventType = 'networking' | 'food' | 'activity';
+
 interface EventProps {
   title: string;
   startTime: string;
   endTime: string;
   hourHeight: number;
   style?: StyleProp<ViewStyle>;
+  type: EventType;
 }
 
-const Event = ({ title, startTime, endTime, hourHeight, style }: EventProps) => {
+const eventTypeColors = {
+  networking: '#F4CCFE', // Purple
+  food: '#FF6F51',      // Orange
+  activity: '#2A398C',  // Dark Blue
+};
+
+const Event = ({ title, startTime, endTime, hourHeight, style, type }: EventProps) => {
   // Convert times to minutes for calculation
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -27,20 +36,21 @@ const Event = ({ title, startTime, endTime, hourHeight, style }: EventProps) => 
 
   return (
     <View 
-      className="absolute bg-uoft_secondary_orange/20 border border-uoft_secondary_orange rounded-lg p-1.5"
+      className="absolute rounded-lg p-2"
       style={[
         { 
           height: height,
           top: topPosition,
+          backgroundColor: eventTypeColors[type],
           zIndex: 1, // Ensure events are above the time grid
         },
         style
       ]}
     >
-      <Text className="text-xs font-pp text-uoft_black" numberOfLines={1}>
+      <Text className="text-white font-pp text-sm" numberOfLines={2}>
         {title}
       </Text>
-      <Text className="text-[10px] text-uoft_black/60">
+      <Text className="text-white/80 font-pp text-xs">
         {startTime} - {endTime}
       </Text>
     </View>
