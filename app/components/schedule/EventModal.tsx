@@ -22,7 +22,7 @@ const TimeSelector = ({
   return (
     <View className="flex-row items-center space-x-2">
 
-    // Hour Selection
+      {/* Hour Selection */}
       <ScrollView 
         className="h-32 w-16 border border-gray-300 rounded-lg"
         showsVerticalScrollIndicator={false}
@@ -48,7 +48,7 @@ const TimeSelector = ({
 
       <Text className="font-pp text-lg">:</Text>
 
-    // Minute Selection
+      {/* Minute Selection */}
       <ScrollView 
         className="h-32 w-16 border border-gray-300 rounded-lg"
         showsVerticalScrollIndicator={false}
@@ -72,7 +72,7 @@ const TimeSelector = ({
         ))}
       </ScrollView>
 
-      // AM PM Selection
+      {/* AM PM Selection */}
       <View className="border border-gray-300 rounded-lg">
         <Pressable
           onPress={() => onChange({ ...value, isPM: false })}
@@ -158,7 +158,7 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
             </Pressable>
           </View>
 
-          // Date Selection
+          {/* Date Selection */}
           <View className="mb-6">
             <Text className="text-gray-600 mb-2 font-pp">Select Date</Text>
             <View className="flex-row space-x-2">
@@ -189,7 +189,7 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
             </View>
           </View>
 
-          // Event Title
+          {/* Event Title */}
           <View className="mb-6">
             <Text className="text-gray-600 mb-2 font-pp">Event Title</Text>
             <View className="border border-gray-300 rounded-lg p-3">
@@ -202,11 +202,11 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
             </View>
           </View>
 
-          // Time Selection
+          {/* Time Selection */}
           <View className="mb-6">
             <Text className="text-gray-600 mb-2 font-pp">Time</Text>
             <View className="space-y-4">
-              // Start Time
+              {/* Start Time */}
               <View>
                 <Text className="text-gray-600 mb-2 font-pp">Start Time</Text>
                 <Pressable
@@ -238,7 +238,7 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
                 )}
               </View>
 
-              // End Time
+              {/* End Time */}
               <View>
                 <Text className="text-gray-600 mb-2 font-pp">End Time</Text>
                 <Pressable
@@ -271,7 +271,7 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
             </View>
           </View>
 
-          // Add Event Button
+          {/* Add Event Button */}
           <Pressable
             className="bg-uoft_black py-4 rounded-lg mt-4"
             onPress={handleAddEvent}
