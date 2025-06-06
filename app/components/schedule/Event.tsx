@@ -12,9 +12,9 @@ interface EventProps {
 }
 
 const eventTypeColors = {
-  networking: '#F4CCFE', // Purple
+  networking: '#4A90E2', // Blue
   food: '#FF6F51',      // Orange
-  activity: '#2A398C',  // Dark Blue
+  activity: '#50E3C2',  // Teal
 };
 
 const Event = ({ title, startTime, endTime, hourHeight, style, type }: EventProps) => {

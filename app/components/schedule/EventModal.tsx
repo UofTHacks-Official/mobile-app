@@ -153,9 +153,9 @@ const EventModal = ({ visible, onClose, onAddEvent, dates }: EventModalProps) =>
   };
 
   const eventTypeColors = {
-    networking: '#F4CCFE', // Purple
+    networking: '#4A90E2', // Blue
     food: '#FF6F51',      // Orange
-    activity: '#2A398C',  // Dark Blue
+    activity: '#50E3C2',  // Teal
   };
 
   return (
