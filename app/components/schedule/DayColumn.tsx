@@ -4,6 +4,7 @@ import TimeSlot from "./TimeSlot";
 type EventType = 'networking' | 'food' | 'activity';
 
 interface Event {
+  id: string;
   title: string;
   startTime: string;
   endTime: string;
@@ -15,9 +16,10 @@ interface DayColumnProps {
   date: Date;
   currentHour: number;
   events: Event[];
+  onDeleteEvent: (eventId: string) => void;
 }
 
-const DayColumn = ({ date, currentHour, events }: DayColumnProps) => {
+const DayColumn = ({ date, currentHour, events, onDeleteEvent }: DayColumnProps) => {
   const formattedDate = date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric'
@@ -37,6 +39,7 @@ const DayColumn = ({ date, currentHour, events }: DayColumnProps) => {
           isCurrentHour={i === currentHour}
           events={events}
           hourHeight={hourHeight}
+          onDeleteEvent={onDeleteEvent}
         />
       ))}
     </View>

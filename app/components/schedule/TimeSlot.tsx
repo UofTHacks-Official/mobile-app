@@ -4,6 +4,7 @@ import Event from './Event';
 type EventType = 'networking' | 'food' | 'activity';
 
 interface Event {
+  id: string;
   title: string;
   startTime: string;
   endTime: string;
@@ -16,9 +17,10 @@ interface TimeSlotProps {
   isCurrentHour: boolean;
   events: Event[];
   hourHeight: number;
+  onDeleteEvent: (eventId: string) => void;
 }
 
-const TimeSlot = ({ hour, isCurrentHour, events, hourHeight }: TimeSlotProps) => {
+const TimeSlot = ({ hour, isCurrentHour, events, hourHeight, onDeleteEvent }: TimeSlotProps) => {
   // Format hour to 12-hour format with AM/PM
   const formattedHour = hour === 0 ? '12 AM' : 
                        hour === 12 ? '12 PM' :
@@ -48,12 +50,14 @@ const TimeSlot = ({ hour, isCurrentHour, events, hourHeight }: TimeSlotProps) =>
         <View className="flex-1 relative">
           {hourEvents.map((event, index) => (
             <Event
-              key={`${hour}-${index}`}
+              key={event.id}
+              id={event.id}
               title={event.title}
               startTime={event.startTime}
               endTime={event.endTime}
               hourHeight={hourHeight}
               type={event.type}
+              onDelete={() => onDeleteEvent(event.id)}
               style={{
                 width: `${eventWidth}%`,
                 left: shouldShareSpace ? `${eventWidth * index}%` : '0%',

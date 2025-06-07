@@ -9,6 +9,7 @@ import EventModal from "../components/schedule/EventModal";
 type EventType = 'networking' | 'food' | 'activity';
 
 interface Event {
+  id: string;
   title: string;
   startTime: string;
   endTime: string;
@@ -39,8 +40,16 @@ const Schedule = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleAddEvent = (event: Event) => {
-    setEvents([...events, event]);
+  const handleAddEvent = (event: Omit<Event, 'id'>) => {
+    const newEvent = {
+      ...event,
+      id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+    setEvents([...events, newEvent]);
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    setEvents(events.filter(event => event.id !== eventId));
   };
 
   // Use device time to get the current hour and minute
@@ -74,6 +83,7 @@ const Schedule = () => {
                   events={events.filter(event => 
                     event.date.toDateString() === date.toDateString()
                   )}
+                  onDeleteEvent={handleDeleteEvent}
                 />
               ))}
               <CurrentTimeIndicator
