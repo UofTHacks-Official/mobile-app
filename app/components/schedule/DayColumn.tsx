@@ -25,7 +25,7 @@ const DayColumn = ({ date, currentHour, events, onDeleteEvent }: DayColumnProps)
     day: 'numeric'
   });
 
-  const hourHeight = 64;
+  const hourHeight = 48;
 
   return (
     <View className="flex-1 border-r border-gray-200">

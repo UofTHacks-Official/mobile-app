@@ -42,8 +42,8 @@ const TimeSlot = ({ hour, isCurrentHour, events, hourHeight, onDeleteEvent }: Ti
       className="h-16 border-b border-gray-200"
     >
       <View className="flex-row h-full">
-        <View className="w-16">
-          <Text className="text-base text-gray-500 ml-2 mt-1">
+      <View className="w-12">
+          <Text className="text-xs text-gray-500 ml-1 mt-1">
             {formattedHour}
           </Text>
         </View>

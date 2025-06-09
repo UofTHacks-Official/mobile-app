@@ -36,6 +36,13 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   // Calculate top position based on start time
   const topPosition = (startMinute / 60) * hourHeight;
 
+  const formatTimeTo12Hour = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
   const handlePress = () => {
     if (onDelete) {
       Alert.alert(
@@ -74,7 +81,7 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
         {title}
       </Text>
       <Text className="text-white/80 font-pp text-xs">
-        {startTime} - {endTime}
+        {formatTimeTo12Hour(startTime)} - {formatTimeTo12Hour(endTime)}
       </Text>
     </Pressable>
   );
