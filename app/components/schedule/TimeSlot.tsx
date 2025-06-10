@@ -50,7 +50,7 @@ const TimeSlot = ({
   const eventWidth = shouldShareSpace ? 100 / hourEvents.length : 100;
 
   return (
-    <View className="h-16 border-b border-gray-200">
+    <View className="h-12 border-b border-gray-200">
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">

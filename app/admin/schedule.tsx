@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
@@ -32,8 +33,11 @@ const Schedule = () => {
 
   useEffect(() => {
     const updateTime = () => {
-      setCurrentTime(new Date(new Date().getTime() - 2 * 60 * 60 * 1000));
-      console.log(currentTime);
+      // Get the current time in America/Toronto timezone
+      const now = new Date();
+      const estTime = toZonedTime(now, "America/Toronto");
+      setCurrentTime(estTime);
+      console.log(estTime);
     };
 
     updateTime();
@@ -127,7 +131,6 @@ const Schedule = () => {
               <CurrentTimeIndicator
                 currentHour={currentHour}
                 currentMinute={currentMinute}
-                hourHeight={48}
               />
             </View>
           </ScrollView>
