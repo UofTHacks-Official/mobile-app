@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-6 text-uoft_black">
-        <View className="mt-12">
+        <View className="mt-6">
           <Text className="text-3xl font-['PPObjectSans-Heavy'] mb-2">
             Admin Dashboard
           </Text>
