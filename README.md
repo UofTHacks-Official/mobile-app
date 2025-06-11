@@ -1,3 +1,31 @@
+# UofTHacks Mobile App
+
+## Authentication Flow
+
+The app uses a token-based authentication system with automatic token refresh:
+
+1. When a user logs in, both access and refresh tokens are stored securely
+2. The access token is automatically included in all API requests
+3. If an access token expires (401 Unauthorized), the system will:
+   - Queue the failed request
+   - Use the refresh token to get a new access token
+   - Retry the original request with the new token
+   - Process any other queued requests
+
+This ensures users don't need to re-login when their token expires.
+
+## Token Storage
+
+Tokens are stored securely using Expo's SecureStore:
+- Access Token: Used for API authentication (expires in 1 hour)
+- Refresh Token: Used to get new access tokens (expires in 24 hours)
+
+## Important Files
+
+- `app/requests/axiosConfig.ts`: Manages API requests and token refresh
+- `app/utils/tokens/secureStorage.ts`: Handles secure token storage
+- `app/requests/admin.ts`: Contains API endpoints for authentication
+
 # Uoft Hacks Mobile App
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).

@@ -1,14 +1,5 @@
-import axios, { AxiosInstance } from "axios";
-import axiosRetry from "axios-retry";
+// Import the enhanced axios instance with token refresh capabilities
+import axiosInstance from './axiosConfig';
 
-console.log("Environment variables check:");
-console.log(`API URL: ${process.env.EXPO_PUBLIC_UOFT_STAGING ? '✅' : '❌'} ${process.env.EXPO_PUBLIC_UOFT_STAGING || 'Not set'}`);
-console.log(process.env.EXPO_PUBLIC_UOFT_STAGING)
-
-const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_UOFT_STAGING,
-});
-
-axiosRetry(axiosInstance);
-
+// Export the enhanced instance
 export default axiosInstance;

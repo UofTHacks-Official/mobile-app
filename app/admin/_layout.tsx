@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Redirect, Tabs } from "expo-router";
 import { useContext } from "react";
 import { AuthContext } from "../context/authContext";
@@ -16,7 +17,6 @@ export default function AdminLayout() {
     return <Redirect href="/" />;
   }
 
-  // If authenticated, render the admin layout with tabs
   return (
     <Tabs
       screenOptions={{
@@ -41,6 +41,11 @@ export default function AdminLayout() {
             />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
+        }}
       />
       <Tabs.Screen
         name="schedule"
@@ -53,6 +58,11 @@ export default function AdminLayout() {
               color={color}
             />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
         }}
       />
       <Tabs.Screen
