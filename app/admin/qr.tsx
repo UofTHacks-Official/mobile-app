@@ -7,6 +7,7 @@ import {
   Animated,
   Button,
   Dimensions,
+  Modal,
   Text,
   TouchableOpacity,
   View,
@@ -44,11 +45,10 @@ export default function App() {
   }, [navigation]);
 
   useEffect(() => {
-    Animated.spring(slideAnim, {
-      toValue: popupMessage ? 0 : 60,
+    Animated.timing(slideAnim, {
+      toValue: popupMessage ? 1 : 0,
+      duration: 200,
       useNativeDriver: true,
-      tension: 20,
-      friction: 4,
     }).start();
   }, [popupMessage]);
 
@@ -172,16 +172,18 @@ export default function App() {
         </View>
       </CameraView>
 
-      <Animated.View
-        className={`absolute w-full bottom-0 bg-white rounded-t-xl p-4 items-center z-50 ${
-          hasScanned ? "pb-[100px]" : "pb-[0px]"
-        }`}
-        style={{
-          transform: [{ translateY: slideAnim }],
+      <Modal
+        visible={!!popupMessage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setPopupMessage(null);
+          setHasScanned(false);
+          setScannedBounds(null);
         }}
       >
-        {!!popupMessage && (
-          <>
+        <View className="flex-1 bg-black/50 items-center justify-end">
+          <View className="bg-white rounded-t-xl p-6 w-full items-center">
             <Text className="text-black text-base text-center font-semibold mb-4">
               {popupMessage}
             </Text>
@@ -194,9 +196,9 @@ export default function App() {
                 setScannedBounds(null);
               }}
             />
-          </>
-        )}
-      </Animated.View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
