@@ -21,7 +21,7 @@ const SignInAdmin = () => {
       console.log("authTokens:", access_token);
       console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
-      router.replace("/admin");
+      router.replace("/(admin)");
     } catch (e) {
       console.log(e);
     }

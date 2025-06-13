@@ -10,17 +10,17 @@ const AdminDashboard = () => {
   const handleQRScan = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // TODO: Implement QR scanning functionality
-    router.push("/admin/qr");
+    router.push("/(admin)/qr");
   };
 
   const handleSchedule = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/admin/schedule");
+    router.push("/(admin)/schedule");
   };
 
   const handleHackerBucks = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/admin/hbucks");
+    router.push("/(admin)/(hackerbucks)/sendHbucks");
   };
 
   return (

@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         console.log("tokens:", tokens);
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
-          router.replace("/admin");
+          router.replace("/(admin)");
         }
       } catch (error) {
         console.error("Error checking token:", error);

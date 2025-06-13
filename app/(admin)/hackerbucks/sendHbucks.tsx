@@ -1,11 +1,24 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import NumericKeypad from "../components/hacker_bucks/keyboard";
+import NumericKeypad from "../../components/hacker_bucks/keyboard";
+
+export interface Recipient {
+  firstName: string;
+  lastName: string;
+  id: string;
+}
 
 export default function SwapScreen() {
   const [amount, setAmount] = useState("0");
+
+  const [recipient, setRecipient] = useState<Recipient>({
+    firstName: "Greg",
+    lastName: "Heffley",
+    id: "d7c2e8f1...b3d1e0a9c",
+  });
 
   const handleKeyPress = (key: string) => {
     // Prevent multiple decimal points
@@ -68,17 +81,14 @@ export default function SwapScreen() {
             <View className="flex-row justify-between items-center">
               <View className="flex-1 ml-2">
                 <Text className="text-xl font-pp">Receiving</Text>
-                <Text className="text-2xl text-gravel">Greg Heffley</Text>
+                <Text className="text-2xl text-gravel">
+                  {recipient.firstName} {recipient.lastName}
+                </Text>
                 <Text className="text-sm text-uoft_grey_medium">
-                  d7c2e8f1...b3d1e0a9c
+                  {recipient.id}
                 </Text>
               </View>
-              <Pressable
-                onPress={() => {
-                  console.log("Hi");
-                }}
-                className="text-sm text-center px-4 py-3 bg-uoft_dark_grey rounded-lg"
-              >
+              <Pressable className="text-sm text-center px-4 py-3 bg-uoft_dark_grey rounded-lg">
                 <Text className="text-sm text-balck">Change</Text>
               </Pressable>
             </View>
@@ -92,7 +102,17 @@ export default function SwapScreen() {
           />
         </View>
         <View className="bg-uoft_primary_blue rounded-md items-center py-4 my-2 shadow-md">
-          <Pressable>
+          <Pressable
+            onPress={() => {
+              router.replace({
+                pathname: "/admin/(hackerbucks)/confirmHBucks",
+                params: {
+                  recipient: JSON.stringify(recipient),
+                  amount,
+                },
+              });
+            }}
+          >
             <Text className="text-white text-center text-lg font-pp">Send</Text>
           </Pressable>
         </View>
