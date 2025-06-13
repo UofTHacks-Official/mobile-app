@@ -37,15 +37,7 @@ export default function SwapScreen() {
       edges={["top", "left", "right"]}
     >
       <View className="flex-1 px-4">
-        <View
-          className="flex-row items-center bg-uoft_light_grey px-6 py-4 min-h-[100px]"
-          style={{
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
+        <View className="flex-row items-center bg-uoft_light_grey px-6 py-4 min-h-[100px] rounded-lg">
           <View className="flex-1">
             <Text className="text-xl pt-2 font-pp">Sending</Text>
             <TextInput
@@ -61,8 +53,8 @@ export default function SwapScreen() {
           </View>
         </View>
 
-        <View className="absolute left-0 right-0 top-[100px] items-center z-10">
-          <View className="bg-uoft_dark_grey p-1 rounded-full">
+        <View className="absolute left-0 right-0 top-[85px] items-center z-10">
+          <View className="bg-uoft_dark_grey p-1 rounded-lg">
             <MaterialCommunityIcons
               name="arrow-down"
               size={36}
@@ -71,22 +63,24 @@ export default function SwapScreen() {
           </View>
         </View>
 
-        <View
-          className="flex-row items-center bg-uoft_light_grey rounded-lg px-6 py-4 min-h-[100px] mt-2"
-          style={{
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <View className="flex-row items-center bg-uoft_light_grey rounded-lg px-6 py-4 min-h-[100px] mt-2 rounded-lg">
           <View className="flex-1">
-            <View className="flex-1 ml-2">
-              <Text className="text-xl font-pp">Receiving</Text>
-              <Text className="text-2xl text-gravel">Craig Chen</Text>
-              <Text className="text-sm text-uoft_grey_medium">
-                d7c2e8f1...b3d1e0a9c
-              </Text>
+            <View className="flex-row justify-between items-center">
+              <View className="flex-1 ml-2">
+                <Text className="text-xl font-pp">Receiving</Text>
+                <Text className="text-2xl text-gravel">Greg Heffley</Text>
+                <Text className="text-sm text-uoft_grey_medium">
+                  d7c2e8f1...b3d1e0a9c
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  console.log("Hi");
+                }}
+                className="text-sm text-center px-4 py-3 bg-uoft_dark_grey rounded-lg"
+              >
+                <Text className="text-sm text-balck">Change</Text>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -97,9 +91,9 @@ export default function SwapScreen() {
             onPresetAmount={handlePresetAmount}
           />
         </View>
-        <View className="bg-uoft_light_grey items-center py-4 my-2">
+        <View className="bg-uoft_primary_blue rounded-md items-center py-4 my-2 shadow-md">
           <Pressable>
-            <Text className="text-black text-center text-lg font-pp">Send</Text>
+            <Text className="text-white text-center text-lg font-pp">Send</Text>
           </Pressable>
         </View>
       </View>
