@@ -1,0 +1,40 @@
+import { router } from "expo-router";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function NotificationPage() {
+  const askForNotifications = () => {
+    // do later
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 px-8">
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-xl font-bold flex-col">
+            Allow notifications
+          </Text>
+        </View>
+
+        <Pressable onPress={askForNotifications}>
+          <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
+            <Text className="text-center text-white">
+              Enable push notifications
+            </Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            router.push("/auth/camera");
+          }}
+        >
+          <View className="mb-4">
+            <Text className="text-center">Maybe Later</Text>
+          </View>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}

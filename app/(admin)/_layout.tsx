@@ -17,6 +17,10 @@ export default function AdminLayout() {
     return <Redirect href="/" />;
   }
 
+  const handleHackerBucks = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -65,6 +69,40 @@ export default function AdminLayout() {
           },
         }}
       />
+      <Tabs.Screen
+        name="qr"
+        options={{
+          title: "qr",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="qrcode-scan"
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
+        }}
+      />
+
+      <Tabs.Screen
+        name="hackerbucks"
+        options={{
+          title: "bucks",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cash" size={size} color={color} />
+          ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
+        }}
+      />
+
       <Tabs.Screen
         name="profile"
         options={{

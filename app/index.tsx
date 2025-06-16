@@ -1,23 +1,32 @@
+import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, SafeAreaView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const App = () => {
+export function App() {
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 justify-center items-center px-6">
-        <Text className="text-4xl font-bold text-center mb-8">UofTHacks</Text>
+    <SafeAreaView className="flex-1 bg-uoft_white">
+      <View className="flex-1 px-8">
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-xl font-bold flex-col">UoftHacks</Text>
+        </View>
+
         <Pressable
-          className="bg-black py-4 px-8 rounded-sm absolute bottom-8 w-full items-center"
           onPress={() => {
+            impactAsync(ImpactFeedbackStyle.Medium);
             router.push("/auth/selectRole");
           }}
         >
-          <Text className="text-white text-lg font-semibold">Get Started</Text>
+          <View className="bg-uoft_primary_blue rounded-md py-4 mt-8">
+            <Text className="text-uoft_white text-center font-pp text-lg font-bold">
+              Sign In
+            </Text>
+          </View>
         </Pressable>
       </View>
     </SafeAreaView>
   );
-};
+}
 
 export default App;

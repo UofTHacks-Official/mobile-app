@@ -10,12 +10,17 @@ const AdminDashboard = () => {
   const handleQRScan = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // TODO: Implement QR scanning functionality
-    router.push("/admin/qr");
+    router.push("/(admin)/qr");
   };
 
   const handleSchedule = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/admin/schedule");
+    router.push("/(admin)/schedule");
+  };
+
+  const handleHackerBucks = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/(admin)/hackerbucks/sendHbucks");
   };
 
   return (
@@ -75,6 +80,30 @@ const AdminDashboard = () => {
               </Text>
               <Text className="text-uoft_white/80 font-pp">
                 Manage event schedules
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            className="bg-uoft_accent_purple p-6 rounded-lg flex-row items-center mt-6"
+            onPress={handleHackerBucks}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <MaterialCommunityIcons
+              name="cash-multiple"
+              size={32}
+              color="white"
+              style={{ marginRight: 16 }}
+            />
+            <View>
+              <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
+                Hacker Bucks
+              </Text>
+              <Text className="text-uoft_white/80 font-pp">
+                Manage hacker bucks
               </Text>
             </View>
           </Pressable>
