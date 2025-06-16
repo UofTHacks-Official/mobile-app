@@ -51,7 +51,7 @@ export default function CameraPage() {
 
         <Pressable
           onPress={() => {
-            router.push("/auth/camera");
+            router.push("/(admin)");
           }}
         >
           <View className="mb-4">
