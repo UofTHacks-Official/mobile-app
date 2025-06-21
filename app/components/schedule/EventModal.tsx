@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
+import { Schedule } from "../../types/schedule";
 import {
   Modal,
   Pressable,

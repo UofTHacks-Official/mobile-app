@@ -1,32 +1,22 @@
 import { Text, View } from "react-native";
-import Event from "./Event";
-
-type EventType = "networking" | "food" | "activity";
-
-interface Event {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  date: Date;
-  type: EventType;
-}
+import { Schedule } from "../../types/schedule";
+import EventComponent from "./Event";
 
 interface TimeSlotProps {
   hour: number;
   isCurrentHour: boolean;
-  events: Event[];
+  schedules: Schedule[];
   hourHeight: number;
-  onDeleteEvent: (eventId: string) => void;
+  onDeleteSchedule: (scheduleId: string) => void;
   showTime?: boolean;
 }
 
 const TimeSlot = ({
   hour,
   isCurrentHour,
-  events,
+  schedules,
   hourHeight,
-  onDeleteEvent,
+  onDeleteSchedule,
   showTime = true,
 }: TimeSlotProps) => {
   // Format hour to 12-hour format with AM/PM
@@ -39,15 +29,15 @@ const TimeSlot = ({
       ? `${hour - 12} PM`
       : `${hour} AM`;
 
-  // Only show events that start in this hour
-  const hourEvents = events.filter((event) => {
-    const [startHour] = event.startTime.split(":").map(Number);
+  // Only show schedules that start in this hour
+  const hourSchedules = schedules.filter((schedule) => {
+    const startHour = new Date(schedule.startTime).getHours();
     return startHour === hour;
   });
 
-  // If there are multiple events starting in this hour, they should be displayed side by side
-  const shouldShareSpace = hourEvents.length > 1;
-  const eventWidth = shouldShareSpace ? 100 / hourEvents.length : 100;
+  // If there are multiple schedules starting in this hour, they should be displayed side by side
+  const shouldShareSpace = hourSchedules.length > 1;
+  const eventWidth = shouldShareSpace ? 100 / hourSchedules.length : 100;
 
   return (
     <View className="h-12 border-b border-gray-200">
@@ -60,16 +50,16 @@ const TimeSlot = ({
           </View>
         )}
         <View className="flex-1 relative">
-          {hourEvents.map((event, index) => (
-            <Event
-              key={event.id}
-              id={event.id}
-              title={event.title}
-              startTime={event.startTime}
-              endTime={event.endTime}
+          {hourSchedules.map((schedule, index) => (
+            <EventComponent
+              key={schedule.id}
+              id={schedule.id}
+              title={schedule.title}
+              startTime={schedule.startTime}
+              endTime={schedule.endTime}
               hourHeight={hourHeight}
-              type={event.type}
-              onDelete={() => onDeleteEvent(event.id)}
+              type={schedule.type}
+              onDelete={() => onDeleteSchedule(schedule.id)}
               style={{
                 width: `${eventWidth}%`,
                 left: shouldShareSpace ? `${eventWidth * index}%` : "0%",
