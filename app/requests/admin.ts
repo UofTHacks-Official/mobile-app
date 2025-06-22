@@ -201,3 +201,6 @@ export const deductHackerBucks = async (hackerId: string, amount: number) => {
       return { error };
     }
   }
+
+// Default export for Expo Router
+export default loginEndpoints;

@@ -1,10 +1,9 @@
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import shortenString from "@/app/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React from "react";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
-import { shortenString } from "../utils/tokens/format/shorten";
 
 export default function ConfirmHBucks() {
   const router = useRouter();

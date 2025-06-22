@@ -32,3 +32,6 @@ export function shortenString(
   // Combine with ellipsis
   return `${start}${ellipsis}${end}`;
 }
+
+// Default export for Expo Router
+export default shortenString;

@@ -23,6 +23,11 @@ const AdminDashboard = () => {
     router.push("/hackerbucks");
   };
 
+  const handleFontExample = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/components/FontExample");
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-6 text-uoft_black">
@@ -104,6 +109,30 @@ const AdminDashboard = () => {
               </Text>
               <Text className="text-uoft_white/80 font-pp">
                 Manage hacker bucks
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            className="bg-uoft_primary_blue p-6 rounded-lg flex-row items-center mt-6"
+            onPress={handleFontExample}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <MaterialCommunityIcons
+              name="format-font"
+              size={32}
+              color="white"
+              style={{ marginRight: 16 }}
+            />
+            <View>
+              <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
+                Font Examples
+              </Text>
+              <Text className="text-uoft_white/80 font-pp">
+                View available fonts
               </Text>
             </View>
           </Pressable>

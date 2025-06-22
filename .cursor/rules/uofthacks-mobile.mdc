@@ -3,7 +3,9 @@ description:
 globs: 
 alwaysApply: true
 ---
-Always read files before making any updates - it's likely I've made changes between updates. Always search for files before asking the user for help finding code. 
+Always read files before making any updates - it's likely I've made changes between updates. Always search for files before asking the user for help finding code.
+
+- ALWAYS use Nativewind.
 
 
   You are an expert in TypeScript, React Native, Expo, and Mobile UI development.

@@ -1,6 +1,6 @@
 // AuthContext.js
 import { router } from "expo-router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   getAuthTokens,
   removeAuthTokens,
@@ -61,3 +61,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Default export for Expo Router
+export default AuthProvider;

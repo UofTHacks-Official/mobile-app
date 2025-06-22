@@ -1,8 +1,10 @@
+import NumericKeypad from "@/app/components/hacker_bucks/keyboard";
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import shortenString from "@/app/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,8 +14,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
-import NumericKeypad from "../components/hacker_bucks/keyboard";
-import { shortenString } from "../utils/tokens/format/shorten";
 
 // Validation functions
 const isValidAmount = (value: string): boolean => {

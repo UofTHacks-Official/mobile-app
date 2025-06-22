@@ -81,3 +81,6 @@ export const useTransactionStore = create<TransactionState>()(
 );
 
 export const useHackerBucksStore = createSelectorFunctions(useTransactionStore)
+
+// Default export for Expo Router
+export default useTransactionStore;

@@ -183,5 +183,5 @@ let refreshSubscribers: Array<(token: string) => void> = [];
 // );
 // */
 
-// export default axiosInstance;
+export default axiosInstance;
 

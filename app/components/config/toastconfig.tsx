@@ -1,5 +1,4 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
 import { Text, View } from "react-native";
 import { BaseToastProps } from "react-native-toast-message";
 
@@ -19,12 +18,12 @@ const toastConfig = {
       />
       <View className="flex-1">
         {text1 && (
-          <Text className="text-[#D92D20] text-[12px] font-bold flex-wrap">
+          <Text className="text-[#D92D20] text-[12px] font-opensans-semibold flex-wrap">
             {text1}
           </Text>
         )}
         {text2 && (
-          <Text className="text-[#D92D20] text-[12px] mt-1 flex-wrap">
+          <Text className="text-[#D92D20] text-[12px] mt-1 font-opensans flex-wrap">
             {text2}
           </Text>
         )}
@@ -41,12 +40,12 @@ const toastConfig = {
       />
       <View className="flex-1">
         {text1 && (
-          <Text className="text-[#067647] text-[12px] font-bold flex-wrap">
+          <Text className="text-[#067647] text-[12px] font-opensans-semibold flex-wrap">
             {text1}
           </Text>
         )}
         {text2 && (
-          <Text className="text-[#067647] text-[12px] mt-1 flex-wrap">
+          <Text className="text-[#067647] text-[12px] mt-1 font-opensans flex-wrap">
             {text2}
           </Text>
         )}
@@ -63,12 +62,12 @@ const toastConfig = {
       />
       <View className="flex-1">
         {text1 && (
-          <Text className="text-[#D92D20] text-[12px] font-bold flex-wrap">
+          <Text className="text-[#D92D20] text-[12px] font-opensans-semibold flex-wrap">
             {text1}
           </Text>
         )}
         {text2 && (
-          <Text className="text-[#D92D20] text-[12px] mt-1 flex-wrap">
+          <Text className="text-[#D92D20] text-[12px] mt-1 font-opensans flex-wrap">
             {text2}
           </Text>
         )}

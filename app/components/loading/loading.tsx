@@ -1,5 +1,4 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 interface LoadingIndicatorProps {
@@ -107,3 +106,6 @@ export function Spinner({
     </View>
   );
 }
+
+// Default export for Expo Router
+export default LoadingIndicator;
