@@ -72,14 +72,14 @@ const Schedule = () => {
           <Text className="text-2xl font-['PPObjectSans-Heavy']">Schedule</Text>
         </View>
 
-        <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
+        {/* <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
           <Pressable
             onPress={() => setIsModalVisible(true)}
             className="ml-auto"
           >
             <MaterialCommunityIcons name="plus" size={48} color="white" />
           </Pressable>
-        </View>
+        </View> */}
 
         <View className="flex-row h-12 border-b border-gray-200 bg-gray-50">
           <View className="w-12 h-12 border-b border-gray-200 bg-gray-50" />

@@ -18,6 +18,9 @@ module.exports = {
         uoft_grey_lighter: "#E0E0E0",
         uoft_dark_grey: "#ecece7",
         uoft_light_grey: "#fbfbf8",
+        navBar: "#1A1819",
+        navBar1: "#2F2E2C",
+        navIconColor: "#BFBDBE"
       },
       fontFamily: {
         pp: ["PPObjectSans-Regular"],
@@ -26,3 +29,4 @@ module.exports = {
   },
   plugins: [],
 }
+
