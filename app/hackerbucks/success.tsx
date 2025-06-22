@@ -27,7 +27,7 @@ export default function Success() {
 
   const handleSendMore = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.replace("/(admin)/hackerbucks");
+    router.replace("/hackerbucks");
     setTimeout(() => clearTransaction(), 100);
   };
 
@@ -89,7 +89,7 @@ export default function Success() {
       </View>
 
       {/* Action Buttons */}
-      <View className="px-6 pb-6 space-y-3">
+      <View className="px-6 space-y-3">
         <TouchableOpacity
           className="bg-uoft_primary_blue py-4 rounded-lg items-center mb-2"
           onPress={handleSendMore}

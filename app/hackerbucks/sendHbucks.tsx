@@ -1,7 +1,7 @@
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
-import NumericKeypad from "../../components/hacker_bucks/keyboard";
+import NumericKeypad from "../components/hacker_bucks/keyboard";
 
 // Validation functions
 const isValidAmount = (value: string): boolean => {
@@ -58,11 +58,13 @@ export default function SwapScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const params = useLocalSearchParams();
 
   const hackerBucksTransaction = useHackerBucksStore();
 
   const currentRecipient = hackerBucksTransaction.currentTransaction?.recipient;
+
+  // Check if amount is valid for enabling the send button
+  const isAmountValid = isValidAmount(amount);
 
   // Validate amount whenever it changes
   useEffect(() => {
@@ -118,17 +120,19 @@ export default function SwapScreen() {
   };
 
   const handleSendPress = () => {
+    // Prevent sending if amount is not valid
+    if (!isAmountValid) {
+      return;
+    }
+
     console.log("[LOG] sending 1");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     hackerBucksTransaction.updateTransactionAmount(amount);
-    router.push("/(admin)/hackerbucks/confirmHBucks");
+    router.push("/hackerbucks/confirmHBucks");
   };
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-uoft_dark_grey"
-      edges={["top", "left", "right"]}
-    >
+    <SafeAreaView className="flex-1 bg-uoft_dark_grey">
       <View className="flex-1 px-4">
         <View className="flex flex-row items-center px-4 pt-4 pb-12">
           <Pressable onPress={() => router.back()}>
@@ -206,9 +210,18 @@ export default function SwapScreen() {
             onPresetAmount={handlePresetAmount}
           />
         </View>
-        <Pressable onPress={handleSendPress}>
-          <View className={`rounded-md items-center py-4 my-2 shadow-md `}>
-            <Text className="text-white text-center text-lg font-pp">Send</Text>
+        <Pressable onPress={handleSendPress} disabled={!isAmountValid}>
+          <View
+            className={`rounded-md items-center py-4 mt-4 ${
+              isAmountValid ? "bg-uoft_primary_blue" : "bg-gray-300"
+            }`}
+          >
+            <Text
+              className={`text-center text-lg font-pp font-bold 
+              ${isAmountValid ? "text-white" : "text-whitetext-gray-100"}`}
+            >
+              Send
+            </Text>
           </View>
         </Pressable>
       </View>

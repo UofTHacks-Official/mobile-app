@@ -20,7 +20,7 @@ const AdminDashboard = () => {
 
   const handleHackerBucks = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(admin)/hackerbucks/sendHbucks");
+    router.push("/hackerbucks");
   };
 
   return (

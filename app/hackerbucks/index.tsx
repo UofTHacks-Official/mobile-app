@@ -92,7 +92,7 @@ export default function App() {
     //setScannedBounds(bounds); // Only uncomment if you want to visualize the bounds
 
     // Navigate to the next screen
-    router.push({ pathname: "/(admin)/hackerbucks/sendHbucks" });
+    router.push("/hackerbucks/sendHbucks");
     startTransaction(
       {
         firstName: "Garry",
@@ -180,7 +180,6 @@ export default function App() {
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                // Reset the processing flag when navigating back
                 isProcessingScan.current = false;
                 navigation.goBack();
               }}
