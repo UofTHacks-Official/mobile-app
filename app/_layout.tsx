@@ -1,4 +1,7 @@
 import { Stack } from "expo-router";
+import React from "react";
+import Toast from "react-native-toast-message";
+import toastConfig from "./components/config/toastconfig";
 import { AuthProvider } from "./context/authContext";
 import "./globals.css";
 
@@ -20,6 +23,7 @@ export default function RootLayout() {
           options={{ headerShown: false, animation: "none" }}
         />
       </Stack>
+      <Toast config={toastConfig} />
     </AuthProvider>
   );
 }

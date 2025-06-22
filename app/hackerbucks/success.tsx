@@ -1,36 +1,34 @@
-import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import { useTransactionStore } from "@/app/reducers/hackerbucks";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { shortenString } from "../utils/tokens/format/shorten";
 
 export default function Success() {
   const router = useRouter();
-  const navigation = useNavigation();
 
   const { currentTransaction, updateTransactionStatus, clearTransaction } =
-    useHackerBucksStore();
+    useTransactionStore();
 
-  // Mark transaction as completed when component mounts
   useEffect(() => {
     if (currentTransaction && currentTransaction.status !== "completed") {
       updateTransactionStatus("completed");
     }
   }, []);
 
+  // const handleSendMore = () => {
+  //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  //   clearTransaction();
+  //   router.replace("/hackerbucks");
+  // };
+
   const handleDone = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.replace("/(admin)");
     setTimeout(() => clearTransaction(), 100);
   };
-
-  const handleSendMore = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.replace("/hackerbucks");
-    setTimeout(() => clearTransaction(), 100);
-  };
-
   // Show loading if no transaction data
   if (!currentTransaction) {
     return (
@@ -72,7 +70,7 @@ export default function Success() {
             <View className="h-0.5 bg-gray-200 rounded-full" />
             <View className="flex flex-row justify-between items-center">
               <Text className="text-gray-600">Hacker ID</Text>
-              <Text className="font-medium">{recipient.id}</Text>
+              <Text className="font-medium">{shortenString(recipient.id)}</Text>
             </View>
             <View className="h-0.5 bg-gray-200 rounded-full" />
             <View className="flex flex-row justify-between items-center">
@@ -90,18 +88,18 @@ export default function Success() {
 
       {/* Action Buttons */}
       <View className="px-6 space-y-3">
-        <TouchableOpacity
+        {/* <TouchableOpacity
           className="bg-uoft_primary_blue py-4 rounded-lg items-center mb-2"
           onPress={handleSendMore}
         >
-          <Text className="text-white text-lg font-bold">Send More HB</Text>
-        </TouchableOpacity>
+          <Text className="text-white text-lg">Send More HB</Text>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
-          className="border-uoft_primary_blue border py-4 rounded-lg items-center"
+          className="bg-uoft_primary_blue border py-4 rounded-lg items-center"
           onPress={handleDone}
         >
-          <Text className="text-uoft_primary_blue text-lg font-bold">Done</Text>
+          <Text className="text-white text-lg">Done</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

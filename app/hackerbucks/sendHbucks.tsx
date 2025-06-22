@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
 import NumericKeypad from "../components/hacker_bucks/keyboard";
+import { shortenString } from "../utils/tokens/format/shorten";
 
 // Validation functions
 const isValidAmount = (value: string): boolean => {
@@ -30,7 +31,7 @@ const isValidAmount = (value: string): boolean => {
   if (decimalPlaces > 2) return false;
 
   // Check if the total value is reasonable (e.g., less than 1 million)
-  if (numValue > 1000000) return false;
+  if (numValue > 1000) return false;
 
   return true;
 };
@@ -187,7 +188,9 @@ export default function SwapScreen() {
                       {currentRecipient?.firstName} {currentRecipient?.lastName}
                     </Text>
                     <Text className="text-sm text-uoft_grey_medium">
-                      {hackerBucksTransaction.currentTransaction?.recipient.id}
+                      {shortenString(
+                        hackerBucksTransaction.currentTransaction?.recipient.id!
+                      )}
                     </Text>
                   </>
                 ) : null}
@@ -217,7 +220,7 @@ export default function SwapScreen() {
             }`}
           >
             <Text
-              className={`text-center text-lg font-pp font-bold 
+              className={`text-center text-lg font-pp
               ${isAmountValid ? "text-white" : "text-whitetext-gray-100"}`}
             >
               Send

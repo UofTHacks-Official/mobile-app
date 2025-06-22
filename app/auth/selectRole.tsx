@@ -4,11 +4,40 @@ import { router } from "expo-router";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const SelectRole = () => {
-  const handleRoleSelection = (role: "Admin" | "Volunteer") => {
+  const handleRoleSelection = (
+    role: "Admin" | "Volunteer" | "Judge" | "Hacker"
+  ) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // Here you would typically save the role selection to your auth state/context
     router.push(`/auth/signIn${role}`); // Navigate to the main app after role selection
   };
+
+  const roles = [
+    {
+      name: "Admin",
+      icon: "shield-account",
+      color: "bg-uoft_primary_blue",
+      available: true,
+    },
+    {
+      name: "Volunteer",
+      icon: "account-group",
+      color: "bg-uoft_accent_purple",
+      available: false,
+    },
+    {
+      name: "Judge",
+      icon: "gavel",
+      color: "bg-uoft_secondary_orange",
+      available: false,
+    },
+    {
+      name: "Hacker",
+      icon: "laptop",
+      color: "bg-uoft_accent_red",
+      available: false,
+    },
+  ];
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
@@ -20,42 +49,76 @@ const SelectRole = () => {
           Choose how you'll be using the app
         </Text>
 
-        <View className="mt-12 flex-row justify-center">
-          <Pressable
-            className="bg-uoft_secondary_orange w-[150px] h-[150px] items-center justify-center rounded-lg mr-4"
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-            onPress={() => handleRoleSelection("Admin")}
-          >
-            <MaterialCommunityIcons
-              name="shield-account"
-              size={48}
-              color="white"
-            />
-            <Text className="text-uoft_white text-center font-pp text-lg font-bold mt-2">
-              Admin
-            </Text>
-          </Pressable>
+        <View className="mt-8 flex-1">
+          <View className="flex-row justify-center mb-4">
+            {roles.slice(0, 2).map((role) => (
+              <Pressable
+                key={role.name}
+                className={`${
+                  role.color
+                } w-[140px] h-[140px] items-center justify-center rounded-lg mx-2 ${
+                  !role.available ? "opacity-50" : ""
+                }`}
+                android_ripple={null}
+                style={({ pressed }) => ({
+                  opacity:
+                    pressed && role.available ? 0.8 : role.available ? 1 : 0.5,
+                })}
+                onPress={() =>
+                  role.available && handleRoleSelection(role.name as any)
+                }
+              >
+                <MaterialCommunityIcons
+                  name={role.icon as any}
+                  size={40}
+                  color="white"
+                />
+                <Text className="text-uoft_white text-center font-pp text-base font-bold mt-2">
+                  {role.name}
+                </Text>
+                {!role.available && (
+                  <Text className="text-uoft_white text-center font-pp text-xs mt-1">
+                    Coming Soon
+                  </Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
 
-          <Pressable
-            className="bg-uoft_black w-[150px] h-[150px] items-center justify-center rounded-lg"
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-            onPress={() => handleRoleSelection("Volunteer")}
-          >
-            <MaterialCommunityIcons
-              name="account-group"
-              size={48}
-              color="white"
-            />
-            <Text className="text-uoft_white text-center font-pp text-lg font-bold mt-2">
-              Volunteer
-            </Text>
-          </Pressable>
+          <View className="flex-row justify-center">
+            {roles.slice(2, 4).map((role) => (
+              <Pressable
+                key={role.name}
+                className={`${
+                  role.color
+                } w-[140px] h-[140px] items-center justify-center rounded-lg mx-2 ${
+                  !role.available ? "opacity-50" : ""
+                }`}
+                android_ripple={null}
+                style={({ pressed }) => ({
+                  opacity:
+                    pressed && role.available ? 0.8 : role.available ? 1 : 0.5,
+                })}
+                onPress={() =>
+                  role.available && handleRoleSelection(role.name as any)
+                }
+              >
+                <MaterialCommunityIcons
+                  name={role.icon as any}
+                  size={40}
+                  color="white"
+                />
+                <Text className="text-uoft_white text-center font-pp text-base font-bold mt-2">
+                  {role.name}
+                </Text>
+                {!role.available && (
+                  <Text className="text-uoft_white text-center font-pp text-xs mt-1">
+                    Coming Soon
+                  </Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
         </View>
       </View>
     </SafeAreaView>

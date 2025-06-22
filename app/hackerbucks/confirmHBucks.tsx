@@ -1,39 +1,24 @@
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import React from "react";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { shortenString } from "../utils/tokens/format/shorten";
 
 export default function ConfirmHBucks() {
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const navigation = useNavigation();
 
   const hackerBucksTransaction = useHackerBucksStore();
 
   const currentRecipient = hackerBucksTransaction.currentTransaction?.recipient;
 
-  useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: { display: "none" },
-    });
-    return () => {
-      navigation.setOptions({
-        tabBarStyle: { display: "flex" },
-      });
-    };
-  }, [navigation]);
-
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      setIsLoading(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       router.push("/hackerbucks/success");
     } catch (error) {
       console.error("Transaction error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -43,7 +28,7 @@ export default function ConfirmHBucks() {
         <View className="flex-1 px-6 py-4">
           <View>
             <MaterialCommunityIcons
-              name="arrow-left"
+              name="chevron-left"
               size={36}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -67,7 +52,9 @@ export default function ConfirmHBucks() {
             <View className="h-0.5 bg-gray-200 rounded-full" />
             <View className="flex flex-row justify-between items-center">
               <Text className="text-gray-600">Hacker ID</Text>
-              <Text className="font-medium">{currentRecipient?.id}</Text>
+              <Text className="font-medium">
+                {shortenString(currentRecipient?.id!)}
+              </Text>
             </View>
           </View>
         </View>
@@ -76,11 +63,8 @@ export default function ConfirmHBucks() {
           <TouchableOpacity
             className="bg-uoft_primary_blue py-4 rounded-lg items-center"
             onPress={handleConfirm}
-            disabled={isLoading}
           >
-            <Text className="text-white text-lg font-bold font-pp">
-              {isLoading ? "Processing..." : "Confirm"}
-            </Text>
+            <Text className="text-white text-lg">Confirm</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -34,15 +34,15 @@ export default function App() {
     console.log(`Current Status`, isProcessingScan.current);
   }, []);
 
-  useEffect(() => {
-    if (
-      currentTransaction &&
-      (currentTransaction.status === "completed" ||
-        currentTransaction.status === "failed")
-    ) {
-      clearTransaction();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (
+  //     currentTransaction &&
+  //     (currentTransaction.status === "completed" ||
+  //       currentTransaction.status === "failed")
+  //   ) {
+  //     clearTransaction();
+  //   }
+  // }, []);
 
   useFocusEffect(
     React.useCallback(() => {
