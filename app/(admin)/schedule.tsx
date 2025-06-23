@@ -41,6 +41,8 @@ function formatTimeTo12Hour(isoString: string) {
 }
 
 const Schedule = () => {
+  const isEditFeatureEnabled = false;
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [schedules, setSchedules] = useState<ScheduleInterface[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -49,7 +51,7 @@ const Schedule = () => {
   const [editInitialValues, setEditInitialValues] = useState<Omit<ScheduleInterface, "id"> | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // June 20, 21, 22 (to match API data)
+  // June 20, 21, 22 (to match API data), TEMP
   const dates = [
     new Date(2025, 5, 20),
     new Date(2025, 5, 21),
@@ -273,28 +275,30 @@ const Schedule = () => {
                       </Text>
                     </View>
                   )}
-                  <Button
-                    title="Edit Event"
-                    color="#4A90E2"
-                    onPress={() => {
-                      if (selectedSchedule) {
-                        setEditInitialValues({
-                          title: selectedSchedule.title,
-                          startTime: selectedSchedule.startTime,
-                          endTime: selectedSchedule.endTime,
-                          date: selectedSchedule.date,
-                          type: selectedSchedule.type,
-                          description: selectedSchedule.description,
-                          sponsorId: selectedSchedule.sponsorId,
-                          isShift: selectedSchedule.isShift,
-                          shiftType: selectedSchedule.shiftType,
-                        });
-                        setIsDetailModalVisible(false);
-                        setIsModalVisible(true);
-                        setEditingId(selectedSchedule.id);
-                      }
-                    }}
-                  />
+                  {isEditFeatureEnabled && (
+                    <Button
+                      title="Edit Event"
+                      color="#4A90E2"
+                      onPress={() => {
+                        if (selectedSchedule) {
+                          setEditInitialValues({
+                            title: selectedSchedule.title,
+                            startTime: selectedSchedule.startTime,
+                            endTime: selectedSchedule.endTime,
+                            date: selectedSchedule.date,
+                            type: selectedSchedule.type,
+                            description: selectedSchedule.description,
+                            sponsorId: selectedSchedule.sponsorId,
+                            isShift: selectedSchedule.isShift,
+                            shiftType: selectedSchedule.shiftType,
+                          });
+                          setIsDetailModalVisible(false);
+                          setIsModalVisible(true);
+                          setEditingId(selectedSchedule.id);
+                        }
+                      }}
+                    />
+                  )}
                   <Button
                     title="Delete Event"
                     color="#FF6F51"
