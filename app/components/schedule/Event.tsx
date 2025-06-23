@@ -10,16 +10,17 @@ interface EventProps {
   style?: StyleProp<ViewStyle>;
   type: EventType;
   onDelete?: () => void;
-  id?: string; // Adding id for future API integration
+  id?: string;
+  onPress?: () => void;
 }
 
-const eventTypeColors = {
-  networking: '#4A90E2', // Blue
-  food: '#FF6F51',      // Orange
-  activity: '#50E3C2',  // Teal
+const eventTypeBgClass = {
+  networking: 'bg-uoft_primary_blue',
+  food: 'bg-uoft_secondary_orange',
+  activity: 'bg-uoft_accent_purple',
 };
 
-const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id }: EventProps) => {
+const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id, onPress }: EventProps) => {
   // Convert times to minutes for calculation
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -36,14 +37,20 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   // Calculate top position based on start time
   const topPosition = (startMinute / 60) * hourHeight;
 
-  const formatTimeTo12Hour = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
+  const formatTimeTo12Hour = (isoString: string) => {
+    const date = new Date(isoString);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
   const handlePress = () => {
+    if (onPress) {
+      onPress();
+      return;
+    }
     if (onDelete) {
       Alert.alert(
         "Delete Event",
@@ -66,12 +73,11 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   return (
     <Pressable 
       onPress={handlePress}
-      className="absolute rounded-lg p-2"
+      className={`absolute rounded-lg p-2 ${eventTypeBgClass[type]}`}
       style={[
         { 
           height: height,
           top: topPosition,
-          backgroundColor: eventTypeColors[type],
           zIndex: 1, // Ensure events are above the time grid
         },
         style

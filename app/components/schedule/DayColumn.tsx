@@ -1,29 +1,21 @@
 import { View } from "react-native";
+import { Schedule } from "../../types/schedule";
 import TimeSlot from "./TimeSlot";
-
-type EventType = "networking" | "food" | "activity";
-
-interface Event {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  date: Date;
-  type: EventType;
-}
 
 interface DayColumnProps {
   date: Date;
   currentHour: number;
-  events: Event[];
-  onDeleteEvent: (eventId: string) => void;
+  schedules: Schedule[];
+  onDeleteSchedule: (scheduleId: string) => void;
+  onSchedulePress: (schedule: Schedule) => void;
 }
 
 const DayColumn = ({
   date,
   currentHour,
-  events,
-  onDeleteEvent,
+  schedules,
+  onDeleteSchedule,
+  onSchedulePress,
 }: DayColumnProps) => {
   const formattedDate = date.toLocaleDateString("en-US", {
     month: "short",
@@ -39,9 +31,10 @@ const DayColumn = ({
           key={i}
           hour={i}
           isCurrentHour={i === currentHour}
-          events={events}
+          schedules={schedules}
           hourHeight={hourHeight}
-          onDeleteEvent={onDeleteEvent}
+          onDeleteSchedule={onDeleteSchedule}
+          onSchedulePress={onSchedulePress}
           showTime={false}
         />
       ))}
