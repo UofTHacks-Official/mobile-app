@@ -2,12 +2,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Alert, Button, Modal, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
 import DayColumn from "../components/schedule/DayColumn";
 import EventModal from "../components/schedule/EventModal";
 import TimeSlot from "../components/schedule/TimeSlot";
-import { fetchAllSchedules } from "../requests/schedule";
+import { deleteSchedule as apiDeleteSchedule, createSchedule, fetchAllSchedules, updateSchedule } from "../requests/schedule";
 import { Schedule as ScheduleInterface, ScheduleType } from "../types/schedule";
 
 // Map API schedule object to local Schedule type
@@ -46,6 +46,8 @@ const Schedule = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [editInitialValues, setEditInitialValues] = useState<Omit<ScheduleInterface, "id"> | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data)
   const dates = [
@@ -80,20 +82,44 @@ const Schedule = () => {
       });
   }, []);
 
-  const handleAddSchedule = (event: { title: string; startTime: string; endTime: string; date: Date; type: ScheduleType; }) => {
-    const newSchedule: ScheduleInterface = {
+  const handleAddSchedule = async (event: { title: string; startTime: string; endTime: string; date: Date; type: ScheduleType; description?: string; sponsorId?: string | null; isShift?: boolean; shiftType?: string | null; }) => {
+    const safeEvent = {
       ...event,
-      id: `schedule-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      description: "", // default value
-      sponsorId: null, // default value
-      isShift: false,   // default value
-      shiftType: null, // default value
+      description: event.description ?? "",
+      sponsorId: event.sponsorId ?? null,
+      isShift: event.isShift ?? false,
+      shiftType: event.shiftType ?? null,
     };
-    setSchedules([...schedules, newSchedule]);
+    if (editingId) {
+      // Edit existing schedule
+      try {
+        const updated = await updateSchedule(editingId, safeEvent);
+        setSchedules(schedules => schedules.map(s => s.id === editingId ? { ...s, ...updated } : s));
+        setEditingId(null);
+      } catch (err) {
+        // Optionally show error to user
+        console.error("Failed to update schedule:", err);
+      }
+    } else {
+      // Add new schedule
+      try {
+        const created = await createSchedule(safeEvent);
+        setSchedules(schedules => [...schedules, created]);
+      } catch (err) {
+        // Optionally show error to user
+        console.error("Failed to create schedule:", err);
+      }
+    }
   };
 
-  const handleDeleteSchedule = (scheduleId: string) => {
-    setSchedules(schedules.filter((schedule) => schedule.id !== scheduleId));
+  const handleDeleteSchedule = async (scheduleId: string) => {
+    try {
+      await apiDeleteSchedule(scheduleId);
+      setSchedules(schedules => schedules.filter(s => s.id !== scheduleId));
+    } catch (err) {
+      // Optionally show error to user
+      console.error("Failed to delete schedule:", err);
+    }
   };
 
   // Use device time to get the current hour and minute
@@ -189,9 +215,13 @@ const Schedule = () => {
 
         <EventModal
           visible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
+          onClose={() => {
+            setIsModalVisible(false);
+            setEditInitialValues(null);
+          }}
           onAddEvent={handleAddSchedule}
           dates={dates}
+          initialValues={editInitialValues}
         />
 
         <Modal
@@ -246,6 +276,50 @@ const Schedule = () => {
                       </Text>
                     </View>
                   )}
+                  <Button
+                    title="Edit Event"
+                    color="#4A90E2"
+                    onPress={() => {
+                      if (selectedSchedule) {
+                        setEditInitialValues({
+                          title: selectedSchedule.title,
+                          startTime: selectedSchedule.startTime,
+                          endTime: selectedSchedule.endTime,
+                          date: selectedSchedule.date,
+                          type: selectedSchedule.type,
+                          description: selectedSchedule.description,
+                          sponsorId: selectedSchedule.sponsorId,
+                          isShift: selectedSchedule.isShift,
+                          shiftType: selectedSchedule.shiftType,
+                        });
+                        setIsDetailModalVisible(false);
+                        setIsModalVisible(true);
+                        setEditingId(selectedSchedule.id);
+                      }
+                    }}
+                  />
+                  <Button
+                    title="Delete Event"
+                    color="#FF6F51"
+                    onPress={() => {
+                      Alert.alert(
+                        "Delete Event",
+                        `Are you sure you want to delete "${selectedSchedule.title}"?`,
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => {
+                              handleDeleteSchedule(selectedSchedule.id);
+                              setIsDetailModalVisible(false);
+                              setSelectedSchedule(null);
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                  />
                 </ScrollView>
               )}
             </View>

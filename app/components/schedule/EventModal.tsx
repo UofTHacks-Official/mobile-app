@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useState } from "react";
-import { Schedule } from "../../types/schedule";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -21,8 +20,23 @@ interface EventModalProps {
     endTime: string;
     date: Date;
     type: EventType;
+    description?: string;
+    sponsorId?: string | null;
+    isShift?: boolean;
+    shiftType?: string | null;
   }) => void;
   dates: Date[];
+  initialValues?: {
+    title: string;
+    startTime: string;
+    endTime: string;
+    date: Date;
+    type: EventType;
+    description?: string;
+    sponsorId?: string | null;
+    isShift?: boolean;
+    shiftType?: string | null;
+  } | null;
 }
 
 const TimeSelector = ({
@@ -125,6 +139,7 @@ const EventModal = ({
   onClose,
   onAddEvent,
   dates,
+  initialValues,
 }: EventModalProps) => {
   const [title, setTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(dates[0]);
@@ -137,22 +152,59 @@ const EventModal = ({
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [selectedType, setSelectedType] = useState<EventType>("activity");
+  const [description, setDescription] = useState("");
+  const [sponsorId, setSponsorId] = useState<string | null>(null);
+  const [isShift, setIsShift] = useState(false);
+  const [shiftType, setShiftType] = useState<string | null>(null);
 
-  const formatTimeForStorage = (time: {
-    hour: number;
-    minute: number;
-    isPM: boolean;
-  }) => {
+  useEffect(() => {
+    if (initialValues) {
+      setTitle(initialValues.title);
+      setSelectedDate(initialValues.date);
+      // Parse startTime and endTime to { hour, minute, isPM }
+      const parseTime = (time: string) => {
+        const date = new Date(time);
+        const h = date.getHours();
+        const m = date.getMinutes();
+        const isPM = h >= 12;
+        return {
+          hour: h % 12 === 0 ? 12 : h % 12,
+          minute: m,
+          isPM,
+        };
+      };
+      setStartTime(parseTime(initialValues.startTime));
+      setEndTime(parseTime(initialValues.endTime));
+      setSelectedType(initialValues.type);
+      setDescription(initialValues.description || "");
+      setSponsorId(initialValues.sponsorId || null);
+      setIsShift(initialValues.isShift || false);
+      setShiftType(initialValues.shiftType || null);
+    } else {
+      setTitle("");
+      setSelectedDate(dates[0]);
+      setStartTime({ hour: 9, minute: 0, isPM: false });
+      setEndTime({ hour: 10, minute: 0, isPM: false });
+      setSelectedType("activity");
+      setDescription("");
+      setSponsorId(null);
+      setIsShift(false);
+      setShiftType(null);
+    }
+  }, [initialValues, dates]);
+
+  // Helper to combine date and time into ISO string
+  function combineDateAndTime(date: Date, time: { hour: number; minute: number; isPM: boolean }) {
     let hours = time.hour;
     if (time.isPM && hours !== 12) {
       hours += 12;
     } else if (!time.isPM && hours === 12) {
       hours = 0;
     }
-    return `${hours.toString().padStart(2, "0")}:${time.minute
-      .toString()
-      .padStart(2, "0")}`;
-  };
+    const newDate = new Date(date);
+    newDate.setHours(hours, time.minute, 0, 0);
+    return newDate.toISOString();
+  }
 
   const formatTimeForDisplay = (time: {
     hour: number;
@@ -167,14 +219,22 @@ const EventModal = ({
   const handleAddEvent = () => {
     onAddEvent({
       title,
-      startTime: formatTimeForStorage(startTime),
-      endTime: formatTimeForStorage(endTime),
+      startTime: combineDateAndTime(selectedDate, startTime),
+      endTime: combineDateAndTime(selectedDate, endTime),
       date: selectedDate,
       type: selectedType,
+      description,
+      sponsorId,
+      isShift,
+      shiftType,
     });
     setTitle("");
     setStartTime({ hour: 9, minute: 0, isPM: false });
     setEndTime({ hour: 10, minute: 0, isPM: false });
+    setDescription("");
+    setSponsorId(null);
+    setIsShift(false);
+    setShiftType(null);
     onClose();
   };
 
