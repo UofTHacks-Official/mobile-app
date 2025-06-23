@@ -41,12 +41,12 @@ export default function AdminLayout() {
           title: "Scan",
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="hackerbucks"
         options={{
           title: "Send",
         }}
-      />
+      /> */}
       {/* <Tabs.Screen
         name="profile"
         options={{

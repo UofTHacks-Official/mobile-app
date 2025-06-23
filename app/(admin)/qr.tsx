@@ -2,7 +2,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useNavigation } from "expo-router";
-import { House } from "phosphor-react-native";
+import { Home } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -172,7 +172,7 @@ export default function App() {
             )}
           </Svg>
 
-          <View className="absolute bottom-10 right-10">
+          <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -180,7 +180,7 @@ export default function App() {
               }}
               className="bg-white/20 p-3 rounded-full"
             >
-              <House size={32} color="white" />
+              <Home size={32} color="white" />
             </TouchableOpacity>
           </View>
         </CameraView>
