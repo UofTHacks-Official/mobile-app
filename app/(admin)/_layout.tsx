@@ -4,7 +4,7 @@ import CustomTabBar from "../components/bottom/bottomNavBar";
 import { AuthContext } from "../context/authContext";
 
 export default function AdminLayout() {
-  const { userToken, loading } = useContext(AuthContext);
+  const { userToken, loading } = useContext(AuthContext)!;
 
   // Show nothing while loading
   if (loading) {
