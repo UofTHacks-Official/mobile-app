@@ -194,7 +194,10 @@ const EventModal = ({
   }, [initialValues, dates]);
 
   // Helper to combine date and time into ISO string
-  function combineDateAndTime(date: Date, time: { hour: number; minute: number; isPM: boolean }) {
+  function combineDateAndTime(
+    date: Date,
+    time: { hour: number; minute: number; isPM: boolean }
+  ) {
     let hours = time.hour;
     if (time.isPM && hours !== 12) {
       hours += 12;
@@ -240,16 +243,16 @@ const EventModal = ({
 
   const eventTypeClasses = {
     networking: {
-      bg: 'bg-uoft_primary_blue',
-      border: 'border-uoft_primary_blue',
+      bg: "bg-uoft_primary_blue",
+      border: "border-uoft_primary_blue",
     },
     food: {
-      bg: 'bg-uoft_secondary_orange',
-      border: 'border-uoft_secondary_orange',
+      bg: "bg-uoft_secondary_orange",
+      border: "border-uoft_secondary_orange",
     },
     activity: {
-      bg: 'bg-uoft_accent_purple',
-      border: 'border-uoft_accent_purple',
+      bg: "bg-uoft_accent_purple",
+      border: "border-uoft_accent_purple",
     },
   };
 

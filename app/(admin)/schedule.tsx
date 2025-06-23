@@ -2,12 +2,26 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Button, Modal, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Button,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
 import DayColumn from "../components/schedule/DayColumn";
 import EventModal from "../components/schedule/EventModal";
 import TimeSlot from "../components/schedule/TimeSlot";
-import { deleteSchedule as apiDeleteSchedule, createSchedule, fetchAllSchedules, updateSchedule } from "../requests/schedule";
+import {
+  deleteSchedule as apiDeleteSchedule,
+  createSchedule,
+  fetchAllSchedules,
+  updateSchedule,
+} from "../requests/schedule";
 import { Schedule as ScheduleInterface, ScheduleType } from "../types/schedule";
 
 // Map API schedule object to local Schedule type
@@ -35,9 +49,9 @@ function formatTimeTo12Hour(isoString: string) {
   const date = new Date(isoString);
   const hours = date.getHours();
   const minutes = date.getMinutes();
-  const period = hours >= 12 ? 'PM' : 'AM';
+  const period = hours >= 12 ? "PM" : "AM";
   const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
 }
 
 const Schedule = () => {
@@ -46,9 +60,13 @@ const Schedule = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [schedules, setSchedules] = useState<ScheduleInterface[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [editInitialValues, setEditInitialValues] = useState<Omit<ScheduleInterface, "id"> | null>(null);
+  const [editInitialValues, setEditInitialValues] = useState<Omit<
+    ScheduleInterface,
+    "id"
+  > | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data), TEMP
@@ -84,7 +102,17 @@ const Schedule = () => {
       });
   }, []);
 
-  const handleAddSchedule = async (event: { title: string; startTime: string; endTime: string; date: Date; type: ScheduleType; description?: string; sponsorId?: string | null; isShift?: boolean; shiftType?: string | null; }) => {
+  const handleAddSchedule = async (event: {
+    title: string;
+    startTime: string;
+    endTime: string;
+    date: Date;
+    type: ScheduleType;
+    description?: string;
+    sponsorId?: string | null;
+    isShift?: boolean;
+    shiftType?: string | null;
+  }) => {
     const safeEvent = {
       ...event,
       description: event.description ?? "",
@@ -96,7 +124,9 @@ const Schedule = () => {
       // Edit existing schedule
       try {
         const updated = await updateSchedule(editingId, safeEvent);
-        setSchedules(schedules => schedules.map(s => s.id === editingId ? { ...s, ...updated } : s));
+        setSchedules((schedules) =>
+          schedules.map((s) => (s.id === editingId ? { ...s, ...updated } : s))
+        );
         setEditingId(null);
       } catch (err) {
         console.error("Failed to update schedule:", err);
@@ -105,7 +135,7 @@ const Schedule = () => {
       // Add new schedule
       try {
         const created = await createSchedule(safeEvent);
-        setSchedules(schedules => [...schedules, created]);
+        setSchedules((schedules) => [...schedules, created]);
       } catch (err) {
         console.error("Failed to create schedule:", err);
       }
@@ -115,7 +145,7 @@ const Schedule = () => {
   const handleDeleteSchedule = async (scheduleId: string) => {
     try {
       await apiDeleteSchedule(scheduleId);
-      setSchedules(schedules => schedules.filter(s => s.id !== scheduleId));
+      setSchedules((schedules) => schedules.filter((s) => s.id !== scheduleId));
     } catch (err) {
       console.error("Failed to delete schedule:", err);
     }
@@ -225,7 +255,7 @@ const Schedule = () => {
 
         <Modal
           visible={isDetailModalVisible}
-          animationType="slide"
+          animationType="fade"
           onRequestClose={() => setIsDetailModalVisible(false)}
           transparent
         >
@@ -240,7 +270,10 @@ const Schedule = () => {
                 <MaterialCommunityIcons name="close" size={24} color="#333" />
               </Pressable>
               {selectedSchedule && (
-                <ScrollView className="max-h-[70vh]" showsVerticalScrollIndicator={false}>
+                <ScrollView
+                  className="max-h-[70vh]"
+                  showsVerticalScrollIndicator={false}
+                >
                   <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-2 text-uoft_black">
                     {selectedSchedule.title}
                   </Text>
@@ -248,20 +281,33 @@ const Schedule = () => {
                     {selectedSchedule.description || "No description provided."}
                   </Text>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="clock-outline" size={20} color="#FF6F51" />
+                    <MaterialCommunityIcons
+                      name="clock-outline"
+                      size={20}
+                      color="#FF6F51"
+                    />
                     <Text className="ml-2 text-base text-uoft_black font-pp">
-                      {formatTimeTo12Hour(selectedSchedule.startTime)} - {formatTimeTo12Hour(selectedSchedule.endTime)}
+                      {formatTimeTo12Hour(selectedSchedule.startTime)} -{" "}
+                      {formatTimeTo12Hour(selectedSchedule.endTime)}
                     </Text>
                   </View>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="tag-outline" size={20} color="#4A90E2" />
+                    <MaterialCommunityIcons
+                      name="tag-outline"
+                      size={20}
+                      color="#4A90E2"
+                    />
                     <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
                       {selectedSchedule.type}
                     </Text>
                   </View>
                   {selectedSchedule.sponsorId && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons name="account-tie-outline" size={20} color="#50E3C2" />
+                      <MaterialCommunityIcons
+                        name="account-tie-outline"
+                        size={20}
+                        color="#50E3C2"
+                      />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Sponsor: {selectedSchedule.sponsorId}
                       </Text>
@@ -269,7 +315,11 @@ const Schedule = () => {
                   )}
                   {selectedSchedule.isShift && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons name="account-group-outline" size={20} color="#FF6F51" />
+                      <MaterialCommunityIcons
+                        name="account-group-outline"
+                        size={20}
+                        color="#FF6F51"
+                      />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Shift: {selectedSchedule.shiftType || "General"}
                       </Text>
