@@ -3,6 +3,13 @@ import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { LoadingIndicator } from "../components/loading/loading";
 import { useAuth } from "../context/authContext";
@@ -22,8 +29,55 @@ const SignInAdmin = () => {
 
   const { signIn } = useAuth();
 
+  // Animation values
+  const buttonScale = useSharedValue(0.95);
+  const buttonOpacity = useSharedValue(0.6);
+
   // Check if both fields are filled
   const isFormValid = email.trim() !== "" && password.trim() !== "";
+
+  // Animate button when form validity changes
+  useEffect(() => {
+    if (isFormValid) {
+      buttonScale.value = withTiming(1, {
+        duration: 300,
+        easing: Easing.out(Easing.back(1.2)),
+      });
+      buttonOpacity.value = withTiming(1, {
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+      });
+    } else {
+      buttonScale.value = withTiming(0.95, {
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+      });
+      buttonOpacity.value = withTiming(0.6, {
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+      });
+    }
+  }, [isFormValid]);
+
+  // Animated styles
+  const animatedButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: buttonScale.value }],
+      opacity: buttonOpacity.value,
+    };
+  });
+
+  const animatedBackgroundStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      buttonOpacity.value,
+      [0.6, 1],
+      ["#9CA3AF", "#002A5C"] // from grey to blue
+    );
+
+    return {
+      backgroundColor,
+    };
+  });
 
   useEffect(() => {
     const loadFirstSignIn = async () => {
@@ -46,14 +100,7 @@ const SignInAdmin = () => {
     try {
       const { response, error } = await adminLogin(email, password);
 
-      console.log("Response: ", response);
-      console.log("Error: ", error);
-      console.log("Error type: ", typeof error);
-      console.log("Error instanceof AxiosError: ", error?.constructor?.name);
-
-      // Check if there's an error first
       if (error) {
-        console.log("Error detected, showing toast...");
         Toast.show({
           type: "error",
           text1: "Login Failed",
@@ -170,19 +217,12 @@ const SignInAdmin = () => {
         </View>
 
         <Pressable onPress={handleSignIn} disabled={!isFormValid}>
-          <View
-            className={`rounded-md py-4 mt-8 mx-8 ${
-              isFormValid ? "bg-uoft_primary_blue" : "bg-uoft_grey_medium"
-            }`}
+          <Animated.View
+            style={[animatedButtonStyle, animatedBackgroundStyle]}
+            className="rounded-md py-4 mt-8 mx-8"
           >
-            <Text
-              className={`text-center text-lg ${
-                isFormValid ? "text-uoft_white" : "text-uoft_grey_lighter"
-              }`}
-            >
-              Sign In
-            </Text>
-          </View>
+            <Text className="text-center text-lg text-uoft_white">Sign In</Text>
+          </Animated.View>
         </Pressable>
 
         {/* <Pressable onPress={handleSignIn}>
@@ -194,7 +234,7 @@ const SignInAdmin = () => {
         </Pressable> */}
 
         <View className="w-full px-12 absolute bottom-0 mb-8">
-          <Text className="  text-xs text-center">
+          <Text className="text-xs text-center text-gray-400">
             By signing in, you agree to our{" "}
             <Text
               style={{ textDecorationLine: "underline", color: "#002A5C" }}
