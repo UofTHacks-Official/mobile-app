@@ -1,15 +1,16 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useState } from "react";
+import {
+  Calendar,
+  MoneyWavy,
+  QrCode,
+  TextAUnderline,
+} from "phosphor-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const AdminDashboard = () => {
-  const [isScanning, setIsScanning] = useState(false);
-
   const handleQRScan = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: Implement QR scanning functionality
     router.push("/(admin)/qr");
   };
 
@@ -20,7 +21,12 @@ const AdminDashboard = () => {
 
   const handleHackerBucks = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(admin)/hackerbucks/sendHbucks");
+    router.push("/hackerbucks");
+  };
+
+  const handleFontExample = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/components/FontExample");
   };
 
   return (
@@ -44,12 +50,7 @@ const AdminDashboard = () => {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <MaterialCommunityIcons
-              name="qrcode-scan"
-              size={32}
-              color="white"
-              style={{ marginRight: 16 }}
-            />
+            <QrCode size={32} color="white" style={{ marginRight: 16 }} />
             <View>
               <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
                 Scan QR Code
@@ -68,12 +69,7 @@ const AdminDashboard = () => {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <MaterialCommunityIcons
-              name="calendar-clock"
-              size={32}
-              color="white"
-              style={{ marginRight: 16 }}
-            />
+            <Calendar size={32} color="white" style={{ marginRight: 16 }} />
             <View>
               <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
                 Schedule
@@ -92,18 +88,36 @@ const AdminDashboard = () => {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <MaterialCommunityIcons
-              name="cash-multiple"
-              size={32}
-              color="white"
-              style={{ marginRight: 16 }}
-            />
+            <MoneyWavy size={32} color="white" style={{ marginRight: 16 }} />
             <View>
               <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
                 Hacker Bucks
               </Text>
               <Text className="text-uoft_white/80 font-pp">
                 Manage hacker bucks
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            className="bg-uoft_primary_blue p-6 rounded-lg flex-row items-center mt-6"
+            onPress={handleFontExample}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <TextAUnderline
+              size={32}
+              color="white"
+              style={{ marginRight: 16 }}
+            />
+            <View>
+              <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
+                Font Examples
+              </Text>
+              <Text className="text-uoft_white/80 font-pp">
+                View available fonts
               </Text>
             </View>
           </Pressable>

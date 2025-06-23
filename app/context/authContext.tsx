@@ -1,15 +1,35 @@
-// AuthContext.js
+// AuthContext.tsx
 import { router } from "expo-router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   getAuthTokens,
   removeAuthTokens,
-  storeAuthTokens
+  storeAuthTokens,
 } from "../utils/tokens/secureStorage";
 
-export const AuthContext = createContext();
+// Missing interface for the context value
+interface AuthContextType {
+  userToken: string | null;
+  signIn: (access_token: string, refresh_token: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  loading: boolean;
+}
 
-export const useAuth = () => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
+
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
@@ -17,19 +37,18 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [userToken, setUserToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-
     const checkToken = async () => {
       try {
         const tokens = await getAuthTokens();
         console.log("tokens:", tokens);
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
-          router.replace("/(admin)");
+          router.replace("/(admin)" as any);
         }
       } catch (error) {
         console.error("Error checking token:", error);
@@ -40,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     checkToken();
   }, []);
 
-  const signIn = async (access_token, refresh_token) => {
+  const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
   };
@@ -49,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await removeAuthTokens();
       setUserToken(null);
-      router.replace("/");
+      router.replace("/" as any);
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -61,3 +80,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Default export for Expo Router
+export default AuthProvider;

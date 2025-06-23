@@ -19,9 +19,7 @@ export function App() {
           }}
         >
           <View className="bg-uoft_primary_blue rounded-md py-4 mt-8">
-            <Text className="text-uoft_white text-center font-pp text-lg font-bold">
-              Sign In
-            </Text>
+            <Text className="text-white text-center text-lg">Sign In</Text>
           </View>
         </Pressable>
       </View>

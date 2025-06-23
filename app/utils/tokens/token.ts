@@ -36,3 +36,9 @@ export function getAuthTokens(response: any) {
         return null;
     }
 }
+
+// Default export for Expo Router
+export default {
+  getRequestData,
+  getAuthTokens
+};

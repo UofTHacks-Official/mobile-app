@@ -57,5 +57,14 @@ export const setSecureToken = async (ACCESS_KEY: string, ACCESS_VALUE: string): 
   }
 };
 
+// Default export for Expo Router
+export default {
+  storeAuthTokens,
+  getAuthTokens,
+  removeAuthTokens,
+  getSecureToken,
+  setSecureToken
+};
+
 
 

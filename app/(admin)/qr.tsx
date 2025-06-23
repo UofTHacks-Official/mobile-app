@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
-import { useNavigation } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { House } from "phosphor-react-native";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
   Button,
   Dimensions,
   Modal,
@@ -24,8 +24,12 @@ export default function App() {
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
-  // Animation for the popup message
-  const slideAnim = useState(new Animated.Value(60))[0];
+  const isProcessingScan = useRef(false);
+
+  const isFocused = useIsFocused();
+
+  const scanAreaTop = (height - SCAN_SIZE) / 2;
+  const scanAreaLeft = (width - SCAN_SIZE) / 2;
 
   // Bounding box for the scanned QR code
   const [scannedBounds, setScannedBounds] = useState<{
@@ -44,13 +48,16 @@ export default function App() {
     };
   }, [navigation]);
 
-  useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: popupMessage ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [popupMessage]);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset the processing flag when the screen is focused
+      isProcessingScan.current = false;
+      // Reset the hasScanned state to allow new scans
+      setHasScanned(false);
+      // Optionally clear transaction or any other state here
+      return () => {};
+    }, [])
+  );
 
   const handleQRCodeScanned = ({
     data,
@@ -62,7 +69,10 @@ export default function App() {
       size: { width: number; height: number };
     };
   }) => {
-    if (hasScanned) return;
+    // If a scan is already being processed or has already scanned, immediately exit.
+    if (isProcessingScan.current || hasScanned) {
+      return;
+    }
 
     // Check if the QR code is within our scan area
     const isInScanArea =
@@ -71,7 +81,13 @@ export default function App() {
       bounds.origin.x + bounds.size.width <= scanAreaLeft + SCAN_SIZE &&
       bounds.origin.y + bounds.size.height <= scanAreaTop + SCAN_SIZE;
 
-    if (!isInScanArea) return;
+    if (!isInScanArea) {
+      return;
+    }
+
+    // If we reach here, it's a valid scan and not currently processing.
+    // Set the flag to true immediately to prevent further calls.
+    isProcessingScan.current = true;
 
     console.log("QR Code scanned:", data);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -99,78 +115,76 @@ export default function App() {
     );
   }
 
-  // Calculate scan area position
-  const scanAreaTop = (height - SCAN_SIZE) / 2;
-  const scanAreaLeft = (width - SCAN_SIZE) / 2;
-
   return (
     <View className="flex-1 justify-center">
-      <CameraView
-        className="flex-1"
-        facing={"back"}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
-        onBarcodeScanned={hasScanned ? undefined : handleQRCodeScanned}
-      >
-        <Svg height={height} width={width} className="absolute inset-0">
-          <Defs>
-            <Mask id="mask" x="0" y="0" width={width} height={height}>
-              <Rect x="0" y="0" width={width} height={height} fill="white" />
-              <Rect
-                x={scanAreaLeft}
-                y={scanAreaTop}
-                width={SCAN_SIZE}
-                height={SCAN_SIZE}
-                rx={40}
-                fill="black"
-              />
-            </Mask>
-          </Defs>
-          <Rect
-            x="0"
-            y="0"
-            width={width}
-            height={height}
-            fill="rgba(0,0,0,0.6)"
-            mask="url(#mask)"
-          />
-          <Rect
-            x={scanAreaLeft}
-            y={scanAreaTop}
-            width={SCAN_SIZE}
-            height={SCAN_SIZE}
-            rx={40}
-            fill="none"
-            stroke="#fff"
-            strokeWidth={3}
-          />
-          {scannedBounds && (
+      {isFocused && (
+        <CameraView
+          className="flex-1"
+          facing={"back"}
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
+          onBarcodeScanned={handleQRCodeScanned}
+        >
+          <Svg height={height} width={width} className="absolute inset-0">
+            <Defs>
+              <Mask id="mask" x="0" y="0" width={width} height={height}>
+                <Rect x="0" y="0" width={width} height={height} fill="white" />
+                <Rect
+                  x={scanAreaLeft}
+                  y={scanAreaTop}
+                  width={SCAN_SIZE}
+                  height={SCAN_SIZE}
+                  rx={40}
+                  fill="black"
+                />
+              </Mask>
+            </Defs>
             <Rect
-              x={scannedBounds.origin.x}
-              y={scannedBounds.origin.y}
-              width={scannedBounds.size.width}
-              height={scannedBounds.size.height}
-              fill="none"
-              stroke="#00FF00"
-              strokeWidth={2}
-              strokeDasharray="5,5"
+              x="0"
+              y="0"
+              width={width}
+              height={height}
+              fill="rgba(0,0,0,0.6)"
+              mask="url(#mask)"
             />
-          )}
-        </Svg>
+            <Rect
+              x={scanAreaLeft}
+              y={scanAreaTop}
+              width={SCAN_SIZE}
+              height={SCAN_SIZE}
+              rx={40}
+              fill="none"
+              stroke="#fff"
+              strokeWidth={3}
+            />
+            {scannedBounds && (
+              <Rect
+                x={scannedBounds.origin.x}
+                y={scannedBounds.origin.y}
+                width={scannedBounds.size.width}
+                height={scannedBounds.size.height}
+                fill="none"
+                stroke="#00FF00"
+                strokeWidth={2}
+                strokeDasharray="5,5"
+              />
+            )}
+          </Svg>
 
-        <View className="absolute bottom-10 right-10">
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              navigation.goBack();
-            }}
-            className="bg-white/20 p-3 rounded-full"
-          >
-            <Ionicons name="home" size={32} color="white" />
-          </TouchableOpacity>
-        </View>
-      </CameraView>
+          <View className="absolute bottom-10 right-10">
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                navigation.goBack();
+              }}
+              className="bg-white/20 p-3 rounded-full"
+            >
+              <House size={32} color="white" />
+            </TouchableOpacity>
+          </View>
+        </CameraView>
+      )}
 
       <Modal
         visible={!!popupMessage}
@@ -180,6 +194,7 @@ export default function App() {
           setPopupMessage(null);
           setHasScanned(false);
           setScannedBounds(null);
+          isProcessingScan.current = false;
         }}
       >
         <View className="flex-1 bg-black/50 items-center justify-end">
@@ -194,6 +209,7 @@ export default function App() {
                 setPopupMessage(null);
                 setHasScanned(false);
                 setScannedBounds(null);
+                isProcessingScan.current = false;
               }}
             />
           </View>
