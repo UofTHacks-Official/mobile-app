@@ -10,14 +10,14 @@ interface EventProps {
   style?: StyleProp<ViewStyle>;
   type: EventType;
   onDelete?: () => void;
-  id?: string; // Adding id for future API integration
-  onPress?: () => void; // New prop for click handling
+  id?: string;
+  onPress?: () => void;
 }
 
-const eventTypeColors = {
-  networking: '#4A90E2', // Blue
-  food: '#FF6F51',      // Orange
-  activity: '#50E3C2',  // Teal
+const eventTypeBgClass = {
+  networking: 'bg-uoft_primary_blue',
+  food: 'bg-uoft_secondary_orange',
+  activity: 'bg-uoft_accent_purple',
 };
 
 const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id, onPress }: EventProps) => {
@@ -73,12 +73,11 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   return (
     <Pressable 
       onPress={handlePress}
-      className="absolute rounded-lg p-2"
+      className={`absolute rounded-lg p-2 ${eventTypeBgClass[type]}`}
       style={[
         { 
           height: height,
           top: topPosition,
-          backgroundColor: eventTypeColors[type],
           zIndex: 1, // Ensure events are above the time grid
         },
         style

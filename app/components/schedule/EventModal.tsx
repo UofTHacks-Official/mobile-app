@@ -238,10 +238,19 @@ const EventModal = ({
     onClose();
   };
 
-  const eventTypeColors = {
-    networking: "#4A90E2", // Blue
-    food: "#FF6F51", // Orange
-    activity: "#50E3C2", // Teal
+  const eventTypeClasses = {
+    networking: {
+      bg: 'bg-uoft_primary_blue',
+      border: 'border-uoft_primary_blue',
+    },
+    food: {
+      bg: 'bg-uoft_secondary_orange',
+      border: 'border-uoft_secondary_orange',
+    },
+    activity: {
+      bg: 'bg-uoft_accent_purple',
+      border: 'border-uoft_accent_purple',
+    },
   };
 
   return (
@@ -265,34 +274,26 @@ const EventModal = ({
           {/* Event Type Selection */}
           <View className="mb-6">
             <Text className="text-gray-600 mb-2 font-pp">Event Type</Text>
-            <View className="flex-row gap-2">
-              {(["networking", "food", "activity"] as EventType[]).map(
-                (type) => (
-                  <Pressable
-                    key={type}
-                    onPress={() => setSelectedType(type)}
-                    className={`flex-1 py-3 rounded-lg border ${
-                      selectedType === type
-                        ? "border-transparent"
-                        : "border-gray-300"
+            <View className="flex-row justify-around my-4">
+              {(Object.keys(eventTypeClasses) as EventType[]).map((type) => (
+                <Pressable
+                  key={type}
+                  onPress={() => setSelectedType(type)}
+                  className={`px-4 py-2 rounded-full border-2 ${
+                    selectedType === type
+                      ? eventTypeClasses[type].bg
+                      : "bg-transparent"
+                  } ${eventTypeClasses[type].border}`}
+                >
+                  <Text
+                    className={`font-pp capitalize ${
+                      selectedType === type ? "text-white" : "text-black"
                     }`}
-                    style={{
-                      backgroundColor:
-                        selectedType === type
-                          ? eventTypeColors[type]
-                          : "transparent",
-                    }}
                   >
-                    <Text
-                      className={`text-center font-pp capitalize ${
-                        selectedType === type ? "text-white" : "text-gray-600"
-                      }`}
-                    >
-                      {type}
-                    </Text>
-                  </Pressable>
-                )
-              )}
+                    {type}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
           </View>
 

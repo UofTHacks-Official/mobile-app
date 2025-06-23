@@ -70,7 +70,7 @@ const Schedule = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch schedules from server on mount
+  // Fetch schedules info
   useEffect(() => {
     fetchAllSchedules()
       .then((data) => {
@@ -97,7 +97,6 @@ const Schedule = () => {
         setSchedules(schedules => schedules.map(s => s.id === editingId ? { ...s, ...updated } : s));
         setEditingId(null);
       } catch (err) {
-        // Optionally show error to user
         console.error("Failed to update schedule:", err);
       }
     } else {
@@ -106,7 +105,6 @@ const Schedule = () => {
         const created = await createSchedule(safeEvent);
         setSchedules(schedules => [...schedules, created]);
       } catch (err) {
-        // Optionally show error to user
         console.error("Failed to create schedule:", err);
       }
     }
@@ -117,7 +115,6 @@ const Schedule = () => {
       await apiDeleteSchedule(scheduleId);
       setSchedules(schedules => schedules.filter(s => s.id !== scheduleId));
     } catch (err) {
-      // Optionally show error to user
       console.error("Failed to delete schedule:", err);
     }
   };
