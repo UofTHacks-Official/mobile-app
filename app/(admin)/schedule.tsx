@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
 import DayColumn from "../components/schedule/DayColumn";
 import EventModal from "../components/schedule/EventModal";
@@ -31,10 +31,21 @@ function mapApiToSchedule(apiEvent: any): ScheduleInterface {
   };
 }
 
+function formatTimeTo12Hour(isoString: string) {
+  const date = new Date(isoString);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
 const Schedule = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [schedules, setSchedules] = useState<ScheduleInterface[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
   // June 20, 21, 22 (to match API data)
   const dates = [
@@ -138,6 +149,7 @@ const Schedule = () => {
                     schedules={[]}
                     hourHeight={48}
                     onDeleteSchedule={() => {}}
+                    onSchedulePress={() => {}}
                     showTime={true}
                   />
                 ))}
@@ -160,6 +172,10 @@ const Schedule = () => {
                     currentHour={currentHour}
                     schedules={filtered}
                     onDeleteSchedule={handleDeleteSchedule}
+                    onSchedulePress={(schedule) => {
+                      setSelectedSchedule(schedule);
+                      setIsDetailModalVisible(true);
+                    }}
                   />
                 );
               })}
@@ -177,6 +193,64 @@ const Schedule = () => {
           onAddEvent={handleAddSchedule}
           dates={dates}
         />
+
+        <Modal
+          visible={isDetailModalVisible}
+          animationType="slide"
+          onRequestClose={() => setIsDetailModalVisible(false)}
+          transparent
+        >
+          <View className="flex-1 bg-black/40 justify-center items-center px-4">
+            <View className="bg-uoft_white rounded-2xl shadow-lg w-full max-w-xl p-6 relative">
+              <Pressable
+                className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-2"
+                onPress={() => setIsDetailModalVisible(false)}
+                accessibilityLabel="Close details"
+                accessibilityRole="button"
+              >
+                <MaterialCommunityIcons name="close" size={24} color="#333" />
+              </Pressable>
+              {selectedSchedule && (
+                <ScrollView className="max-h-[70vh]" showsVerticalScrollIndicator={false}>
+                  <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-2 text-uoft_black">
+                    {selectedSchedule.title}
+                  </Text>
+                  <Text className="mb-4 text-base text-uoft_black/80">
+                    {selectedSchedule.description || "No description provided."}
+                  </Text>
+                  <View className="flex-row items-center mb-2">
+                    <MaterialCommunityIcons name="clock-outline" size={20} color="#FF6F51" />
+                    <Text className="ml-2 text-base text-uoft_black font-pp">
+                      {formatTimeTo12Hour(selectedSchedule.startTime)} - {formatTimeTo12Hour(selectedSchedule.endTime)}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center mb-2">
+                    <MaterialCommunityIcons name="tag-outline" size={20} color="#4A90E2" />
+                    <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
+                      {selectedSchedule.type}
+                    </Text>
+                  </View>
+                  {selectedSchedule.sponsorId && (
+                    <View className="flex-row items-center mb-2">
+                      <MaterialCommunityIcons name="account-tie-outline" size={20} color="#50E3C2" />
+                      <Text className="ml-2 text-base text-uoft_black font-pp">
+                        Sponsor: {selectedSchedule.sponsorId}
+                      </Text>
+                    </View>
+                  )}
+                  {selectedSchedule.isShift && (
+                    <View className="flex-row items-center mb-2">
+                      <MaterialCommunityIcons name="account-group-outline" size={20} color="#FF6F51" />
+                      <Text className="ml-2 text-base text-uoft_black font-pp">
+                        Shift: {selectedSchedule.shiftType || "General"}
+                      </Text>
+                    </View>
+                  )}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );

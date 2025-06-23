@@ -11,6 +11,7 @@ interface EventProps {
   type: EventType;
   onDelete?: () => void;
   id?: string; // Adding id for future API integration
+  onPress?: () => void; // New prop for click handling
 }
 
 const eventTypeColors = {
@@ -19,7 +20,7 @@ const eventTypeColors = {
   activity: '#50E3C2',  // Teal
 };
 
-const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id }: EventProps) => {
+const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id, onPress }: EventProps) => {
   // Convert times to minutes for calculation
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -36,14 +37,20 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   // Calculate top position based on start time
   const topPosition = (startMinute / 60) * hourHeight;
 
-  const formatTimeTo12Hour = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
+  const formatTimeTo12Hour = (isoString: string) => {
+    const date = new Date(isoString);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
   const handlePress = () => {
+    if (onPress) {
+      onPress();
+      return;
+    }
     if (onDelete) {
       Alert.alert(
         "Delete Event",

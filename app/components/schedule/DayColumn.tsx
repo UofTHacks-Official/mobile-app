@@ -7,6 +7,7 @@ interface DayColumnProps {
   currentHour: number;
   schedules: Schedule[];
   onDeleteSchedule: (scheduleId: string) => void;
+  onSchedulePress: (schedule: Schedule) => void;
 }
 
 const DayColumn = ({
@@ -14,6 +15,7 @@ const DayColumn = ({
   currentHour,
   schedules,
   onDeleteSchedule,
+  onSchedulePress,
 }: DayColumnProps) => {
   const formattedDate = date.toLocaleDateString("en-US", {
     month: "short",
@@ -32,6 +34,7 @@ const DayColumn = ({
           schedules={schedules}
           hourHeight={hourHeight}
           onDeleteSchedule={onDeleteSchedule}
+          onSchedulePress={onSchedulePress}
           showTime={false}
         />
       ))}

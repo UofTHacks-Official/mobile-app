@@ -8,6 +8,7 @@ interface TimeSlotProps {
   schedules: Schedule[];
   hourHeight: number;
   onDeleteSchedule: (scheduleId: string) => void;
+  onSchedulePress: (schedule: Schedule) => void;
   showTime?: boolean;
 }
 
@@ -17,6 +18,7 @@ const TimeSlot = ({
   schedules,
   hourHeight,
   onDeleteSchedule,
+  onSchedulePress,
   showTime = true,
 }: TimeSlotProps) => {
   // Format hour to 12-hour format with AM/PM
@@ -60,6 +62,7 @@ const TimeSlot = ({
               hourHeight={hourHeight}
               type={schedule.type}
               onDelete={() => onDeleteSchedule(schedule.id)}
+              onPress={() => onSchedulePress(schedule)}
               style={{
                 width: `${eventWidth}%`,
                 left: shouldShareSpace ? `${eventWidth * index}%` : "0%",
