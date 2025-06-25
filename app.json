@@ -10,11 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.uofthacks.uoft-hacks",
+      "buildNumber": "1",
       "config": {
         "googleMapsApiKey": "AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes."
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -27,7 +30,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -84,8 +91,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "Allow UoftHacks to access your camera",
+          "microphonePermission": "Allow UoftHacks to access your microphone",
           "recordAudioAndroid": true
         }
       ],
@@ -93,6 +100,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "19c11133-81b6-44cb-908b-61cf473cbbc9"
+      }
+    },
+    "owner": "rodney992"
   }
 }

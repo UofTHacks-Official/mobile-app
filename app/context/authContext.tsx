@@ -48,6 +48,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [adminLoading, setAdminLoading] = useState<boolean>(false);
 
+  // Listen for token changes and update admin data
+  useEffect(() => {
+    if (userToken) {
+      fetchAdminProfile(userToken);
+    } else {
+      setAdminData(null);
+    }
+  }, [userToken]);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const tokens = await getAuthTokens();
+        console.log("tokens:", tokens);
+        if (tokens?.access_token) {
+          setUserToken(tokens.access_token);
+          // Admin data will be fetched automatically via the useEffect above
+          router.replace("/(admin)" as any);
+        }
+      } catch (error) {
+        console.error("Error checking token:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkToken();
+  }, []);
+
   // Function to fetch admin profile data
   const fetchAdminProfile = async (token: string) => {
     setAdminLoading(true);
@@ -77,48 +105,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Listen for token changes and update admin data
-  useEffect(() => {
-    if (userToken) {
-      fetchAdminProfile(userToken);
-    } else {
-      setAdminData(null);
-    }
-  }, [userToken]);
-
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const tokens = await getAuthTokens();
-        console.log("tokens:", tokens);
-        if (tokens?.access_token) {
-          setUserToken(tokens.access_token);
-          // Admin data will be fetched automatically via the useEffect above
-          router.replace("/(admin)" as any);
-        }
-      } catch (error) {
-        console.error("Error checking token:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkToken();
-  }, []);
-
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-    // Admin data will be fetched automatically via the useEffect above
   };
 
   const signOut = async () => {
     try {
+      router.replace("/");
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
       await removeAuthTokens();
       setUserToken(null);
-      setAdminData(null); // Clear admin data on sign out
-      router.replace("/" as any);
     } catch (error) {
       console.error("Error during sign out:", error);
     }
