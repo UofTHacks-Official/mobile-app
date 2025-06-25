@@ -85,7 +85,7 @@ const CustomTabBar = ({
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["65%", "85%"], // Narrower default, wider when expanded
+    outputRange: ["60%", "85%"], // Narrower default, wider when expanded
   });
 
   // Fade in the scan options
@@ -104,7 +104,11 @@ const CustomTabBar = ({
     <>
       {/* Transparent overlay to catch taps and close the component */}
       {isExpanded && (
-        <View className="absolute inset-0" onTouchEnd={toggleExpansion} />
+        <View
+          className="absolute inset-0"
+          onTouchEnd={toggleExpansion}
+          style={{ zIndex: 1 }}
+        />
       )}
 
       {/* A single animated container for the entire component */}
@@ -116,6 +120,7 @@ const CustomTabBar = ({
           right: 0,
           height: animatedHeight,
           alignItems: "center",
+          zIndex: 2, // Higher zIndex than the overlay
         }}
       >
         <Animated.View

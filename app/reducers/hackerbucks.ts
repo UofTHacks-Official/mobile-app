@@ -16,16 +16,13 @@ export interface Transaction {
   timestamp: Date;
 }
 
-// Simplified state
 interface TransactionState {
   currentTransaction: Transaction | null;
   isLoading: boolean;
   error: string | null;
-  
-  // Simplified actions
+
 
   clearTransaction: () => void;
-  
   startTransaction: (recipient: Recipient, amount: string | null) => void;
   updateTransactionAmount: (amount: string) => void;
   updateTransactionStatus: (status: Transaction['status']) => void;

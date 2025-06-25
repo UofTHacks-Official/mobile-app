@@ -4,6 +4,7 @@ import * as Haptics from "expo-haptics";
 import { useFocusEffect, useNavigation } from "expo-router";
 import { Home } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
+
 import {
   Button,
   Dimensions,

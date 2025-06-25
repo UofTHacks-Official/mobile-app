@@ -1,4 +1,5 @@
 // AuthContext.tsx
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import {
   ReactNode,
@@ -7,18 +8,22 @@ import {
   useEffect,
   useState,
 } from "react";
+import type { Admin } from "../requests/admin";
+import { getAdminProfile } from "../requests/admin";
 import {
   getAuthTokens,
   removeAuthTokens,
   storeAuthTokens,
 } from "../utils/tokens/secureStorage";
 
-// Missing interface for the context value
 interface AuthContextType {
   userToken: string | null;
+  adminData: Admin | null;
   signIn: (access_token: string, refresh_token: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  adminLoading: boolean;
+  refreshAdminData: () => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -39,7 +44,47 @@ export const useAuth = (): AuthContextType => {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userToken, setUserToken] = useState<string | null>(null);
+  const [adminData, setAdminData] = useState<Admin | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [adminLoading, setAdminLoading] = useState<boolean>(false);
+
+  // Function to fetch admin profile data
+  const fetchAdminProfile = async (token: string) => {
+    setAdminLoading(true);
+    try {
+      const result = await getAdminProfile(token);
+      if (result.error) {
+        console.error("Error fetching admin profile:", result.error);
+        // If we get a 401 error, it might mean the token is invalid
+        // The axios interceptor will handle token refresh automatically
+        return;
+      }
+      if (result.response) {
+        setAdminData(result.response.data as Admin);
+      }
+    } catch (error) {
+      console.error("Error fetching admin profile:", error);
+      // Don't clear admin data on network errors, only on auth errors
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // Function to refresh admin data (useful after token refresh)
+  const refreshAdminData = async () => {
+    if (userToken) {
+      await fetchAdminProfile(userToken);
+    }
+  };
+
+  // Listen for token changes and update admin data
+  useEffect(() => {
+    if (userToken) {
+      fetchAdminProfile(userToken);
+    } else {
+      setAdminData(null);
+    }
+  }, [userToken]);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -48,6 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.log("tokens:", tokens);
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
+          // Admin data will be fetched automatically via the useEffect above
           router.replace("/(admin)" as any);
         }
       } catch (error) {
@@ -62,12 +108,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
+    // Admin data will be fetched automatically via the useEffect above
   };
 
   const signOut = async () => {
     try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
       await removeAuthTokens();
       setUserToken(null);
+      setAdminData(null); // Clear admin data on sign out
       router.replace("/" as any);
     } catch (error) {
       console.error("Error during sign out:", error);
@@ -75,7 +125,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userToken, signIn, signOut, loading }}>
+    <AuthContext.Provider
+      value={{
+        userToken,
+        adminData,
+        signIn,
+        signOut,
+        loading,
+        adminLoading,
+        refreshAdminData,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

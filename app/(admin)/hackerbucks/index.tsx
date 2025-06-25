@@ -1,9 +1,9 @@
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
-import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router, useNavigation } from "expo-router";
+import { Home } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Dimensions, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
@@ -176,7 +176,7 @@ export default function App() {
             )}
           </Svg>
 
-          <View className="absolute bottom-10 right-10">
+          <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -185,7 +185,7 @@ export default function App() {
               }}
               className="bg-white/20 p-3 rounded-full"
             >
-              <Ionicons name="home" size={32} color="white" />
+              <Home size={32} color="white" />
             </TouchableOpacity>
           </View>
         </CameraView>

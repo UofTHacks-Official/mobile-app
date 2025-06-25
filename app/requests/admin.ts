@@ -15,15 +15,17 @@ export const loginEndpoints = {
 
 export interface Admin {
   admin_username: string;
-  admin_password: string;
+  admin_role: string;
+  admin_id: string;
+
   admin_fname: string;
   admin_lname: string;
-  admin_role: string;
   is_admin_manager: boolean;
   is_marking_manager: boolean;
   is_shift_manager: boolean;
-}
 
+  last_login: string;
+}
 /**
  * Authenticates an admin user with email and password.
  * @param {string} email Admin's username/email.

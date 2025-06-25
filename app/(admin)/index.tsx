@@ -1,10 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import { ScanQrCode } from "lucide-react-native";
 import {
   Calendar,
   MoneyWavy,
-  QrCode,
   TextAUnderline,
+  UserCircle,
 } from "phosphor-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
@@ -29,16 +30,28 @@ const AdminDashboard = () => {
     router.push("/components/FontExample");
   };
 
+  const handleProfile = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/(admin)/profile");
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-6 text-uoft_black">
-        <View className="mt-6">
-          <Text className="text-3xl font-['PPObjectSans-Heavy'] mb-2">
-            Admin Dashboard
-          </Text>
-          <Text className="text-lg font-pp text-uoft_black">
-            Manage your events and volunteers
-          </Text>
+        <View className="mt-6 flex-row justify-between">
+          <View>
+            <Text className="text-3xl font-onest-bold mb-2">
+              Admin Dashboard
+            </Text>
+            <Text className="text-lg font-opensans-medium text-uoft_black">
+              Manage your events and volunteers
+            </Text>
+          </View>
+          <View>
+            <Pressable onPress={handleProfile}>
+              <UserCircle size={32} />
+            </Pressable>
+          </View>
         </View>
 
         <View className="mt-12 space-y-6">
@@ -50,7 +63,7 @@ const AdminDashboard = () => {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <QrCode size={32} color="white" style={{ marginRight: 16 }} />
+            <ScanQrCode size={32} color="white" style={{ marginRight: 16 }} />
             <View>
               <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
                 Scan QR Code
