@@ -129,7 +129,12 @@ const SignInAdmin = () => {
       console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
 
-      // Redirection is now handled by _redirect.tsx based on isFirstSignIn state
+      if (isFirstSignIn) {
+        await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+        router.replace("/auth/camera" as any);
+      } else {
+        router.replace("/admin" as any);
+      }
       setLoading(false);
     } catch (e) {
       console.log("Catch block error:", e);
