@@ -194,10 +194,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     console.log("AuthContext: signIn called.");
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-
-    const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
-    setIsFirstSignIn(firstSignInValue === null);
-    console.log("AuthContext: signIn completed, isFirstSignIn:", firstSignInValue === null);
+    console.log("AuthContext: signIn completed.");
   };
 
   return (
