@@ -1,5 +1,6 @@
 import NumericKeypad from "@/app/components/hacker_bucks/keyboard";
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import { formatAmount, isValidAmount } from "@/app/utils/hackerbucks/format";
 import shortenString from "@/app/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -16,43 +17,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
 
 // Validation functions
-const isValidAmount = (value: string): boolean => {
-  // Check if it's a valid number
-  const numValue = parseFloat(value);
-  if (isNaN(numValue)) return false;
-
-  // Check if it's positive
-  if (numValue <= 0) return false;
-
-  // Check if it has more than 2 decimal places
-  const decimalPlaces = value.includes(".")
-    ? value.split(".")[1]?.length || 0
-    : 0;
-  if (decimalPlaces > 2) return false;
-
-  // Check if the total value is reasonable (e.g., less than 1 million)
-  if (numValue > 1000) return false;
-
-  return true;
-};
-
-const formatAmount = (value: string): string => {
-  // Remove any non-numeric characters except decimal point
-  let cleaned = value.replace(/[^0-9.]/g, "");
-
-  // Ensure only one decimal point
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    cleaned = parts[0] + "." + parts.slice(1).join("");
-  }
-
-  // Limit decimal places to 2
-  if (parts.length === 2 && parts[1].length > 2) {
-    cleaned = parts[0] + "." + parts[1].substring(0, 2);
-  }
-
-  return cleaned;
-};
 
 export default function SwapScreen() {
   const [amount, setAmount] = useState("0");
@@ -64,10 +28,8 @@ export default function SwapScreen() {
 
   const currentRecipient = hackerBucksTransaction.currentTransaction?.recipient;
 
-  // Check if amount is valid for enabling the send button
   const isAmountValid = isValidAmount(amount);
 
-  // Validate amount whenever it changes
   useEffect(() => {
     if (amount === "0" || amount === "") {
       setAmountError(null);
@@ -90,12 +52,18 @@ export default function SwapScreen() {
     // If current value is "0", replace it with the new key
     if (amount === "0" && key !== ".") {
       const newAmount = key;
-      setAmount(newAmount);
+      // Check if the new amount would exceed 1000
+      if (parseFloat(newAmount) <= 1000) {
+        setAmount(newAmount);
+      }
     } else {
       const newAmount = amount + key;
       // Format the amount to ensure it's valid
       const formattedAmount = formatAmount(newAmount);
-      setAmount(formattedAmount);
+      // Check if the formatted amount would exceed 1000
+      if (parseFloat(formattedAmount) <= 1000) {
+        setAmount(formattedAmount);
+      }
     }
   };
 
@@ -117,11 +85,14 @@ export default function SwapScreen() {
 
   const handleTextInputChange = (text: string) => {
     const formattedText = formatAmount(text);
-    setAmount(formattedText);
+    const numValue = parseFloat(formattedText);
+
+    if (!isNaN(numValue) && numValue <= 1000) {
+      setAmount(formattedText);
+    }
   };
 
   const handleSendPress = () => {
-    // Prevent sending if amount is not valid
     if (!isAmountValid) {
       return;
     }
@@ -157,9 +128,6 @@ export default function SwapScreen() {
               value={amount}
               showSoftInputOnFocus={false}
             />
-            {amountError && (
-              <Text className="text-red-500 text-sm mt-1">{amountError}</Text>
-            )}
           </View>
         </View>
 
@@ -215,7 +183,7 @@ export default function SwapScreen() {
         </View>
         <Pressable onPress={handleSendPress} disabled={!isAmountValid}>
           <View
-            className={`rounded-md items-center py-4 mt-4 ${
+            className={`rounded-md items-center py-4 mt-4 mb-20 ${
               isAmountValid ? "bg-uoft_primary_blue" : "bg-gray-300"
             }`}
           >

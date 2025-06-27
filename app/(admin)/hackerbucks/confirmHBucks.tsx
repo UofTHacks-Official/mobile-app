@@ -58,7 +58,7 @@ export default function ConfirmHBucks() {
           </View>
         </View>
 
-        <View className="px-6">
+        <View className="px-6 mb-20">
           <TouchableOpacity
             className="bg-uoft_primary_blue py-4 rounded-lg items-center"
             onPress={handleConfirm}

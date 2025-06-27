@@ -5,6 +5,12 @@ import toastConfig from "./components/config/toastconfig";
 import { AuthProvider } from "./context/authContext";
 import "./globals.css";
 import { useCustomFonts } from "./utils/fonts";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
 // Create a client
 const queryClient = new QueryClient({
@@ -26,40 +32,47 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useCustomFonts();
 
+  console.log("RootLayout rendered. fontsLoaded:", fontsLoaded, "fontError:", fontError);
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
   // Handle font loading errors
   if (fontError) {
     console.error("Font loading error:", fontError);
   }
 
-  // You can show a loading screen while fonts are loading
-  if (!fontsLoaded) {
-    // You might want to show a splash screen here
-    return null; // or a loading component
-  }
+  // We don't return null here anymore, as SplashScreen handles the loading state.
+  // The UI will be rendered once fonts are loaded.
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen
-            name="index"
-            options={{ headerShown: false, animation: "none" }}
-          />
-          <Stack.Screen
-            name="auth/selectRole"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="auth/signInAdmin"
-            options={{ headerShown: false, animation: "none" }}
-          />
-          <Stack.Screen
-            name="admin"
-            options={{ headerShown: false, animation: "none" }}
-          />
-        </Stack>
-        <Toast config={toastConfig} />
-      </AuthProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name="_redirect"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="auth/selectRole"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="auth/signInAdmin"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="(admin)"
+              options={{ headerShown: false, animation: "none" }}
+            />
+          </Stack>
+          <Toast config={toastConfig} />
+        </AuthProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

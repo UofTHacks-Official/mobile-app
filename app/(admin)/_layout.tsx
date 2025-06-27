@@ -12,7 +12,7 @@ export default function AdminLayout() {
   }
 
   // Redirect to home if not authenticated
-  if (!userToken) {
+  if (!userToken && !loading) {
     return <Redirect href="/" />;
   }
 

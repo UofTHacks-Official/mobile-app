@@ -4,12 +4,14 @@ import { router } from "expo-router";
 import {
   ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 import type { Admin } from "../requests/admin";
 import { getAdminProfile } from "../requests/admin";
+import { authEventEmitter } from "../utils/eventEmitter";
 import {
   getAuthTokens,
   removeAuthTokens,
@@ -48,43 +50,76 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [adminLoading, setAdminLoading] = useState<boolean>(false);
 
-  // Listen for token changes and update admin data
-  useEffect(() => {
-    if (userToken) {
-      fetchAdminProfile(userToken);
-    } else {
-      setAdminData(null);
-    }
-  }, [userToken]);
+  console.log(
+    "AuthContext: Rendered, loading:",
+    loading,
+    "userToken:",
+    !!userToken
+  );
 
+  const signOut = useCallback(async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await removeAuthTokens();
+      setUserToken(null);
+      console.log("AuthContext: Signed out, userToken set to null");
+      // Reset navigation stack to login screen after sign out
+      router.replace("/auth/signInAdmin");
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    }
+  }, []);
+
+  // Listen for auth errors from the axios interceptor
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const tokens = await getAuthTokens();
-        console.log("tokens:", tokens);
-        if (tokens?.access_token) {
-          setUserToken(tokens.access_token);
-          // Admin data will be fetched automatically via the useEffect above
-          router.replace("/(admin)" as any);
-        }
-      } catch (error) {
-        console.error("Error checking token:", error);
-      } finally {
-        setLoading(false);
+    const handleAuthError = () => {
+      if (userToken) {
+        console.log(
+          "AuthContext: Authentication error detected, calling signOut."
+        );
+        signOut();
       }
     };
-    checkToken();
+
+    authEventEmitter.on("onExpiredRefreshToken", handleAuthError);
+
+    return () => {
+      authEventEmitter.off("onExpiredRefreshToken", handleAuthError);
+    };
+  }, [signOut, userToken]);
+
+  // Restore session on app start
+  useEffect(() => {
+    const restoreSession = async () => {
+      console.log("AuthContext: restoreSession started.");
+      try {
+        const tokens = await getAuthTokens();
+        if (tokens?.access_token) {
+          setUserToken(tokens.access_token);
+          console.log("AuthContext: Tokens restored, userToken set.");
+        } else {
+          console.log("AuthContext: No tokens found.");
+        }
+      } catch (error) {
+        console.error("AuthContext: Error restoring session:", error);
+      } finally {
+        setLoading(false);
+        console.log(
+          "AuthContext: restoreSession finished, loading set to false."
+        );
+      }
+    };
+    restoreSession();
   }, []);
 
   // Function to fetch admin profile data
-  const fetchAdminProfile = async (token: string) => {
+  const fetchAdminProfile = useCallback(async (token: string) => {
+    if (!token) return; // Prevent fetching if token is null
     setAdminLoading(true);
     try {
       const result = await getAdminProfile(token);
       if (result.error) {
         console.error("Error fetching admin profile:", result.error);
-        // If we get a 401 error, it might mean the token is invalid
-        // The axios interceptor will handle token refresh automatically
         return;
       }
       if (result.response) {
@@ -92,11 +127,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (error) {
       console.error("Error fetching admin profile:", error);
-      // Don't clear admin data on network errors, only on auth errors
     } finally {
       setAdminLoading(false);
     }
-  };
+  }, []);
+
+  // Listen for token changes and update admin data
+  useEffect(() => {
+    console.log("AuthContext: userToken changed, fetching admin profile.");
+    if (userToken) {
+      fetchAdminProfile(userToken);
+    } else {
+      setAdminData(null);
+    }
+  }, [userToken, fetchAdminProfile]);
 
   // Function to refresh admin data (useful after token refresh)
   const refreshAdminData = async () => {
@@ -108,17 +152,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-  };
-
-  const signOut = async () => {
-    try {
-      router.replace("/");
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await removeAuthTokens();
-      setUserToken(null);
-    } catch (error) {
-      console.error("Error during sign out:", error);
-    }
   };
 
   return (

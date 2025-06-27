@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
+import { authEventEmitter } from '../utils/eventEmitter';
 import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../utils/tokens/secureStorage';
 import { loginEndpoints } from './admin';
 
@@ -48,9 +49,9 @@ const handleRefreshError = async (): Promise<void> => {
   // Clear tokens
   await removeAuthTokens();
   
-  // Redirect to login (this should be implemented by your auth context)
-  // You may want to dispatch an event or use a context method to handle this
-  console.log('Token refresh failed. User needs to login again.');
+  // Emit an event to notify the auth context to log the user out
+  console.log('Token refresh failed. Emitting authError event.');
+  authEventEmitter.emit('onExpiredRefreshToken');
   
   // Reset the refreshing flag
   isRefreshing = false;
@@ -101,13 +102,13 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Check if the error is due to an expired token (401 Unauthorized)
-    const isUnauthorized = error.response?.status === 401;
+    // Check if the error is due to an expired token (401 Unauthorized or 403 Forbidden)
+    const isAuthError = error.response?.status === 401 || error.response?.status === 403;
     const isTokenEndpoint = originalRequest.url?.includes('/api/v13/admins/refresh');
     const isLoginEndpoint = originalRequest.url?.includes('/api/v13/admins/login');
     
     // Don't retry if this is already a retry, it's the token endpoint itself, or it's a login endpoint
-    if (isUnauthorized && !originalRequest._retry && !isTokenEndpoint && !isLoginEndpoint) {
+    if (isAuthError && !originalRequest._retry && !isTokenEndpoint && !isLoginEndpoint) {
       originalRequest._retry = true;
       
       // If a refresh is already in progress, add this request to the queue
