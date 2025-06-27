@@ -12,6 +12,11 @@ import Animated, {
 } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { adminLogin } from "../_requests/admin";
+import {
+  FIRST_SIGN_SIGN_IN,
+  getSecureToken,
+  setSecureToken,
+} from "../_utils/tokens/secureStorage";
 import { LoadingIndicator } from "../components/loading/loading";
 import { useAuth } from "../context/authContext";
 
@@ -19,6 +24,8 @@ const SignInAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [isFirstSignIn, setIsFirstSignIn] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -30,6 +37,10 @@ const SignInAdmin = () => {
 
   // Check if both fields are filled
   const isFormValid = email.trim() !== "" && password.trim() !== "";
+
+  useEffect(() => {
+    firstSignIn();
+  }, []);
 
   // Animate button when form validity changes
   useEffect(() => {
@@ -61,6 +72,13 @@ const SignInAdmin = () => {
       opacity: buttonOpacity.value,
     };
   });
+
+  const firstSignIn = async () => {
+    const value = await getSecureToken(FIRST_SIGN_SIGN_IN);
+    if (value === null) {
+      setIsFirstSignIn(true);
+    }
+  };
 
   const animatedBackgroundStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
@@ -111,7 +129,7 @@ const SignInAdmin = () => {
       console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
 
-      router.replace("/(admin)");
+      // Redirection is now handled by _redirect.tsx based on isFirstSignIn state
       setLoading(false);
     } catch (e) {
       console.log("Catch block error:", e);

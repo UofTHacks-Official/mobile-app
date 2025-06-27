@@ -14,8 +14,11 @@ import type { Admin } from "../_requests/admin";
 import { getAdminProfile } from "../_requests/admin";
 import { authEventEmitter } from "../_utils/eventEmitter";
 import {
+  FIRST_SIGN_SIGN_IN,
   getAuthTokens,
+  getSecureToken,
   removeAuthTokens,
+  setSecureToken,
   storeAuthTokens,
 } from "../_utils/tokens/secureStorage";
 
@@ -26,6 +29,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   adminLoading: boolean;
+  isFirstSignIn: boolean;
   refreshAdminData: () => Promise<void>;
 }
 
@@ -50,6 +54,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [adminData, setAdminData] = useState<Admin | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [adminLoading, setAdminLoading] = useState<boolean>(false);
+  const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
 
   console.log(
@@ -64,9 +69,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await removeAuthTokens();
       setUserToken(null);
+      setIsFirstSignIn(false); // Reset first sign in state on sign out
       console.log("AuthContext: Signed out, userToken set to null");
       // Reset navigation stack to login screen after sign out
-      router.replace("/auth/signInAdmin");
+      router.replace("/");
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -98,6 +104,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const tokens = await getAuthTokens();
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
+          const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
+          setIsFirstSignIn(firstSignInValue === null);
           console.log("AuthContext: Tokens restored, userToken set.");
         } else {
           console.log("AuthContext: No tokens found.");
@@ -129,10 +137,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Only update state if this is the latest fetch
           if (fetchIdRef.current === fetchId) {
             setAdminData(result.response.data as Admin);
-          } else {
-            // Stale response, do not update state
-            console.log("Stale fetchAdminProfile response ignored.");
           }
+        } else {
+          // Stale response, do not update state
+          console.log("Stale fetchAdminProfile response ignored.");
         }
       } catch (error) {
         console.error("Error fetching admin profile:", error);
@@ -169,6 +177,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
+
+    const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
+    if (firstSignInValue === null) {
+      setIsFirstSignIn(true);
+      await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+    } else {
+      setIsFirstSignIn(false);
+    }
   };
 
   return (
@@ -180,6 +196,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         signOut,
         loading,
         adminLoading,
+        isFirstSignIn,
         refreshAdminData,
       }}
     >

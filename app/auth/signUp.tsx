@@ -36,10 +36,7 @@ const SignUp = () => {
             <Text
               className="text-uoft_white text-center font-pp text-lg font-bold"
               onPress={() => {
-                router.push("/auth/confirmSignIn");
-                router.setParams({
-                  email: email,
-                });
+                router.push({ pathname: "/auth/confirmSignIn" as any, params: { email: email } });
               }}
             >
               Continue

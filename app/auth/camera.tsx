@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FIRST_SIGN_SIGN_IN, setSecureToken } from "../_utils/tokens/secureStorage";
 
 export default function CameraPage() {
   const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -32,6 +33,13 @@ export default function CameraPage() {
 
   const askForCamera = async () => {
     await requestCameraPermission();
+    await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+    router.replace("/(admin)");
+  };
+
+  const handleMaybeLater = async () => {
+    await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+    router.replace("/(admin)");
   };
 
   return (
@@ -54,9 +62,7 @@ export default function CameraPage() {
         </Pressable>
 
         <Pressable
-          onPress={() => {
-            router.push("/(admin)");
-          }}
+          onPress={handleMaybeLater}
         >
           <View className="mb-4 py-4 px-2">
             <Text className="text-center text-uoft_primary_blue">
