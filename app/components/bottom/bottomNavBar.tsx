@@ -1,6 +1,6 @@
 // components/CustomTabBar.js
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { useNavigation } from "@react-navigation/native";
+
 import * as Haptics from "expo-haptics";
 import {
   BanknoteArrowUp,
@@ -20,7 +20,7 @@ const CustomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
-  const actualNavigation = useNavigation();
+  
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Animation values for each tab
@@ -41,7 +41,7 @@ const CustomTabBar = ({
         friction: 8,
       }).start();
     });
-  }, [state.index]);
+  }, [state.index, animatedValues, state.routes]);
 
   const toggleExpansion = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

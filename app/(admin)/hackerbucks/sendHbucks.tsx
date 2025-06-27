@@ -1,18 +1,12 @@
+import { formatAmount, isValidAmount } from "@/app/_utils/hackerbucks/format";
+import { shortenString } from "@/app/_utils/tokens/format/shorten";
 import NumericKeypad from "@/app/components/hacker_bucks/keyboard";
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
-import { formatAmount, isValidAmount } from "@/app/utils/hackerbucks/format";
-import shortenString from "@/app/utils/tokens/format/shorten";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ArrowDown, ArrowUp } from "lucide-react-native";
+import { useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
 
@@ -20,9 +14,7 @@ import Icon from "react-native-vector-icons/Feather";
 
 export default function SwapScreen() {
   const [amount, setAmount] = useState("0");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [amountError, setAmountError] = useState<string | null>(null);
+  const [isDeducting, setIsDeducting] = useState(false);
 
   const hackerBucksTransaction = useHackerBucksStore();
 
@@ -30,20 +22,10 @@ export default function SwapScreen() {
 
   const isAmountValid = isValidAmount(amount);
 
-  useEffect(() => {
-    if (amount === "0" || amount === "") {
-      setAmountError(null);
-      return;
-    }
-
-    if (!isValidAmount(amount)) {
-      setAmountError(
-        "Please enter a valid amount (positive number, max 2 decimal places)"
-      );
-    } else {
-      setAmountError(null);
-    }
-  }, [amount]);
+  const handleDirectionToggle = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsDeducting(!isDeducting);
+  };
 
   const handleKeyPress = (key: string) => {
     // Prevent multiple decimal points
@@ -78,8 +60,6 @@ export default function SwapScreen() {
   const handlePresetAmount = (presetAmount: string) => {
     if (isValidAmount(presetAmount)) {
       setAmount(presetAmount);
-    } else {
-      setAmountError("Invalid preset amount");
     }
   };
 
@@ -96,10 +76,11 @@ export default function SwapScreen() {
     if (!isAmountValid) {
       return;
     }
-
-    console.log("[LOG] sending 1");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    hackerBucksTransaction.updateTransactionAmount(amount);
+    hackerBucksTransaction.updateTransactionAmount(
+      amount,
+      isDeducting ? "deduct" : "send"
+    );
     router.push("/hackerbucks/confirmHBucks");
   };
 
@@ -111,13 +92,15 @@ export default function SwapScreen() {
             <Icon name="chevron-left" size={28} />
           </Pressable>
           <Text className="text-lg font-bold text-black flex-1 text-center">
-            Send Order
+            {isDeducting ? "Deduct Order" : "Send Order"}
           </Text>
         </View>
 
         <View className="flex-row items-center bg-uoft_light_grey px-6 py-4 min-h-[100px] rounded-lg">
           <View className="flex-1">
-            <Text className="text-xl pt-2 font-pp">Sending</Text>
+            <Text className="text-xl pt-2 font-pp">
+              {isDeducting ? "Deducting" : "Sending"}
+            </Text>
             <TextInput
               className="flex-1 font-pp text-4xl text-clementine border-0 p-0"
               placeholderTextColor="rock"
@@ -131,26 +114,27 @@ export default function SwapScreen() {
           </View>
         </View>
 
-        <View className="absolute left-0 right-0 top-[165px] items-center z-10">
+        <Pressable
+          className="absolute left-0 right-0 top-[165px] items-center z-10"
+          onPress={handleDirectionToggle}
+        >
           <View className="bg-uoft_dark_grey p-1 rounded-lg">
-            <MaterialCommunityIcons
-              name="arrow-down"
-              size={36}
-              color="#666666"
-            />
+            {isDeducting ? (
+              <ArrowUp size={36} color="#666666" />
+            ) : (
+              <ArrowDown size={36} color="#666666" />
+            )}
           </View>
-        </View>
+        </Pressable>
 
         <View className="flex-row items-center bg-uoft_light_grey rounded-lg px-6 py-4 min-h-[100px] mt-2 rounded-lg">
           <View className="flex-1">
             <View className="flex-row justify-between items-center">
               <View className="flex-1 ml-2">
-                <Text className="text-xl font-pp">Receiving</Text>
-                {loading ? (
-                  <ActivityIndicator size="small" color="#666" />
-                ) : error ? (
-                  <Text className="text-red-500">{error}</Text>
-                ) : currentRecipient?.firstName ? (
+                <Text className="text-xl font-pp">
+                  {isDeducting ? "Taking" : "Receiving"}
+                </Text>
+                {currentRecipient?.firstName ? (
                   <>
                     <Text className="text-2xl text-gravel">
                       {currentRecipient?.firstName} {currentRecipient?.lastName}

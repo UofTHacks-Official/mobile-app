@@ -5,7 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CameraPage() {
-  const [permission, setPermission] = useState<boolean | null>(null);
+  const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const requestCameraPermission = async () => {
     try {

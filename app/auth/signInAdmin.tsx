@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
@@ -11,20 +11,15 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
+import { adminLogin } from "../_requests/admin";
 import { LoadingIndicator } from "../components/loading/loading";
 import { useAuth } from "../context/authContext";
-import { adminLogin } from "../requests/admin";
-import {
-  FIRST_SIGN_SIGN_IN,
-  getSecureToken,
-  setSecureToken,
-} from "../utils/tokens/secureStorage";
 
 const SignInAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isFirstSignIn, setIsFirstSignIn] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const { signIn } = useAuth();
@@ -57,7 +52,7 @@ const SignInAdmin = () => {
         easing: Easing.out(Easing.quad),
       });
     }
-  }, [isFormValid]);
+  }, [isFormValid, buttonOpacity, buttonScale]);
 
   // Animated styles
   const animatedButtonStyle = useAnimatedStyle(() => {
@@ -78,16 +73,6 @@ const SignInAdmin = () => {
       backgroundColor,
     };
   });
-
-  useEffect(() => {
-    const loadFirstSignIn = async () => {
-      const firstTime = await getSecureToken(FIRST_SIGN_SIGN_IN);
-      if (firstTime === null) {
-        setIsFirstSignIn(true);
-      }
-    };
-    loadFirstSignIn();
-  }, []);
 
   const handleSignIn = async () => {
     // Prevent submission if form is not valid
@@ -126,15 +111,8 @@ const SignInAdmin = () => {
       console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
 
-      if (isFirstSignIn) {
-        await setSecureToken(FIRST_SIGN_SIGN_IN, "FALSE");
-        router.replace("/auth/notification");
-        setLoading(false);
-      } else {
-        // Add navigation for non-first sign in
-        router.replace("/(admin)");
-        setLoading(false);
-      }
+      router.replace("/(admin)");
+      setLoading(false);
     } catch (e) {
       console.log("Catch block error:", e);
       Toast.show({
@@ -184,9 +162,9 @@ const SignInAdmin = () => {
             }}
           />
 
-          <View className="relative">
+          <View className="flex-row items-center border border-gray-300 rounded-sm p-3">
             <TextInput
-              className="w-full px-4 pr-12 bg-uoft_grey_lighter border-uoft_black py-3 text-lg mb-4 rounded-xl"
+              className="flex-1 font-opensans"
               placeholder="Password"
               placeholderTextColor="uoft_grey_medium"
               secureTextEntry={!showPassword}
@@ -203,15 +181,12 @@ const SignInAdmin = () => {
                 lineHeight: 20,
               }}
             />
-            <Pressable
-              onPress={togglePasswordVisibility}
-              className="absolute right-4 top-0 bottom-4 justify-center"
-            >
-              <Ionicons
-                name={showPassword ? "eye-off" : "eye"}
-                size={24}
-                color="#666"
-              />
+            <Pressable onPress={togglePasswordVisibility} className="ml-2">
+              {showPassword ? (
+                <EyeOff size={20} color="#666" />
+              ) : (
+                <Eye size={20} color="#666" />
+              )}
             </Pressable>
           </View>
         </View>

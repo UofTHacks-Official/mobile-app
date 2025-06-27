@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Admin } from '../requests/admin';
-import { getAdminByToken, getAdminProfile } from '../requests/admin';
+import type { Admin } from '../_requests/admin';
+import { getAdminByToken, getAdminProfile } from '../_requests/admin';
 
 /**
  * TanStack Query hook for fetching admin data by token

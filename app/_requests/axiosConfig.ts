@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
-import { authEventEmitter } from '../utils/eventEmitter';
-import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../utils/tokens/secureStorage';
+import { authEventEmitter } from '../_utils/eventEmitter';
+import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../_utils/tokens/secureStorage';
 import { loginEndpoints } from './admin';
 
 // Get base URL from environment variables
@@ -23,7 +23,7 @@ axiosRetry(axiosInstance, {
 let isRefreshing = false;
 
 // Queue of requests that are waiting for token refresh
-let refreshSubscribers: Array<(token: string) => void> = [];
+let refreshSubscribers: ((token: string) => void)[] = [];
 
 /**
  * Execute all queued requests with the new token
@@ -45,21 +45,21 @@ const addSubscriber = (callback: (token: string) => void): void => {
 /**
  * Handle refresh token error - typically by logging the user out
  */
-const handleRefreshError = async (): Promise<void> => {
-  // Clear tokens
-  await removeAuthTokens();
-  
-  // Emit an event to notify the auth context to log the user out
-  console.log('Token refresh failed. Emitting authError event.');
-  authEventEmitter.emit('onExpiredRefreshToken');
-  
-  // Reset the refreshing flag
-  isRefreshing = false;
-  
-  // Notify any pending requests that refresh failed
-  refreshSubscribers.forEach(callback => callback(''));
-  refreshSubscribers = [];
-};
+  const handleRefreshError = async (): Promise<void> => {
+    // Clear tokens
+    await removeAuthTokens();
+    
+    // Emit an event to notify the auth context to log the user out
+    console.log('Token refresh failed. Emitting onExpiredRefreshToken event.');
+    authEventEmitter.emit('onExpiredRefreshToken');
+    
+    // Reset the refreshing flag
+    isRefreshing = false;
+    
+    // Notify any pending requests that refresh failed
+    refreshSubscribers.forEach(callback => callback(''));
+    refreshSubscribers = [];
+  };
 
 // Request interceptor to add auth token to all requests
 axiosInstance.interceptors.request.use(
@@ -129,8 +129,8 @@ axiosInstance.interceptors.response.use(
               resolve(axiosInstance(originalRequest));
             });
           });
-        } catch (refreshError) {
-          return Promise.reject(refreshError);
+        } catch (_) {
+          return Promise.reject(error);
         }
       }
       
@@ -170,7 +170,7 @@ axiosInstance.interceptors.response.use(
         
         // Retry the original request with the new token
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
+      } catch (_) {
         // Handle refresh token error - typically by logging out
         await handleRefreshError();
         return Promise.reject(error);

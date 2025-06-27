@@ -144,7 +144,7 @@ export default function FontExample() {
 
           {/* Body Text */}
           <Text className="font-opensans text-base leading-6 mb-3 text-uoft_black">
-            This is body text using Open Sans Regular. It's perfect for reading
+            This is body text using Open Sans Regular. It&apos;s perfect for reading
             long paragraphs and general content.
           </Text>
 

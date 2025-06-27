@@ -1,9 +1,8 @@
-import { Stack, useSegments } from "expo-router";
-import React from "react";
+import { Stack } from "expo-router";
+
 //import { useHackerBucksStore } from "../../reducers/hackerbucks";
 
 export default function HackerBucksLayout() {
-  const segments = useSegments();
   //const { currentTransaction } = useHackerBucksStore();
 
   // useEffect(() => {

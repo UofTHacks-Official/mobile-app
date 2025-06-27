@@ -4,7 +4,7 @@ import Toast from "react-native-toast-message";
 import toastConfig from "./components/config/toastconfig";
 import { AuthProvider } from "./context/authContext";
 import "./globals.css";
-import { useCustomFonts } from "./utils/fonts";
+import { useCustomFonts } from "./_utils/fonts";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";

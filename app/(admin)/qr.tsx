@@ -21,7 +21,6 @@ const SCAN_SIZE = 250;
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
-  const [scannedCodes, setScannedCodes] = useState<string[]>([]);
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
@@ -92,7 +91,7 @@ export default function App() {
 
     console.log("QR Code scanned:", data);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setScannedCodes((prev) => [...prev, data]);
+    
     setHasScanned(true);
     setPopupMessage("QR Code scanned: " + data);
     setScannedBounds(bounds);

@@ -20,8 +20,8 @@ import {
   createSchedule,
   fetchAllSchedules,
   updateSchedule,
-} from "../requests/schedule";
-import { Schedule as ScheduleInterface, ScheduleType } from "../types/schedule";
+} from "../_requests/schedule";
+import { Schedule as ScheduleInterface, ScheduleType } from "../_types/schedule";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {

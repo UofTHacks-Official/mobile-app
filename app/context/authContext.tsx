@@ -9,14 +9,14 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { Admin } from "../requests/admin";
-import { getAdminProfile } from "../requests/admin";
-import { authEventEmitter } from "../utils/eventEmitter";
+import type { Admin } from "../_requests/admin";
+import { getAdminProfile } from "../_requests/admin";
+import { authEventEmitter } from "../_utils/eventEmitter";
 import {
   getAuthTokens,
   removeAuthTokens,
   storeAuthTokens,
-} from "../utils/tokens/secureStorage";
+} from "../_utils/tokens/secureStorage";
 
 interface AuthContextType {
   userToken: string | null;
