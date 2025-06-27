@@ -37,13 +37,13 @@ export default function CameraPage() {
     await requestCameraPermission();
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
     updateFirstSignInStatus(false);
-    router.replace("/(admin)");
+    router.replace("/admin" as any);
   };
 
   const handleMaybeLater = async () => {
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
     updateFirstSignInStatus(false);
-    router.replace("/(admin)");
+    router.replace("/admin" as any);
   };
 
   return (
