@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 
 export const ACCESS_TOKEN_KEY = 'ACCESS_TOKEN'; 
 export const REFRESH_TOKEN = 'REFRESH_TOKEN'; 
-export const FIRST_SIGN_SIGN_IN = "FIRST_SIGN_SIGN_IN" 
+export const FIRST_SIGN_SIGN_IN = "FIRST_SIGN_IN" 
 
 
 // Store the auth tokens in the secure storage 

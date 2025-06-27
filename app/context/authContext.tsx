@@ -184,12 +184,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     await storeAuthTokens(access_token, refresh_token);
 
     const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
-    if (firstSignInValue === null) {
-      setIsFirstSignIn(true);
-      await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
-    } else {
-      setIsFirstSignIn(false);
-    }
+    setIsFirstSignIn(firstSignInValue === null);
   };
 
   return (
