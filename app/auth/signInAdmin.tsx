@@ -144,7 +144,7 @@ const SignInAdmin = () => {
 
         <View className="space-y-4 px-8">
           <TextInput
-            className="w-full px-4 bg-uoft_grey_lighter border-uoft_black py-3 text-lg mb-4 rounded-xl"
+            className="w-full px-4 bg-uoft_grey_lighter rounded-xl text-lg mb-4"
             placeholder="Email"
             placeholderTextColor="uoft_grey_medium"
             keyboardType="email-address"
@@ -162,9 +162,9 @@ const SignInAdmin = () => {
             }}
           />
 
-          <View className="flex-row items-center border border-gray-300 rounded-sm p-3">
+          <View className="w-full flex-row items-center px-4 bg-uoft_grey_lighter rounded-xl mb-4">
             <TextInput
-              className="flex-1 font-opensans"
+              className="flex-1 text-lg"
               placeholder="Password"
               placeholderTextColor="uoft_grey_medium"
               secureTextEntry={!showPassword}
