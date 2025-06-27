@@ -4,9 +4,11 @@ import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FIRST_SIGN_SIGN_IN, setSecureToken } from "../_utils/tokens/secureStorage";
+import { useAuth } from "../context/authContext";
 
 export default function CameraPage() {
   const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { updateFirstSignInStatus } = useAuth();
 
   const requestCameraPermission = async () => {
     try {
@@ -34,11 +36,13 @@ export default function CameraPage() {
   const askForCamera = async () => {
     await requestCameraPermission();
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+    updateFirstSignInStatus(false);
     router.replace("/(admin)");
   };
 
   const handleMaybeLater = async () => {
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
+    updateFirstSignInStatus(false);
     router.replace("/(admin)");
   };
 
