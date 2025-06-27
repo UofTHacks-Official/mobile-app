@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { Admin } from "../_requests/admin";
@@ -49,6 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [adminData, setAdminData] = useState<Admin | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [adminLoading, setAdminLoading] = useState<boolean>(false);
+  const fetchIdRef = useRef(0);
 
   console.log(
     "AuthContext: Rendered, loading:",
@@ -113,30 +115,43 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // Function to fetch admin profile data
-  const fetchAdminProfile = useCallback(async (token: string) => {
-    if (!token) return; // Prevent fetching if token is null
-    setAdminLoading(true);
-    try {
-      const result = await getAdminProfile(token);
-      if (result.error) {
-        console.error("Error fetching admin profile:", result.error);
-        return;
+  const fetchAdminProfile = useCallback(
+    async (token: string, fetchId: number) => {
+      if (!token) return; // Prevent fetching if token is null
+      setAdminLoading(true);
+      try {
+        const result = await getAdminProfile(token);
+        if (result.error) {
+          console.error("Error fetching admin profile:", result.error);
+          return;
+        }
+        if (result.response) {
+          // Only update state if this is the latest fetch
+          if (fetchIdRef.current === fetchId) {
+            setAdminData(result.response.data as Admin);
+          } else {
+            // Stale response, do not update state
+            console.log("Stale fetchAdminProfile response ignored.");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching admin profile:", error);
+      } finally {
+        if (fetchIdRef.current === fetchId) {
+          setAdminLoading(false);
+        }
       }
-      if (result.response) {
-        setAdminData(result.response.data as Admin);
-      }
-    } catch (error) {
-      console.error("Error fetching admin profile:", error);
-    } finally {
-      setAdminLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // Listen for token changes and update admin data
   useEffect(() => {
     console.log("AuthContext: userToken changed, fetching admin profile.");
+    fetchIdRef.current += 1;
+    const currentFetchId = fetchIdRef.current;
     if (userToken) {
-      fetchAdminProfile(userToken);
+      fetchAdminProfile(userToken, currentFetchId);
     } else {
       setAdminData(null);
     }
@@ -144,8 +159,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Function to refresh admin data (useful after token refresh)
   const refreshAdminData = async () => {
+    fetchIdRef.current += 1;
+    const currentFetchId = fetchIdRef.current;
     if (userToken) {
-      await fetchAdminProfile(userToken);
+      await fetchAdminProfile(userToken, currentFetchId);
     }
   };
 

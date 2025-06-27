@@ -21,6 +21,8 @@ export const useAdminByToken = (adminId: string, enabled: boolean = true) => {
       if(result.response){
         return result.response.data as Admin;
       }
+      
+      throw new Error('No response or error received from getAdminByToken');
     },
     enabled: enabled && !!adminId,
     staleTime: 5 * 60 * 1000, // 5 minutes
