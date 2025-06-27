@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const fetchIdRef = useRef(0);
 
   const updateFirstSignInStatus = useCallback((status: boolean) => {
+    console.log("AuthContext: updateFirstSignInStatus called with", status);
     setIsFirstSignIn(status);
   }, []);
 
@@ -66,16 +67,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     "AuthContext: Rendered, loading:",
     loading,
     "userToken:",
-    !!userToken
+    !!userToken,
+    "isFirstSignIn:",
+    isFirstSignIn
   );
 
   const signOut = useCallback(async () => {
+    console.log("AuthContext: signOut called.");
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await removeAuthTokens();
       setUserToken(null);
       setIsFirstSignIn(false); // Reset first sign in state on sign out
-      console.log("AuthContext: Signed out, userToken set to null");
+      console.log("AuthContext: Signed out, userToken set to null.");
       // Reset navigation stack to login screen after sign out
       router.replace("/");
     } catch (error) {
@@ -85,6 +89,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Listen for auth errors from the axios interceptor
   useEffect(() => {
+    console.log("AuthContext: useEffect [authEventEmitter] triggered.");
     const handleAuthError = () => {
       if (userToken) {
         console.log(
@@ -103,6 +108,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Restore session on app start
   useEffect(() => {
+    console.log("AuthContext: useEffect [restoreSession] triggered.");
     const restoreSession = async () => {
       console.log("AuthContext: restoreSession started.");
       try {
@@ -130,6 +136,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Function to fetch admin profile data
   const fetchAdminProfile = useCallback(
     async (token: string, fetchId: number) => {
+      console.log("AuthContext: fetchAdminProfile called.");
       if (!token) return; // Prevent fetching if token is null
       setAdminLoading(true);
       try {
@@ -142,6 +149,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Only update state if this is the latest fetch
           if (fetchIdRef.current === fetchId) {
             setAdminData(result.response.data as Admin);
+            console.log("AuthContext: Admin data updated.");
           }
         } else {
           // Stale response, do not update state
@@ -152,6 +160,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } finally {
         if (fetchIdRef.current === fetchId) {
           setAdminLoading(false);
+          console.log("AuthContext: Admin loading set to false.");
         }
       }
     },
@@ -160,18 +169,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Listen for token changes and update admin data
   useEffect(() => {
-    console.log("AuthContext: userToken changed, fetching admin profile.");
+    console.log("AuthContext: useEffect [userToken] triggered.");
     fetchIdRef.current += 1;
     const currentFetchId = fetchIdRef.current;
     if (userToken) {
       fetchAdminProfile(userToken, currentFetchId);
     } else {
       setAdminData(null);
+      console.log("AuthContext: userToken is null, adminData set to null.");
     }
   }, [userToken, fetchAdminProfile]);
 
   // Function to refresh admin data (useful after token refresh)
   const refreshAdminData = async () => {
+    console.log("AuthContext: refreshAdminData called.");
     fetchIdRef.current += 1;
     const currentFetchId = fetchIdRef.current;
     if (userToken) {
@@ -180,11 +191,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signIn = async (access_token: string, refresh_token: string) => {
+    console.log("AuthContext: signIn called.");
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
 
     const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
     setIsFirstSignIn(firstSignInValue === null);
+    console.log("AuthContext: signIn completed, isFirstSignIn:", firstSignInValue === null);
   };
 
   return (
