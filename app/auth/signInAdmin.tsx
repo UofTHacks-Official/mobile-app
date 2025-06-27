@@ -12,11 +12,6 @@ import Animated, {
 } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { adminLogin } from "../_requests/admin";
-import {
-  FIRST_SIGN_SIGN_IN,
-  getSecureToken,
-  setSecureToken,
-} from "../_utils/tokens/secureStorage";
 import { LoadingIndicator } from "../components/loading/loading";
 import { useAuth } from "../context/authContext";
 
@@ -117,9 +112,9 @@ const SignInAdmin = () => {
       await signIn(access_token, refresh_token);
 
       if (isFirstSignIn) {
-        router.replace("/auth/camera" as any);
+        router.replace({ pathname: "/auth/camera" });
       } else {
-        router.replace("/admin" as any);
+        router.replace({ pathname: "/(admin)" });
       }
       setLoading(false);
     } catch (e) {

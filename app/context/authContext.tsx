@@ -81,9 +81,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsFirstSignIn(false); // Reset first sign in state on sign out
       console.log("AuthContext: Signed out, userToken set to null.");
       // Reset navigation stack to login screen after sign out
-      setTimeout(() => {
-        router.replace("/auth/signInAdmin");
-      }, 0);
+      router.replace("/auth/signInAdmin");
     } catch (error) {
       console.error("Error during sign out:", error);
     }
