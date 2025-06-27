@@ -2,15 +2,13 @@ import { Redirect } from "expo-router";
 import { useAuth } from "./context/authContext";
 
 export default function StartPage() {
-  const { userToken, loading, isFirstSignIn } = useAuth();
+  const { userToken, loading } = useAuth();
 
   console.log(
     "_redirect: Rendered, loading:",
     loading,
     "userToken:",
-    !!userToken,
-    "isFirstSignIn:",
-    isFirstSignIn
+    !!userToken
   );
 
   // Show a loading screen while authentication state is being determined
@@ -21,17 +19,10 @@ export default function StartPage() {
 
   // Redirect based on authentication state
   if (userToken) {
-    if (isFirstSignIn) {
-      console.log(
-        "_redirect: First sign-in, redirecting to /auth/camera. (via <Redirect>)"
-      );
-      return <Redirect href="/auth/notification" />;
-    } else {
-      console.log(
-        "_redirect: User authenticated, redirecting to /(admin). (via <Redirect>)"
-      );
-      return <Redirect href="/(admin)" />;
-    }
+    console.log(
+      "_redirect: User authenticated, redirecting to /admin. (via <Redirect>)"
+    );
+    return <Redirect href="/admin" />;
   } else {
     console.log(
       "_redirect: User not authenticated, redirecting to /auth/signInAdmin. (via <Redirect>)"
