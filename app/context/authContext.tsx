@@ -31,6 +31,7 @@ interface AuthContextType {
   adminLoading: boolean;
   isFirstSignIn: boolean;
   refreshAdminData: () => Promise<void>;
+  updateFirstSignInStatus: (status: boolean) => void;
 }
 
 interface AuthProviderProps {
@@ -56,6 +57,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [adminLoading, setAdminLoading] = useState<boolean>(false);
   const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
+
+  const updateFirstSignInStatus = useCallback((status: boolean) => {
+    setIsFirstSignIn(status);
+  }, []);
 
   console.log(
     "AuthContext: Rendered, loading:",
@@ -198,6 +203,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         adminLoading,
         isFirstSignIn,
         refreshAdminData,
+        updateFirstSignInStatus,
       }}
     >
       {children}
