@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { Schedule } from "../../types/schedule";
+import { Schedule } from "../../_types/schedule";
 import TimeSlot from "./TimeSlot";
 
 interface DayColumnProps {
@@ -17,10 +17,7 @@ const DayColumn = ({
   onDeleteSchedule,
   onSchedulePress,
 }: DayColumnProps) => {
-  const formattedDate = date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  
 
   const hourHeight = 48;
 

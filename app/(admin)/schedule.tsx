@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { toZonedTime } from "date-fns-tz";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -21,8 +20,8 @@ import {
   createSchedule,
   fetchAllSchedules,
   updateSchedule,
-} from "../requests/schedule";
-import { Schedule as ScheduleInterface, ScheduleType } from "../types/schedule";
+} from "../_requests/schedule";
+import { Schedule as ScheduleInterface, ScheduleType } from "../_types/schedule";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {
@@ -158,13 +157,6 @@ const Schedule = () => {
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 text-uoft_black">
-        <View className="flex-row items-center mt-6 mb-6 px-6">
-          <Pressable onPress={() => router.back()} className="mr-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="black" />
-          </Pressable>
-          <Text className="text-2xl font-['PPObjectSans-Heavy']">Schedule</Text>
-        </View>
-
         {/* <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
           <Pressable
             onPress={() => setIsModalVisible(true)}

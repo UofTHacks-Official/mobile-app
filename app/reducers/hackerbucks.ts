@@ -14,20 +14,18 @@ export interface Transaction {
   amount: string | null;
   status: 'pending' | 'confirmed' | 'completed' | 'failed';
   timestamp: Date;
+  orderType: 'send' | 'deduct' | null; 
 }
 
-// Simplified state
 interface TransactionState {
   currentTransaction: Transaction | null;
   isLoading: boolean;
   error: string | null;
-  
-  // Simplified actions
+
 
   clearTransaction: () => void;
-  
   startTransaction: (recipient: Recipient, amount: string | null) => void;
-  updateTransactionAmount: (amount: string) => void;
+  updateTransactionAmount: (amount: string, orderType: Transaction['orderType']) => void;
   updateTransactionStatus: (status: Transaction['status']) => void;
 
   setLoading: (loading: boolean) => void;
@@ -47,15 +45,16 @@ export const useTransactionStore = create<TransactionState>()(
         amount,
         status: 'pending',
         timestamp: new Date(),
+        orderType: null
       };
       set({ currentTransaction: transaction, error: null });
     },
 
-    updateTransactionAmount: (amount) => {
+    updateTransactionAmount: (amount, orderType) => {
       const { currentTransaction } = get();
       if (currentTransaction) {
         set({
-          currentTransaction: { ...currentTransaction, amount },
+          currentTransaction: { ...currentTransaction, amount, orderType },
         });
       }
     },

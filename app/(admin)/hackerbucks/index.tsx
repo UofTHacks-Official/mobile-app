@@ -1,10 +1,10 @@
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
-import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router, useNavigation } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { Home } from "lucide-react-native";
+import React, { useEffect, useRef } from "react";
 import { Button, Dimensions, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
 
@@ -15,13 +15,10 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
 
-  const { startTransaction, clearTransaction, currentTransaction } =
+  const { startTransaction, clearTransaction } =
     useHackerBucksStore();
 
-  const [scannedBounds, setScannedBounds] = useState<{
-    origin: { x: number; y: number };
-    size: { width: number; height: number };
-  } | null>(null);
+  
 
   // NEW: A ref to control whether a scan is currently being processed
   const isProcessingScan = useRef(false);
@@ -32,7 +29,7 @@ export default function App() {
     clearTransaction();
     isProcessingScan.current = false;
     console.log(`Current Status`, isProcessingScan.current);
-  }, []);
+  }, [clearTransaction]);
 
   // useEffect(() => {
   //   if (
@@ -51,7 +48,7 @@ export default function App() {
       // Optionally clear transaction or any other state here
       clearTransaction();
       return () => {};
-    }, [])
+    }, [clearTransaction])
   );
 
   const handleQRCodeScanned = ({
@@ -162,21 +159,10 @@ export default function App() {
               stroke="#fff"
               strokeWidth={3}
             />
-            {scannedBounds && (
-              <Rect
-                x={scannedBounds.origin.x}
-                y={scannedBounds.origin.y}
-                width={scannedBounds.size.width}
-                height={scannedBounds.size.height}
-                fill="none"
-                stroke="#00FF00"
-                strokeWidth={2}
-                strokeDasharray="5,5"
-              />
-            )}
+            
           </Svg>
 
-          <View className="absolute bottom-10 right-10">
+          <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -185,7 +171,7 @@ export default function App() {
               }}
               className="bg-white/20 p-3 rounded-full"
             >
-              <Ionicons name="home" size={32} color="white" />
+              <Home size={32} color="white" />
             </TouchableOpacity>
           </View>
         </CameraView>

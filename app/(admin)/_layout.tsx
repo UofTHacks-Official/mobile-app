@@ -12,7 +12,7 @@ export default function AdminLayout() {
   }
 
   // Redirect to home if not authenticated
-  if (!userToken) {
+  if (!userToken && !loading) {
     return <Redirect href="/" />;
   }
 
@@ -21,7 +21,20 @@ export default function AdminLayout() {
       screenOptions={{
         headerShown: false,
       }}
-      tabBar={(props) => <CustomTabBar {...props} />}
+      tabBar={(props) => {
+        // Filter out the profile and hackerbucks screens from the tab bar props
+        const filteredProps = {
+          ...props,
+          state: {
+            ...props.state,
+            routes: props.state.routes.filter(
+              (route) =>
+                route.name !== "profile" && route.name !== "hackerbucks"
+            ),
+          },
+        };
+        return <CustomTabBar {...filteredProps} />;
+      }}
     >
       <Tabs.Screen
         name="index"
@@ -45,12 +58,14 @@ export default function AdminLayout() {
         name="hackerbucks"
         options={{
           title: "Send",
+          href: null, // This prevents it from showing in the tab bar
         }}
-      /> */}
-      {/* <Tabs.Screen
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
+          href: null, // This prevents it from showing in the tab bar
         }}
       /> */}
     </Tabs>

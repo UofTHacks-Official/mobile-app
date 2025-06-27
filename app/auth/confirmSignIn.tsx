@@ -5,7 +5,7 @@ import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const SignIn = () => {
   const { email } = useLocalSearchParams();
-  const [showEmailPicker, setShowEmailPicker] = useState(false);
+  const [_showEmailPicker, _setShowEmailPicker] = useState(false);
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
@@ -15,7 +15,7 @@ const SignIn = () => {
         </Text>
         <View className="mt-48 text-center">
           <Text className="text-md font-pp text-center">
-            We've sent a verification link to
+            We&apos;ve sent a verification link to
           </Text>
 
           <Text className="text-md font-pp text-center">
@@ -33,11 +33,11 @@ const SignIn = () => {
         <Pressable
           className="bg-uoft_secondary_orange py-4 px-6 w-full"
           android_ripple={null}
-          style={({ pressed }) => ({
+          style={({ pressed: _pressed }) => ({
             opacity: 1,
           })}
           onPress={() => {
-            setShowEmailPicker(true);
+            _setShowEmailPicker(true);
           }}
         >
           <Text className="text-uoft_white text-center font-pp text-lg font-bold">

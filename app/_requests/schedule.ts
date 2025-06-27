@@ -1,4 +1,4 @@
-import { Schedule } from '../types/schedule';
+import { Schedule } from '../_types/schedule';
 import axios from './axios';
 
 const typeToEventType = {

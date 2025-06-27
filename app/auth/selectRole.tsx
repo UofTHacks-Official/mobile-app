@@ -9,7 +9,7 @@ const SelectRole = () => {
   ) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // Here you would typically save the role selection to your auth state/context
-    router.push(`/auth/signIn${role}`); // Navigate to the main app after role selection
+    router.push(`/auth/signIn${role}` as any); // Navigate to the main app after role selection
   };
 
   const roles = [
@@ -46,7 +46,7 @@ const SelectRole = () => {
           Select your role
         </Text>
         <Text className="text-md font-pp text-center mt-4">
-          Choose how you'll be using the app
+          Choose how you&apos;ll be using the app
         </Text>
 
         <View className="mt-8 flex-1">

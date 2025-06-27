@@ -44,7 +44,7 @@ export const getSecureToken = async (ACCESS_TOKEN_KEY: string): Promise<string |
   try {
     const response = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
     return response;
-  } catch (e) {
+  } catch (_) {
     return null;
   }
 };
@@ -52,7 +52,7 @@ export const getSecureToken = async (ACCESS_TOKEN_KEY: string): Promise<string |
 export const setSecureToken = async (ACCESS_KEY: string, ACCESS_VALUE: string): Promise< void | null> => {
   try {
     await SecureStore.setItemAsync(ACCESS_KEY, ACCESS_VALUE);
-  } catch (e) {
+  } catch (_) {
     return null;
   }
 };
