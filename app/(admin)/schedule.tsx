@@ -13,7 +13,6 @@ import {
   Text,
   View,
 } from "react-native";
-import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
 import DayColumn from "../components/schedule/DayColumn";
 import EventModal from "../components/schedule/EventModal";
 import TimeSlot from "../components/schedule/TimeSlot";
@@ -226,6 +225,12 @@ const Schedule = () => {
                     scheduleDate.getDate() === date.getDate()
                   );
                 });
+                // hardcoded date for testing
+                const now = new Date(2025, 5, 21);
+                const isToday =
+                  date.getFullYear() === now.getFullYear() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getDate() === now.getDate();
                 return (
                   <DayColumn
                     key={index}
@@ -237,13 +242,11 @@ const Schedule = () => {
                       setSelectedSchedule(schedule);
                       setIsDetailModalVisible(true);
                     }}
+                    showCurrentTimeIndicator={isToday}
+                    currentMinute={currentMinute}
                   />
                 );
               })}
-              <CurrentTimeIndicator
-                currentHour={currentHour}
-                currentMinute={currentMinute}
-              />
             </View>
           </ScrollView>
         </View>
