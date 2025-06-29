@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { Schedule } from "../../types/schedule";
+import { Schedule } from "../../_types/schedule";
 import EventComponent from "./Event";
 
 interface TimeSlotProps {

@@ -60,8 +60,8 @@ const SignUp = () => {
         </View>
         <View className="w-full px-12 absolute bottom-0 mb-8">
           <Text className="font-pp text-xs text-center">
-            By signing up, you agree to Paytrie's Terms and Conditions and
-            Privacy Statement, and iDenfy's Terms and Conditions and Privacy
+            By signing up, you agree to Paytrie&apos;s Terms and Conditions and
+            Privacy Statement, and iDenfy&apos;s Terms and Conditions and Privacy
             Statement. By providing your email, you consent to receiving
             communications from Paytrie. You can opt-out anytime.
           </Text>

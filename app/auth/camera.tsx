@@ -5,7 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CameraPage() {
-  const [permission, setPermission] = useState<boolean | null>(null);
+  const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const requestCameraPermission = async () => {
     try {
@@ -30,8 +30,8 @@ export default function CameraPage() {
     })();
   }, []);
 
-  const askForCamera = () => {
-    // do later
+  const askForCamera = async () => {
+    await requestCameraPermission();
   };
 
   return (
@@ -40,6 +40,10 @@ export default function CameraPage() {
         <View className="flex-1 justify-center items-center">
           <Text className="text-xl font-bold flex-col">
             Allow camera access
+          </Text>
+          <Text className="text-center text-gray-600 mt-2 px-4">
+            We need camera to sign in users and send hacker bucks via QR code
+            scan
           </Text>
         </View>
 
@@ -54,8 +58,10 @@ export default function CameraPage() {
             router.push("/(admin)");
           }}
         >
-          <View className="mb-4">
-            <Text className="text-center">Maybe Later</Text>
+          <View className="mb-4 py-4 px-2">
+            <Text className="text-center text-uoft_primary_blue">
+              Maybe Later
+            </Text>
           </View>
         </Pressable>
       </View>

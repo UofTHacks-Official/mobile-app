@@ -12,8 +12,12 @@ export default function NotificationPage() {
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-8">
         <View className="flex-1 justify-center items-center">
-          <Text className="text-xl font-bold flex-col">
+          <Text className="text-xl font-bold flex-col text-center mb-4">
             Allow notifications
+          </Text>
+          <Text className="text-gray-600 text-center px-2">
+            We only send notifications for food alerts, event details, and
+            important updates. No spam, promise!
           </Text>
         </View>
 
@@ -30,8 +34,10 @@ export default function NotificationPage() {
             router.push("/auth/camera");
           }}
         >
-          <View className="mb-4">
-            <Text className="text-center">Maybe Later</Text>
+          <View className="py-4 px-2 rounded-md mb-4 items-center">
+            <Text className="text-center text-uoft_primary_blue">
+              Maybe Later
+            </Text>
           </View>
         </Pressable>
       </View>

@@ -1,6 +1,6 @@
-import axios from "./axios";
+import { axiosInstance } from './axiosConfig';
 
-const loginEndpoints = {
+export const loginEndpoints = {
   ADMIN_LOGIN: "/api/v13/admins/login",
   ADMIN_LOGOUT: "/api/v13/admins/logout",
   ADMIN_TOKEN_REFRESH: "/api/v13/admins/refresh",
@@ -15,15 +15,17 @@ const loginEndpoints = {
 
 export interface Admin {
   admin_username: string;
-  admin_password: string;
+  admin_role: string;
+  admin_id: string;
+
   admin_fname: string;
   admin_lname: string;
-  admin_role: string;
   is_admin_manager: boolean;
   is_marking_manager: boolean;
   is_shift_manager: boolean;
-}
 
+  last_login: string;
+}
 /**
  * Authenticates an admin user with email and password.
  * @param {string} email Admin's username/email.
@@ -32,7 +34,7 @@ export interface Admin {
  */
 export const adminLogin = async (email: string, password: string) => {
   try {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       loginEndpoints.ADMIN_LOGIN,
       {
         admin_username: email, 
@@ -53,7 +55,7 @@ export const adminLogin = async (email: string, password: string) => {
  */
 export const adminLogout = async (access_token: string, refresh_token: string) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.ADMIN_LOGOUT,
         {
             access_token,
@@ -73,7 +75,7 @@ export const adminLogout = async (access_token: string, refresh_token: string) =
  */
 export const refreshAdminToken = async (refresh_token: string) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.ADMIN_TOKEN_REFRESH,
         {
             refresh_token,
@@ -92,7 +94,7 @@ export const refreshAdminToken = async (refresh_token: string) => {
  */
 export const listAdmin = async (refresh_token: string) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.ADMIN_TOKEN_REFRESH,
         {
             refresh_token,
@@ -111,7 +113,7 @@ export const listAdmin = async (refresh_token: string) => {
  */
 export const createAdmin = async (adminObject: Admin)=>{
     try{
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.CREATE_ADMIN,
         {
           adminObject
@@ -130,7 +132,7 @@ export const createAdmin = async (adminObject: Admin)=>{
  */
 export const getAdminByToken = async (admin_id: string) => {
     try {
-      const response = await axios.get<Admin>(
+      const response = await axiosInstance.get<Admin>(
         loginEndpoints.GET_ADMIN_BY_TOKEN.replace("{admin_id}", admin_id)
       );
       return { response };
@@ -146,7 +148,7 @@ export const getAdminByToken = async (admin_id: string) => {
  */
 export const getAdminProfile = async (bearerToken: string) => {
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         loginEndpoints.ADMIN_PROFILE,
         {
           headers: {
@@ -166,10 +168,9 @@ export const getAdminProfile = async (bearerToken: string) => {
  * @param {number} amount Amount of hacker bucks to add.
  * @returns {Promise<object>} Promise resolving to { response } or { error }.
  */
-
 export const addHackerBucks = async (hackerId: string, amount: number) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.HACKER_HUCKS_ADD,
         {
           hacker_id: hackerId,
@@ -190,7 +191,7 @@ export const addHackerBucks = async (hackerId: string, amount: number) => {
  */
 export const deductHackerBucks = async (hackerId: string, amount: number) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         loginEndpoints.HACKER_HUCKS_DEDUCT,
         {
           hacker_id: hackerId,
@@ -202,3 +203,6 @@ export const deductHackerBucks = async (hackerId: string, amount: number) => {
       return { error };
     }
   }
+
+// Default export for Expo Router
+export default loginEndpoints;

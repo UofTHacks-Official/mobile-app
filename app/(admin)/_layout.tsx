@@ -1,11 +1,10 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { Redirect, Tabs } from "expo-router";
 import { useContext } from "react";
+import CustomTabBar from "../components/bottom/bottomNavBar";
 import { AuthContext } from "../context/authContext";
 
 export default function AdminLayout() {
-  const { userToken, loading } = useContext(AuthContext);
+  const { userToken, loading } = useContext(AuthContext)!;
 
   // Show nothing while loading
   if (loading) {
@@ -13,105 +12,62 @@ export default function AdminLayout() {
   }
 
   // Redirect to home if not authenticated
-  if (!userToken) {
+  if (!userToken && !loading) {
     return <Redirect href="/" />;
   }
-
-  const handleHackerBucks = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  };
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#F6F6F6", // uoft_white
-          borderTopColor: "#181818", // uoft_black
-        },
-        tabBarActiveTintColor: "#FF6F51", // uoft_secondary_orange
-        tabBarInactiveTintColor: "#181818", // uoft_black
+      }}
+      tabBar={(props) => {
+        // Filter out the profile and hackerbucks screens from the tab bar props
+        const filteredProps = {
+          ...props,
+          state: {
+            ...props.state,
+            routes: props.state.routes.filter(
+              (route) =>
+                route.name !== "profile" && route.name !== "hackerbucks"
+            ),
+          },
+        };
+        return <CustomTabBar {...filteredProps} />;
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="view-dashboard"
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-        listeners={{
-          tabPress: () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          },
+          title: "Home",
         }}
       />
       <Tabs.Screen
         name="schedule"
         options={{
           title: "Schedule",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="calendar-clock"
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-        listeners={{
-          tabPress: () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          },
         }}
       />
       <Tabs.Screen
         name="qr"
         options={{
-          title: "qr",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="qrcode-scan"
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-        listeners={{
-          tabPress: () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          },
+          title: "Scan",
         }}
       />
-
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="hackerbucks"
         options={{
-          title: "bucks",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cash" size={size} color={color} />
-          ),
-        }}
-        listeners={{
-          tabPress: () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          },
+          title: "Send",
+          href: null, // This prevents it from showing in the tab bar
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" size={size} color={color} />
-          ),
+          href: null, // This prevents it from showing in the tab bar
         }}
-      />
+      /> */}
     </Tabs>
   );
 }
