@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
+import { ArrowLeft, Clock, Plus, Tag, UserCog, Users, X } from 'lucide-react-native';
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -166,7 +166,7 @@ const Schedule = () => {
       <View className="flex-1 text-uoft_black">
         <View className="flex-row items-center mt-6 mb-6 px-6">
           <Pressable onPress={() => router.back()} className="mr-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="black" />
+            <ArrowLeft size={24} color="black" />
           </Pressable>
           <Text className="text-2xl font-['PPObjectSans-Heavy']">Schedule</Text>
         </View>
@@ -176,7 +176,7 @@ const Schedule = () => {
             onPress={() => setIsModalVisible(true)}
             className="ml-auto"
           >
-            <MaterialCommunityIcons name="plus" size={48} color="white" />
+            <Plus size={48} color="white" />
           </Pressable>
         </View>
 
@@ -273,7 +273,7 @@ const Schedule = () => {
                 accessibilityLabel="Close details"
                 accessibilityRole="button"
               >
-                <MaterialCommunityIcons name="close" size={24} color="#333" />
+                <X size={24} color="#333" />
               </Pressable>
               {selectedSchedule && (
                 <ScrollView
@@ -287,33 +287,21 @@ const Schedule = () => {
                     {selectedSchedule.description || "No description provided."}
                   </Text>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons
-                      name="clock-outline"
-                      size={20}
-                      color="#FF6F51"
-                    />
+                    <Clock size={20} color="#FF6F51" />
                     <Text className="ml-2 text-base text-uoft_black font-pp">
                       {formatTimeTo12Hour(selectedSchedule.startTime)} -{" "}
                       {formatTimeTo12Hour(selectedSchedule.endTime)}
                     </Text>
                   </View>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons
-                      name="tag-outline"
-                      size={20}
-                      color="#4A90E2"
-                    />
+                    <Tag size={20} color="#4A90E2" />
                     <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
                       {selectedSchedule.type}
                     </Text>
                   </View>
                   {selectedSchedule.sponsorId && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons
-                        name="account-tie-outline"
-                        size={20}
-                        color="#50E3C2"
-                      />
+                      <UserCog size={20} color="#50E3C2" />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Sponsor: {selectedSchedule.sponsorId}
                       </Text>
@@ -321,11 +309,7 @@ const Schedule = () => {
                   )}
                   {selectedSchedule.isShift && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons
-                        name="account-group-outline"
-                        size={20}
-                        color="#FF6F51"
-                      />
+                      <Users size={20} color="#FF6F51" />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Shift: {selectedSchedule.shiftType || "General"}
                       </Text>
