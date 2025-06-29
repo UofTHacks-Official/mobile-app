@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -55,18 +56,15 @@ function formatTimeTo12Hour(isoString: string) {
 }
 
 const Schedule = () => {
-  const isEditFeatureEnabled = false;
+  const isEditFeatureEnabled = true;
+
+  const queryClient = useQueryClient();
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [schedules, setSchedules] = useState<ScheduleInterface[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] =
-    useState<ScheduleInterface | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [editInitialValues, setEditInitialValues] = useState<Omit<
-    ScheduleInterface,
-    "id"
-  > | null>(null);
+  const [editInitialValues, setEditInitialValues] = useState<Omit<ScheduleInterface, "id"> | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data), TEMP
@@ -90,17 +88,29 @@ const Schedule = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch schedules info
-  useEffect(() => {
-    fetchAllSchedules()
-      .then((data) => {
-        const mapped = data.map(mapApiToSchedule);
-        setSchedules(mapped);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch schedules:", err);
-      });
-  }, []);
+  // Tanstack Query for schedules
+  const { data: schedules = [], isLoading, error } = useQuery({
+    queryKey: ['schedules'],
+    queryFn: async () => {
+      const data = await fetchAllSchedules();
+      return data.map(mapApiToSchedule);
+    },
+  });
+
+  // Mutations
+  const updateScheduleMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => updateSchedule(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+    },
+  });
+
+  const deleteScheduleMutation = useMutation({
+    mutationFn: (id: string) => apiDeleteSchedule(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+    },
+  });
 
   const handleAddSchedule = async (event: {
     title: string;
@@ -123,10 +133,7 @@ const Schedule = () => {
     if (editingId) {
       // Edit existing schedule
       try {
-        const updated = await updateSchedule(editingId, safeEvent);
-        setSchedules((schedules) =>
-          schedules.map((s) => (s.id === editingId ? { ...s, ...updated } : s))
-        );
+        await updateScheduleMutation.mutateAsync({ id: editingId, data: safeEvent });
         setEditingId(null);
       } catch (err) {
         console.error("Failed to update schedule:", err);
@@ -134,8 +141,8 @@ const Schedule = () => {
     } else {
       // Add new schedule
       try {
-        const created = await createSchedule(safeEvent);
-        setSchedules((schedules) => [...schedules, created]);
+        await createSchedule(safeEvent);
+        queryClient.invalidateQueries({ queryKey: ['schedules'] });
       } catch (err) {
         console.error("Failed to create schedule:", err);
       }
@@ -144,8 +151,7 @@ const Schedule = () => {
 
   const handleDeleteSchedule = async (scheduleId: string) => {
     try {
-      await apiDeleteSchedule(scheduleId);
-      setSchedules((schedules) => schedules.filter((s) => s.id !== scheduleId));
+      await deleteScheduleMutation.mutateAsync(scheduleId);
     } catch (err) {
       console.error("Failed to delete schedule:", err);
     }
