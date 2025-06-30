@@ -1,7 +1,7 @@
+import CustomTabBar from "@/components/bottom/bottomNavBar";
+import { AuthContext } from "@/context/authContext";
 import { Redirect, Tabs } from "expo-router";
 import { useContext } from "react";
-import CustomTabBar from "../components/bottom/bottomNavBar";
-import { AuthContext } from "../context/authContext";
 
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;

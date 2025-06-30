@@ -1,3 +1,14 @@
+import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
+import DayColumn from "@/components/schedule/DayColumn";
+import EventModal from "@/components/schedule/EventModal";
+import TimeSlot from "@/components/schedule/TimeSlot";
+import {
+  deleteSchedule as apiDeleteSchedule,
+  createSchedule,
+  fetchAllSchedules,
+  updateSchedule,
+} from "@/requests/schedule";
+import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { toZonedTime } from "date-fns-tz";
 import { useEffect, useState } from "react";
@@ -11,17 +22,6 @@ import {
   Text,
   View,
 } from "react-native";
-import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
-import DayColumn from "../components/schedule/DayColumn";
-import EventModal from "../components/schedule/EventModal";
-import TimeSlot from "../components/schedule/TimeSlot";
-import {
-  deleteSchedule as apiDeleteSchedule,
-  createSchedule,
-  fetchAllSchedules,
-  updateSchedule,
-} from "../_requests/schedule";
-import { Schedule as ScheduleInterface, ScheduleType } from "../_types/schedule";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {

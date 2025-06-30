@@ -1,4 +1,15 @@
 // AuthContext.tsx
+import type { Admin } from "@/requests/admin";
+import { getAdminProfile } from "@/requests/admin";
+import { authEventEmitter } from "@/utils/eventEmitter";
+import {
+  FIRST_SIGN_SIGN_IN,
+  getAuthTokens,
+  getSecureToken,
+  removeAuthTokens,
+  removeSecureToken,
+  storeAuthTokens,
+} from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import {
   ReactNode,
@@ -9,17 +20,6 @@ import {
   useRef,
   useState,
 } from "react";
-import type { Admin } from "../_requests/admin";
-import { getAdminProfile } from "../_requests/admin";
-import { authEventEmitter } from "../_utils/eventEmitter";
-import {
-  FIRST_SIGN_SIGN_IN,
-  getAuthTokens,
-  getSecureToken,
-  removeAuthTokens,
-  removeSecureToken,
-  storeAuthTokens,
-} from "../_utils/tokens/secureStorage";
 
 interface AuthContextType {
   userToken: string | null;

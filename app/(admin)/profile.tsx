@@ -1,6 +1,6 @@
+import { useAuth } from "@/context/authContext";
 import { Bell, CalendarCheck2Icon, User } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
-import { useAuth } from "../context/authContext";
 
 const Profile = () => {
   const { signOut, adminData, adminLoading } = useAuth();
@@ -65,14 +65,6 @@ const Profile = () => {
                   </Text>
                   <Text className="font-opensans-medium">
                     {admin.is_admin_manager ? "Yes" : "No"}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
-                    Marking Manager:
-                  </Text>
-                  <Text className="font-opensans-medium">
-                    {admin.is_marking_manager ? "Yes" : "No"}
                   </Text>
                 </View>
                 <View className="flex-row justify-between">

@@ -7,8 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   FIRST_SIGN_SIGN_IN,
   setSecureToken,
-} from "../_utils/tokens/secureStorage";
-import { useAuth } from "../context/authContext";
+} from "@/utils/tokens/secureStorage";
+import { useAuth } from "@/context/authContext";
 
 export default function CameraPage() {
   const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars

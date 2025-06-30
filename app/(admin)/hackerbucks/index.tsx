@@ -1,5 +1,5 @@
-import { openSettings } from "@/app/_utils/camera/permissions";
-import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { openSettings } from "@/utils/camera/permissions";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
@@ -28,44 +28,6 @@ export default function App() {
     isProcessingScan.current = false;
     console.log(`Current Status`, isProcessingScan.current);
   }, [clearTransaction]);
-
-  if (permission!.granted) {
-    return (
-      <View className="flex-1 justify-center items-center bg-uoft_white">
-        <View className="px-6">
-          <Text className="text-black text-center text-lg mb-4">
-            Camera Permission Required
-          </Text>
-          <Text className="text-black text-center mb-8">
-            We need camera access to scan QR codes. Please grant permission to
-            continue.
-          </Text>
-
-          <TouchableOpacity
-            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
-            onPress={requestPermission}
-          >
-            <Text className="text-black text-center">Grant Permission</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="bg-black px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
-            onPress={openSettings}
-          >
-            <Settings size={20} color="white" style={{ marginRight: 8 }} />
-            <Text className="text-white text-center">Open Settings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="px-6 py-3 rounded-lg border border-black"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-black font-bold text-center">Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
 
   useFocusEffect(
     useCallback(() => {
@@ -126,7 +88,9 @@ export default function App() {
     );
   };
 
-  if (!permission) return <View />;
+  if (!permission) {
+    return <View />;
+  }
 
   if (!permission.granted) {
     return (

@@ -1,10 +1,32 @@
 import { router } from "expo-router";
 import { BellPlus } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { registerForPushNotificationsAsync } from "../_utils/notifications";
+import { registerForPushNotificationsAsync } from "@/utils/notifications";
 
 export default function NotificationPage() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleEnableNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        Alert.alert("Success", "Notifications enabled!");
+        // You might want to send this token to your backend here
+        router.push("/auth/camera");
+      } else {
+        Alert.alert("Failed", "Could not enable notifications. Please check permissions.");
+      }
+    } catch (error) {
+      console.error("Error enabling notifications:", error);
+      Alert.alert("Error", "An unexpected error occurred while enabling notifications.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-8">
@@ -21,11 +43,15 @@ export default function NotificationPage() {
           </Text>
         </View>
 
-        <Pressable onPress={registerForPushNotificationsAsync}>
+        <Pressable onPress={handleEnableNotifications} disabled={isLoading}>
           <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
-            <Text className="text-center text-white">
-              Enable push notifications
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-center text-white">
+                Enable push notifications
+              </Text>
+            )}
           </View>
         </Pressable>
 

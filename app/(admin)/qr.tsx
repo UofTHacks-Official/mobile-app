@@ -14,7 +14,7 @@ import {
   View,
 } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
-import { openSettings } from "../_utils/camera/permissions";
+import { openSettings } from "@/utils/camera/permissions";
 
 const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
-import { authEventEmitter } from '../_utils/eventEmitter';
-import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../_utils/tokens/secureStorage';
+import { authEventEmitter } from '@/utils/eventEmitter';
+import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '@/utils/tokens/secureStorage';
 import { loginEndpoints } from './admin';
 
 // Get base URL from environment variables

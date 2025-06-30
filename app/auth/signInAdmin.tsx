@@ -1,3 +1,6 @@
+import { LoadingIndicator } from "@/components/loading/loading";
+import { useAuth } from "@/context/authContext";
+import { adminLogin } from "@/requests/admin";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
@@ -11,9 +14,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
-import { adminLogin } from "../_requests/admin";
-import { LoadingIndicator } from "../components/loading/loading";
-import { useAuth } from "../context/authContext";
 
 const SignInAdmin = () => {
   const [email, setEmail] = useState("");

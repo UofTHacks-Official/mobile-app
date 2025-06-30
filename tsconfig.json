@@ -5,17 +5,19 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts",
-    "context/authContext.jsx"
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/context/authContext.tsx"
   ],
   "exclude": [
     "assets/app-example"

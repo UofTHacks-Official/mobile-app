@@ -10,7 +10,7 @@ interface EventProps {
   style?: StyleProp<ViewStyle>;
   type: EventType;
   onDelete?: () => void;
-  id?: string;
+  id?: string,
   onPress?: () => void;
 }
 
