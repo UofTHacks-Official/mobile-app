@@ -13,8 +13,7 @@ const CurrentTimeIndicator = ({
 }: CurrentTimeIndicatorProps) => {
   // Calculate position based on hour and minute
   // Each hour slot is 48px high
-  const topPosition = currentHour * 48 + (currentMinute / 60) * 48 - 48 * 1.3;
-  // had to manually adjusted the top position (- 48 * 1.3) to account for the header (not sure why) can look into this later
+  const topPosition = currentHour * 48 + (currentMinute / 60) * 48;
 
   return (
     <View

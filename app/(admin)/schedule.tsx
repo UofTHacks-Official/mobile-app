@@ -205,7 +205,7 @@ const Schedule = () => {
 
         <View className="flex-1">
           <ScrollView className="flex-1">
-            <View className="flex-row h-[1358px]">
+            <View className="flex-row">
               {/* Time column */}
               <View className="w-12 border-r border-gray-200">
                 {Array.from({ length: 24 }, (_, i) => (
