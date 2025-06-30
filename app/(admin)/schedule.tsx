@@ -1,7 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toZonedTime } from "date-fns-tz";
 import { router } from "expo-router";
-import { ArrowLeft, Clock, Plus, Tag, UserCog, Users, X } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Clock,
+  Plus,
+  Tag,
+  UserCog,
+  Users,
+  X,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -13,16 +21,19 @@ import {
   Text,
   View,
 } from "react-native";
-import DayColumn from "../components/schedule/DayColumn";
-import EventModal from "../components/schedule/EventModal";
-import TimeSlot from "../components/schedule/TimeSlot";
 import {
   deleteSchedule as apiDeleteSchedule,
   createSchedule,
   fetchAllSchedules,
   updateSchedule,
-} from "../requests/schedule";
-import { Schedule as ScheduleInterface, ScheduleType } from "../types/schedule";
+} from "../_requests/schedule";
+import {
+  Schedule as ScheduleInterface,
+  ScheduleType,
+} from "../_types/schedule";
+import DayColumn from "../components/schedule/DayColumn";
+import EventModal from "../components/schedule/EventModal";
+import TimeSlot from "../components/schedule/TimeSlot";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {
@@ -61,9 +72,13 @@ const Schedule = () => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [editInitialValues, setEditInitialValues] = useState<Omit<ScheduleInterface, "id"> | null>(null);
+  const [editInitialValues, setEditInitialValues] = useState<Omit<
+    ScheduleInterface,
+    "id"
+  > | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data), TEMP
@@ -88,8 +103,12 @@ const Schedule = () => {
   }, []);
 
   // Tanstack Query for schedules
-  const { data: schedules = [], isLoading, error } = useQuery({
-    queryKey: ['schedules'],
+  const {
+    data: schedules = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["schedules"],
     queryFn: async () => {
       const data = await fetchAllSchedules();
       return data.map(mapApiToSchedule);
@@ -98,16 +117,17 @@ const Schedule = () => {
 
   // Mutations
   const updateScheduleMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, data: any }) => updateSchedule(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      updateSchedule(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({ queryKey: ["schedules"] });
     },
   });
 
   const deleteScheduleMutation = useMutation({
     mutationFn: (id: string) => apiDeleteSchedule(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({ queryKey: ["schedules"] });
     },
   });
 
@@ -132,7 +152,10 @@ const Schedule = () => {
     if (editingId) {
       // Edit existing schedule
       try {
-        await updateScheduleMutation.mutateAsync({ id: editingId, data: safeEvent });
+        await updateScheduleMutation.mutateAsync({
+          id: editingId,
+          data: safeEvent,
+        });
         setEditingId(null);
       } catch (err) {
         console.error("Failed to update schedule:", err);
@@ -141,7 +164,7 @@ const Schedule = () => {
       // Add new schedule
       try {
         await createSchedule(safeEvent);
-        queryClient.invalidateQueries({ queryKey: ['schedules'] });
+        queryClient.invalidateQueries({ queryKey: ["schedules"] });
       } catch (err) {
         console.error("Failed to create schedule:", err);
       }
