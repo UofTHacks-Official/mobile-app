@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toZonedTime } from "date-fns-tz";
 import { Clock, Plus, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -81,14 +80,10 @@ const Schedule = () => {
 
   useEffect(() => {
     const updateTime = () => {
-      // Get the current time in America/Toronto timezone
-      const now = new Date();
-      const estTime = toZonedTime(now, "America/Toronto");
-      setCurrentTime(estTime);
+      setCurrentTime(new Date());
     };
 
     updateTime();
-
     const timer = setInterval(updateTime, 60000);
     return () => clearInterval(timer);
   }, []);

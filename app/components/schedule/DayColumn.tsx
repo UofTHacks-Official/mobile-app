@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View } from "react-native";
 import { Schedule } from "../../_types/schedule";
 import CurrentTimeIndicator from "./CurrentTimeIndicator";
@@ -11,7 +12,6 @@ interface DayColumnProps {
   onSchedulePress: (schedule: Schedule) => void;
   showCurrentTimeIndicator?: boolean;
   currentMinute?: number;
-
 }
 
 const DayColumn = ({
@@ -22,11 +22,8 @@ const DayColumn = ({
   onSchedulePress,
   showCurrentTimeIndicator = false,
   currentMinute = 0,
-
 }: DayColumnProps) => {
-  
-
-  const hourHeight = 48;
+  const [rowHeight, setRowHeight] = useState<number | null>(null);
 
   return (
     <View className="flex-1 border-r border-gray-200 relative">
@@ -36,14 +33,15 @@ const DayColumn = ({
           hour={i}
           isCurrentHour={i === currentHour}
           schedules={schedules}
-          hourHeight={hourHeight}
+          hourHeight={rowHeight ?? 42}
           onDeleteSchedule={onDeleteSchedule}
           onSchedulePress={onSchedulePress}
           showTime={false}
+          onLayout={i === 0 ? (e) => setRowHeight(e.nativeEvent.layout.height) : undefined}
         />
       ))}
-      {showCurrentTimeIndicator && (
-        <CurrentTimeIndicator currentHour={currentHour} currentMinute={currentMinute} />
+      {showCurrentTimeIndicator && rowHeight && (
+        <CurrentTimeIndicator currentHour={currentHour} currentMinute={currentMinute} firstHour={0} hourHeight={rowHeight} />
       )}
     </View>
   );

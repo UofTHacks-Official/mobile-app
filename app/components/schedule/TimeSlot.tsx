@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { LayoutChangeEvent, Text, View } from "react-native";
 import { Schedule } from "../../_types/schedule";
 import EventComponent from "./Event";
 
@@ -10,6 +10,7 @@ interface TimeSlotProps {
   onDeleteSchedule: (scheduleId: string) => void;
   onSchedulePress: (schedule: Schedule) => void;
   showTime?: boolean;
+  onLayout?: (e: LayoutChangeEvent) => void;
 }
 
 const TimeSlot = ({
@@ -20,6 +21,7 @@ const TimeSlot = ({
   onDeleteSchedule,
   onSchedulePress,
   showTime = true,
+  onLayout,
 }: TimeSlotProps) => {
   // Format hour to 12-hour format with AM/PM
   const formattedHour =
@@ -42,7 +44,10 @@ const TimeSlot = ({
   const eventWidth = shouldShareSpace ? 100 / hourSchedules.length : 100;
 
   return (
-    <View className="h-12 border-b border-gray-200">
+    <View 
+      className="h-12 border-b border-gray-200"
+      onLayout={onLayout}
+    >
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">

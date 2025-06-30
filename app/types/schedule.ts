@@ -13,5 +13,4 @@ export interface Schedule {
   isShift: boolean;
   shiftType: string | null;
 
- // rawApi?: any;
 } 

@@ -3,17 +3,20 @@ import { View } from "react-native";
 interface CurrentTimeIndicatorProps {
   currentHour: number;
   currentMinute: number;
+  hourHeight: number;
   pointerEvents?: "auto" | "none" | "box-none" | "box-only";
+  firstHour?: number;
 }
 
 const CurrentTimeIndicator = ({
   currentHour,
   currentMinute,
+  hourHeight,
   pointerEvents,
+  firstHour = 0,
 }: CurrentTimeIndicatorProps) => {
-  // Calculate position based on hour and minute
-  // Each hour slot is 48px high
-  const topPosition = currentHour * 48 + (currentMinute / 60) * 48;
+  // Calculate position based on hour and minute, relative to first visible hour
+  const topPosition = (currentHour - firstHour + currentMinute / 60) * hourHeight;
 
   return (
     <View
