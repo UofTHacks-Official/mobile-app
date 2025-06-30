@@ -1,15 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toZonedTime } from "date-fns-tz";
-import { router } from "expo-router";
-import {
-  ArrowLeft,
-  Clock,
-  Plus,
-  Tag,
-  UserCog,
-  Users,
-  X,
-} from "lucide-react-native";
+import { Clock, Plus, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -186,13 +177,6 @@ const Schedule = () => {
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 text-uoft_black">
-        <View className="flex-row items-center mt-6 mb-6 px-6">
-          <Pressable onPress={() => router.back()} className="mr-4">
-            <ArrowLeft size={24} color="black" />
-          </Pressable>
-          <Text className="text-2xl font-['PPObjectSans-Heavy']">Schedule</Text>
-        </View>
-
         <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
           <Pressable
             onPress={() => setIsModalVisible(true)}
