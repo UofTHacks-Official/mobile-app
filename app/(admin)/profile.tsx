@@ -134,10 +134,7 @@ const Profile = () => {
           {/* Sign Out Button */}
           <Pressable
             className="bg-white p-2 px-6 rounded-sm flex-row items-center justify-center"
-            onPress={() => {
-              signOut();
-              //router.push("/");
-            }}
+            onPress={signOut}
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,

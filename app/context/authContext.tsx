@@ -1,6 +1,5 @@
 // AuthContext.tsx
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
 import {
   ReactNode,
   createContext,
@@ -18,7 +17,7 @@ import {
   getAuthTokens,
   getSecureToken,
   removeAuthTokens,
-  setSecureToken,
+  removeSecureToken,
   storeAuthTokens,
 } from "../_utils/tokens/secureStorage";
 
@@ -62,22 +61,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsFirstSignIn(status);
   }, []);
 
-  console.log(
-    "AuthContext: Rendered, loading:",
-    loading,
-    "userToken:",
-    !!userToken
-  );
-
   const signOut = useCallback(async () => {
+    console.log("[LOG] Signing out");
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await removeAuthTokens();
       setUserToken(null);
-      setIsFirstSignIn(false); // Reset first sign in state on sign out
-      console.log("AuthContext: Signed out, userToken set to null");
-      // Reset navigation stack to login screen after sign out
-      router.replace("/");
+      setIsFirstSignIn(false);
+      setAdminData(null); // Added
+      await removeSecureToken(FIRST_SIGN_SIGN_IN); //uncomment this line if you want to test onboarding flow
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -160,13 +152,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Listen for token changes and update admin data
   useEffect(() => {
-    console.log("AuthContext: userToken changed, fetching admin profile.");
-    fetchIdRef.current += 1;
-    const currentFetchId = fetchIdRef.current;
     if (userToken) {
+      console.log("AuthContext: userToken changed, fetching admin profile.");
+      fetchIdRef.current += 1;
+      const currentFetchId = fetchIdRef.current;
       fetchAdminProfile(userToken, currentFetchId);
-    } else {
-      setAdminData(null);
     }
   }, [userToken, fetchAdminProfile]);
 
@@ -182,9 +172,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-
     const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
     setIsFirstSignIn(firstSignInValue === null);
+    console.log(`[SIGN IN] - First time sign in value ${firstSignInValue}`);
+    console.log(
+      `[SIGN IN]- Is first time sign in? ${firstSignInValue === null}`
+    );
   };
 
   return (

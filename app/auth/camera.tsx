@@ -1,9 +1,13 @@
 import { Camera } from "expo-camera";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { CameraIcon } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FIRST_SIGN_SIGN_IN, setSecureToken } from "../_utils/tokens/secureStorage";
+import {
+  FIRST_SIGN_SIGN_IN,
+  setSecureToken,
+} from "../_utils/tokens/secureStorage";
 import { useAuth } from "../context/authContext";
 
 export default function CameraPage() {
@@ -37,19 +41,23 @@ export default function CameraPage() {
     await requestCameraPermission();
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
     updateFirstSignInStatus(false);
-    router.replace("/admin" as any);
+    router.replace("/(admin)");
   };
 
   const handleMaybeLater = async () => {
     await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
     updateFirstSignInStatus(false);
-    router.replace("/admin" as any);
+    router.replace("/(admin)");
   };
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-8">
         <View className="flex-1 justify-center items-center">
+          <View className="mb-4">
+            <CameraIcon color="black" size={32} />
+          </View>
+
           <Text className="text-xl font-bold flex-col">
             Allow camera access
           </Text>
@@ -65,9 +73,7 @@ export default function CameraPage() {
           </View>
         </Pressable>
 
-        <Pressable
-          onPress={handleMaybeLater}
-        >
+        <Pressable onPress={handleMaybeLater}>
           <View className="mb-4 py-4 px-2">
             <Text className="text-center text-uoft_primary_blue">
               Maybe Later

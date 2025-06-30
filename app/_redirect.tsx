@@ -4,13 +4,6 @@ import { useAuth } from "./context/authContext";
 export default function StartPage() {
   const { userToken, loading } = useAuth();
 
-  console.log(
-    "_redirect: Rendered, loading:",
-    loading,
-    "userToken:",
-    !!userToken
-  );
-
   // Show a loading screen while authentication state is being determined
   if (loading) {
     console.log("_redirect: Still loading, returning null.");
@@ -22,11 +15,11 @@ export default function StartPage() {
     console.log(
       "_redirect: User authenticated, redirecting to /admin. (via <Redirect>)"
     );
-    return <Redirect href="/admin" />;
+    return <Redirect href="/(admin)" />;
   } else {
     console.log(
       "_redirect: User not authenticated, redirecting to /auth/signInAdmin. (via <Redirect>)"
     );
-    return <Redirect href="/auth/signInAdmin" />;
+    return <Redirect href="/auth/selectRole" />;
   }
 }

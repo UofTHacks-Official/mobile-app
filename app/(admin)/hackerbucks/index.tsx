@@ -1,11 +1,12 @@
+import { openSettings } from "@/app/_utils/camera/permissions";
 import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router, useNavigation } from "expo-router";
-import { Home } from "lucide-react-native";
-import React, { useEffect, useRef } from "react";
-import { Button, Dimensions, Text, TouchableOpacity, View } from "react-native";
+import { Home, Settings } from "lucide-react-native";
+import { useCallback, useEffect, useRef } from "react";
+import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
 
 const { width, height } = Dimensions.get("window");
@@ -15,10 +16,7 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
 
-  const { startTransaction, clearTransaction } =
-    useHackerBucksStore();
-
-  
+  const { startTransaction, clearTransaction } = useHackerBucksStore();
 
   // NEW: A ref to control whether a scan is currently being processed
   const isProcessingScan = useRef(false);
@@ -31,18 +29,46 @@ export default function App() {
     console.log(`Current Status`, isProcessingScan.current);
   }, [clearTransaction]);
 
-  // useEffect(() => {
-  //   if (
-  //     currentTransaction &&
-  //     (currentTransaction.status === "completed" ||
-  //       currentTransaction.status === "failed")
-  //   ) {
-  //     clearTransaction();
-  //   }
-  // }, []);
+  if (permission!.granted) {
+    return (
+      <View className="flex-1 justify-center items-center bg-uoft_white">
+        <View className="px-6">
+          <Text className="text-black text-center text-lg mb-4">
+            Camera Permission Required
+          </Text>
+          <Text className="text-black text-center mb-8">
+            We need camera access to scan QR codes. Please grant permission to
+            continue.
+          </Text>
+
+          <TouchableOpacity
+            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
+            onPress={requestPermission}
+          >
+            <Text className="text-black text-center">Grant Permission</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-black px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+            onPress={openSettings}
+          >
+            <Settings size={20} color="white" style={{ marginRight: 8 }} />
+            <Text className="text-white text-center">Open Settings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="px-6 py-3 rounded-lg border border-black"
+            onPress={() => navigation.goBack()}
+          >
+            <Text className="text-black font-bold text-center">Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       // Reset the processing flag when the screen is focused
       isProcessingScan.current = false;
       // Optionally clear transaction or any other state here
@@ -104,11 +130,38 @@ export default function App() {
 
   if (!permission.granted) {
     return (
-      <View className="flex-1 justify-center">
-        <Text className="text-center pb-2.5">
-          We need your permission to show the camera
-        </Text>
-        <Button onPress={requestPermission} title="grant permission" />
+      <View className="flex-1 justify-center items-center bg-uoft_white">
+        <View className="px-6">
+          <Text className="text-black text-center text-lg mb-4">
+            Camera Permission Required
+          </Text>
+          <Text className="text-black text-center mb-8">
+            We need camera access to scan QR codes. Please grant permission to
+            continue.
+          </Text>
+
+          <TouchableOpacity
+            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
+            onPress={requestPermission}
+          >
+            <Text className="text-black text-center">Grant Permission</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-black px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+            onPress={openSettings}
+          >
+            <Settings size={20} color="white" style={{ marginRight: 8 }} />
+            <Text className="text-white text-center">Open Settings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="px-6 py-3 rounded-lg border border-black"
+            onPress={() => navigation.goBack()}
+          >
+            <Text className="text-black font-bold text-center">Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -159,7 +212,6 @@ export default function App() {
               stroke="#fff"
               strokeWidth={3}
             />
-            
           </Svg>
 
           <View className="absolute bottom-40 right-10">

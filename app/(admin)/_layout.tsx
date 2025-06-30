@@ -4,7 +4,7 @@ import CustomTabBar from "../components/bottom/bottomNavBar";
 import { AuthContext } from "../context/authContext";
 
 export default function AdminLayout() {
-  const { userToken, loading } = useContext(AuthContext)!;
+  const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
 
   // Show nothing while loading
   if (loading) {
@@ -13,7 +13,11 @@ export default function AdminLayout() {
 
   // Redirect to home if not authenticated
   if (!userToken && !loading) {
-    return <Redirect href="/" />;
+    return <Redirect href="/auth/selectRole" />;
+  }
+
+  if (isFirstSignIn && !loading && userToken) {
+    return <Redirect href="/auth/notification" />;
   }
 
   return (

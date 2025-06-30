@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React from "react";
+import { BellPlus } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -12,6 +12,9 @@ export default function NotificationPage() {
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-8">
         <View className="flex-1 justify-center items-center">
+          <View className="mb-4">
+            <BellPlus color="black" size={32} />
+          </View>
           <Text className="text-xl font-bold flex-col text-center mb-4">
             Allow notifications
           </Text>
