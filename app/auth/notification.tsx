@@ -2,12 +2,9 @@ import { router } from "expo-router";
 import { BellPlus } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { registerForPushNotificationsAsync } from "../_utils/notifications";
 
 export default function NotificationPage() {
-  const askForNotifications = () => {
-    // do later
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 px-8">
@@ -24,7 +21,7 @@ export default function NotificationPage() {
           </Text>
         </View>
 
-        <Pressable onPress={askForNotifications}>
+        <Pressable onPress={registerForPushNotificationsAsync}>
           <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
             <Text className="text-center text-white">
               Enable push notifications
