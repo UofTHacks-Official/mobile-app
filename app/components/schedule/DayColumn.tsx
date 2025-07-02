@@ -8,7 +8,6 @@ interface DayColumnProps {
   date: Date;
   currentHour: number;
   schedules: Schedule[];
-  onDeleteSchedule: (scheduleId: string) => void;
   onSchedulePress: (schedule: Schedule) => void;
   showCurrentTimeIndicator?: boolean;
   currentMinute?: number;
@@ -18,7 +17,6 @@ const DayColumn = ({
   date,
   currentHour,
   schedules,
-  onDeleteSchedule,
   onSchedulePress,
   showCurrentTimeIndicator = false,
   currentMinute = 0,
@@ -34,7 +32,6 @@ const DayColumn = ({
           isCurrentHour={i === currentHour}
           schedules={schedules}
           hourHeight={rowHeight ?? 42}
-          onDeleteSchedule={onDeleteSchedule}
           onSchedulePress={onSchedulePress}
           showTime={false}
           onLayout={i === 0 ? (e) => setRowHeight(e.nativeEvent.layout.height) : undefined}

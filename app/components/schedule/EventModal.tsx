@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -26,17 +26,6 @@ interface EventModalProps {
     shiftType?: string | null;
   }) => void;
   dates: Date[];
-  initialValues?: {
-    title: string;
-    startTime: string;
-    endTime: string;
-    date: Date;
-    type: EventType;
-    description?: string;
-    sponsorId?: string | null;
-    isShift?: boolean;
-    shiftType?: string | null;
-  } | null;
 }
 
 const TimeSelector = ({
@@ -139,7 +128,6 @@ const EventModal = ({
   onClose,
   onAddEvent,
   dates,
-  initialValues,
 }: EventModalProps) => {
   const [title, setTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(dates[0]);
@@ -156,42 +144,6 @@ const EventModal = ({
   const [sponsorId, setSponsorId] = useState<string | null>(null);
   const [isShift, setIsShift] = useState(false);
   const [shiftType, setShiftType] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialValues) {
-      setTitle(initialValues.title);
-      setSelectedDate(initialValues.date);
-      // Parse startTime and endTime to { hour, minute, isPM }
-      const parseTime = (time: string) => {
-        const date = new Date(time);
-        const h = date.getHours();
-        const m = date.getMinutes();
-        const isPM = h >= 12;
-        return {
-          hour: h % 12 === 0 ? 12 : h % 12,
-          minute: m,
-          isPM,
-        };
-      };
-      setStartTime(parseTime(initialValues.startTime));
-      setEndTime(parseTime(initialValues.endTime));
-      setSelectedType(initialValues.type);
-      setDescription(initialValues.description || "");
-      setSponsorId(initialValues.sponsorId || null);
-      setIsShift(initialValues.isShift || false);
-      setShiftType(initialValues.shiftType || null);
-    } else {
-      setTitle("");
-      setSelectedDate(dates[0]);
-      setStartTime({ hour: 9, minute: 0, isPM: false });
-      setEndTime({ hour: 10, minute: 0, isPM: false });
-      setSelectedType("activity");
-      setDescription("");
-      setSponsorId(null);
-      setIsShift(false);
-      setShiftType(null);
-    }
-  }, [initialValues, dates]);
 
   // Helper to combine date and time into ISO string
   function combineDateAndTime(

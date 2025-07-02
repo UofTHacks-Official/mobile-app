@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleProp, Text, ViewStyle } from "react-native";
+import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 
 type EventType = 'networking' | 'food' | 'activity';
 
@@ -9,7 +9,6 @@ interface EventProps {
   hourHeight: number;
   style?: StyleProp<ViewStyle>;
   type: EventType;
-  onDelete?: () => void;
   id?: string;
   onPress?: () => void;
 }
@@ -20,7 +19,7 @@ const eventTypeBgClass = {
   activity: 'bg-uoft_accent_purple',
 };
 
-const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, id, onPress }: EventProps) => {
+const Event = ({ title, startTime, endTime, hourHeight, style, type, id, onPress }: EventProps) => {
   // Convert times to minutes for calculation
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -49,24 +48,6 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, onDelete, i
   const handlePress = () => {
     if (onPress) {
       onPress();
-      return;
-    }
-    if (onDelete) {
-      Alert.alert(
-        "Delete Event",
-        `Are you sure you want to delete "${title}"?`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Delete",
-            onPress: onDelete,
-            style: "destructive"
-          }
-        ]
-      );
     }
   };
 

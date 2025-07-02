@@ -1,21 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock, Plus, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Button,
   Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
   Text,
-  View,
+  View
 } from "react-native";
 import {
-  deleteSchedule as apiDeleteSchedule,
   createSchedule,
   fetchAllSchedules,
-  updateSchedule,
 } from "../_requests/schedule";
 import {
   Schedule as ScheduleInterface,
@@ -56,8 +52,6 @@ function formatTimeTo12Hour(isoString: string) {
 }
 
 const Schedule = () => {
-  const isEditFeatureEnabled = true;
-
   const queryClient = useQueryClient();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -65,11 +59,6 @@ const Schedule = () => {
   const [selectedSchedule, setSelectedSchedule] =
     useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [editInitialValues, setEditInitialValues] = useState<Omit<
-    ScheduleInterface,
-    "id"
-  > | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data), TEMP
   const dates = [
@@ -101,22 +90,6 @@ const Schedule = () => {
     },
   });
 
-  // Mutations
-  const updateScheduleMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      updateSchedule(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["schedules"] });
-    },
-  });
-
-  const deleteScheduleMutation = useMutation({
-    mutationFn: (id: string) => apiDeleteSchedule(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["schedules"] });
-    },
-  });
-
   const handleAddSchedule = async (event: {
     title: string;
     startTime: string;
@@ -135,33 +108,11 @@ const Schedule = () => {
       isShift: event.isShift ?? false,
       shiftType: event.shiftType ?? null,
     };
-    if (editingId) {
-      // Edit existing schedule
-      try {
-        await updateScheduleMutation.mutateAsync({
-          id: editingId,
-          data: safeEvent,
-        });
-        setEditingId(null);
-      } catch (err) {
-        console.error("Failed to update schedule:", err);
-      }
-    } else {
-      // Add new schedule
-      try {
-        await createSchedule(safeEvent);
-        queryClient.invalidateQueries({ queryKey: ["schedules"] });
-      } catch (err) {
-        console.error("Failed to create schedule:", err);
-      }
-    }
-  };
-
-  const handleDeleteSchedule = async (scheduleId: string) => {
     try {
-      await deleteScheduleMutation.mutateAsync(scheduleId);
+      await createSchedule(safeEvent);
+      queryClient.invalidateQueries({ queryKey: ["schedules"] });
     } catch (err) {
-      console.error("Failed to delete schedule:", err);
+      console.error("Failed to create schedule:", err);
     }
   };
 
@@ -210,7 +161,6 @@ const Schedule = () => {
                     isCurrentHour={i === currentHour}
                     schedules={[]}
                     hourHeight={48}
-                    onDeleteSchedule={() => {}}
                     onSchedulePress={() => {}}
                     showTime={true}
                   />
@@ -239,7 +189,6 @@ const Schedule = () => {
                     date={date}
                     currentHour={currentHour}
                     schedules={filtered}
-                    onDeleteSchedule={handleDeleteSchedule}
                     onSchedulePress={(schedule) => {
                       setSelectedSchedule(schedule);
                       setIsDetailModalVisible(true);
@@ -257,11 +206,9 @@ const Schedule = () => {
           visible={isModalVisible}
           onClose={() => {
             setIsModalVisible(false);
-            setEditInitialValues(null);
           }}
           onAddEvent={handleAddSchedule}
           dates={dates}
-          initialValues={editInitialValues}
         />
 
         <Modal
@@ -320,52 +267,6 @@ const Schedule = () => {
                       </Text>
                     </View>
                   )}
-                  {isEditFeatureEnabled && (
-                    <Button
-                      title="Edit Event"
-                      color="#4A90E2"
-                      onPress={() => {
-                        if (selectedSchedule) {
-                          setEditInitialValues({
-                            title: selectedSchedule.title,
-                            startTime: selectedSchedule.startTime,
-                            endTime: selectedSchedule.endTime,
-                            date: selectedSchedule.date,
-                            type: selectedSchedule.type,
-                            description: selectedSchedule.description,
-                            sponsorId: selectedSchedule.sponsorId,
-                            isShift: selectedSchedule.isShift,
-                            shiftType: selectedSchedule.shiftType,
-                          });
-                          setIsDetailModalVisible(false);
-                          setIsModalVisible(true);
-                          setEditingId(selectedSchedule.id);
-                        }
-                      }}
-                    />
-                  )}
-                  <Button
-                    title="Delete Event"
-                    color="#FF6F51"
-                    onPress={() => {
-                      Alert.alert(
-                        "Delete Event",
-                        `Are you sure you want to delete "${selectedSchedule.title}"?`,
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Delete",
-                            style: "destructive",
-                            onPress: () => {
-                              handleDeleteSchedule(selectedSchedule.id);
-                              setIsDetailModalVisible(false);
-                              setSelectedSchedule(null);
-                            },
-                          },
-                        ]
-                      );
-                    }}
-                  />
                 </ScrollView>
               )}
             </View>

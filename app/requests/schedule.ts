@@ -37,15 +37,4 @@ export async function fetchScheduleById(id: string): Promise<Schedule> {
 export async function createSchedule(data: Omit<Schedule, 'id' | 'date'> & { date: Date }): Promise<Schedule> {
   const payload = toApiPayload(data);
   return (await axios.post('/api/v13/admins/schedules/', payload)).data;
-}
-
-// Update a schedule (admin)
-export async function updateSchedule(scheduleId: string, data: Partial<Schedule>): Promise<Schedule> {
-  const payload = toApiPayload({ ...data, id: scheduleId });
-  console.log("Payload for update:", payload);
-  return (await axios.put(`/api/v13/admins/schedules/${scheduleId}`, payload)).data;
-}
-// Delete a schedule (admin)
-export async function deleteSchedule(scheduleId: string): Promise<void> {
-  await axios.delete(`/api/v13/admins/schedules/${scheduleId}`);
 } 

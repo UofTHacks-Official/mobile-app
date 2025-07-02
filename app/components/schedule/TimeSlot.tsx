@@ -7,7 +7,6 @@ interface TimeSlotProps {
   isCurrentHour: boolean;
   schedules: Schedule[];
   hourHeight: number;
-  onDeleteSchedule: (scheduleId: string) => void;
   onSchedulePress: (schedule: Schedule) => void;
   showTime?: boolean;
   onLayout?: (e: LayoutChangeEvent) => void;
@@ -18,7 +17,6 @@ const TimeSlot = ({
   isCurrentHour,
   schedules,
   hourHeight,
-  onDeleteSchedule,
   onSchedulePress,
   showTime = true,
   onLayout,
@@ -66,7 +64,6 @@ const TimeSlot = ({
               endTime={schedule.endTime}
               hourHeight={hourHeight}
               type={schedule.type}
-              onDelete={() => onDeleteSchedule(schedule.id)}
               onPress={() => onSchedulePress(schedule)}
               style={{
                 width: `${eventWidth}%`,
