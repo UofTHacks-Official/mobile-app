@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, Plus, Tag, UserCog, Users, X } from "lucide-react-native";
+import { Clock, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -10,15 +10,13 @@ import {
   View
 } from "react-native";
 import {
-  createSchedule,
-  fetchAllSchedules,
+  fetchAllSchedules
 } from "../_requests/schedule";
 import {
   Schedule as ScheduleInterface,
   ScheduleType,
 } from "../_types/schedule";
 import DayColumn from "../components/schedule/DayColumn";
-import EventModal from "../components/schedule/EventModal";
 import TimeSlot from "../components/schedule/TimeSlot";
 
 // Map API schedule object to local Schedule type
@@ -90,32 +88,6 @@ const Schedule = () => {
     },
   });
 
-  const handleAddSchedule = async (event: {
-    title: string;
-    startTime: string;
-    endTime: string;
-    date: Date;
-    type: ScheduleType;
-    description?: string;
-    sponsorId?: string | null;
-    isShift?: boolean;
-    shiftType?: string | null;
-  }) => {
-    const safeEvent = {
-      ...event,
-      description: event.description ?? "",
-      sponsorId: event.sponsorId ?? null,
-      isShift: event.isShift ?? false,
-      shiftType: event.shiftType ?? null,
-    };
-    try {
-      await createSchedule(safeEvent);
-      queryClient.invalidateQueries({ queryKey: ["schedules"] });
-    } catch (err) {
-      console.error("Failed to create schedule:", err);
-    }
-  };
-
   // Use device time to get the current hour and minute
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
@@ -123,15 +95,6 @@ const Schedule = () => {
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 text-uoft_black">
-        <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
-          <Pressable
-            onPress={() => setIsModalVisible(true)}
-            className="ml-auto"
-          >
-            <Plus size={48} color="white" />
-          </Pressable>
-        </View>
-
         <View className="flex-row h-12 border-b border-gray-200 bg-gray-50">
           <View className="w-12 h-12 border-b border-gray-200 bg-gray-50" />
           {dates.map((date, index) => (
@@ -247,15 +210,6 @@ const Schedule = () => {
             </View>
           </ScrollView>
         </View>
-
-        <EventModal
-          visible={isModalVisible}
-          onClose={() => {
-            setIsModalVisible(false);
-          }}
-          onAddEvent={handleAddSchedule}
-          dates={dates}
-        />
 
         <Modal
           visible={isDetailModalVisible}
