@@ -20,22 +20,6 @@ const eventTypeBgClass = {
 };
 
 const Event = ({ title, startTime, endTime, hourHeight, style, type, id, onPress }: EventProps) => {
-  // Convert times to minutes for calculation
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
-  
-  const startMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
-  
-  // Calculate duration in minutes
-  const durationMinutes = endMinutes - startMinutes;
-  
-  // Calculate height based on duration (hourHeight is in pixels)
-  const height = (durationMinutes / 60) * hourHeight;
-  
-  // Calculate top position based on start time
-  const topPosition = (startMinute / 60) * hourHeight;
-
   const formatTimeTo12Hour = (isoString: string) => {
     const date = new Date(isoString);
     const hours = date.getHours();
@@ -54,24 +38,23 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, id, onPress
   return (
     <Pressable 
       onPress={handlePress}
-      className={`absolute rounded-lg p-2 ${eventTypeBgClass[type]}`}
+      className={`absolute rounded-lg px-2 py-1 ${eventTypeBgClass[type]}`}
       style={[
-        { 
-          height: height,
-          top: topPosition,
-          zIndex: 1, // Ensure events are above the time grid
+        {
+          zIndex: 1,
         },
         style
       ]}
     >
-      <Text className="text-white font-pp text-sm" numberOfLines={2}>
+      <Text
+        className="text-white font-pp text-sm"
+        numberOfLines={2}
+        style={{ minHeight: 32, lineHeight: 16 }}
+      >
         {title}
-      </Text>
-      <Text className="text-white/80 font-pp text-xs">
-        {formatTimeTo12Hour(startTime)} - {formatTimeTo12Hour(endTime)}
       </Text>
     </Pressable>
   );
 };
 
-export default Event; 
+export default Event;

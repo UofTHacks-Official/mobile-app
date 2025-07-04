@@ -169,13 +169,59 @@ const Schedule = () => {
 
               {/* Day columns */}
               {dates.map((date, index) => {
-                const filtered = schedules.filter((schedule) => {
-                  const scheduleDate = schedule.date;
-                  return (
-                    scheduleDate.getFullYear() === date.getFullYear() &&
-                    scheduleDate.getMonth() === date.getMonth() &&
-                    scheduleDate.getDate() === date.getDate()
-                  );
+                // Split overnight events so they appear in both days
+                const filtered = schedules.flatMap((schedule) => {
+                  const start = new Date(schedule.startTime);
+                  const end = new Date(schedule.endTime);
+                  // Check if event crosses midnight (end time is on a different day than start time)
+                  const crossesMidnight = start.getDate() !== end.getDate() || 
+                                         start.getMonth() !== end.getMonth() || 
+                                         start.getFullYear() !== end.getFullYear();
+                  if (crossesMidnight) {
+                    const results = [];
+                    // First part: ends at 11:59:59 PM on the start day
+                    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                    const isStartDay = date.getTime() === startDate.getTime();
+                    if (isStartDay) {
+                      const firstPart = {
+                        ...schedule,
+                        endTime: new Date(
+                          start.getFullYear(),
+                          start.getMonth(),
+                          start.getDate(),
+                          23, 59, 59, 999
+                        ).toISOString(),
+                      };
+                      results.push(firstPart);
+                    }
+                    // Second part: starts at 12:00:00 AM on the end day
+                    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+                    const isEndDay = date.getTime() === endDate.getTime();
+                    if (isEndDay) {
+                      const secondPart = {
+                        ...schedule,
+                        id: schedule.id + "-part2",
+                        startTime: new Date(
+                          end.getFullYear(),
+                          end.getMonth(),
+                          end.getDate(),
+                          0, 0, 0, 0
+                        ).toISOString(),
+                        endTime: schedule.endTime,
+                        date: endDate,
+                      };
+                      results.push(secondPart);
+                    }
+                    return results;
+                  } else {
+                    // Normal event - check if it belongs to this day
+                    const eventDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                    const isCurrentDay = date.getTime() === eventDate.getTime();
+                    if (isCurrentDay) {
+                      return [schedule];
+                    }
+                    return [];
+                  }
                 });
                 // hardcoded date for testing
                 const now = new Date(2025, 5, 21);
