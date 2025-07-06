@@ -1,7 +1,7 @@
+import { authEventEmitter } from '@/utils/eventEmitter';
+import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '@/utils/tokens/secureStorage';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
-import { authEventEmitter } from '../_utils/eventEmitter';
-import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../_utils/tokens/secureStorage';
 
 // Get base URL from environment variables
 const baseURL = process.env.EXPO_PUBLIC_UOFT_STAGING;

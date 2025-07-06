@@ -62,10 +62,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsFirstSignIn(status);
   }, []);
 
-  const updateFirstSignInStatus = useCallback((status: boolean) => {
-    setIsFirstSignIn(status);
-  }, []);
-
   const signOut = useCallback(async () => {
     console.log("[LOG] Signing out");
     try {

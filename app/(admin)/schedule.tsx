@@ -1,3 +1,7 @@
+import DayColumn from "@/components/schedule/DayColumn";
+import TimeSlot from "@/components/schedule/TimeSlot";
+import { fetchAllSchedules } from "@/requests/schedule";
+import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -9,13 +13,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { fetchAllSchedules } from "../_requests/schedule";
-import {
-  Schedule as ScheduleInterface,
-  ScheduleType,
-} from "../_types/schedule";
-import DayColumn from "../components/schedule/DayColumn";
-import TimeSlot from "../components/schedule/TimeSlot";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {

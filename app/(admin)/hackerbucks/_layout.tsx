@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-//import { useHackerBucksStore } from "../../reducers/hackerbucks";
+//import { useHackerBucksStore } from "@/reducers/hackerbucks";
 
 export default function HackerBucksLayout() {
   //const { currentTransaction } = useHackerBucksStore();

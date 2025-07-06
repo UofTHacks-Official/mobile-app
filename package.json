@@ -22,6 +22,7 @@
     "auto-zustand-selectors-hook": "^3.0.1",
     "axios": "^1.9.0",
     "axios-retry": "^4.5.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "date-fns-tz": "^3.2.0",
     "expo": "53.0.11",
     "expo-blur": "~14.1.5",

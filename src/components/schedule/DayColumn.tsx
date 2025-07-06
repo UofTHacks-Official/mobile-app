@@ -1,6 +1,6 @@
+import { Schedule } from "@/types/schedule";
 import { useState } from "react";
 import { View } from "react-native";
-import { Schedule } from "../../_types/schedule";
 import CurrentTimeIndicator from "./CurrentTimeIndicator";
 import TimeSlot from "./TimeSlot";
 

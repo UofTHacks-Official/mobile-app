@@ -4,7 +4,7 @@ import { adminLogin } from "@/requests/admin";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
@@ -22,7 +22,6 @@ const SignInAdmin = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signIn, isFirstSignIn } = useAuth();
   const { signIn, isFirstSignIn } = useAuth();
 
   // Animation values

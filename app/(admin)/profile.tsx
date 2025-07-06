@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/authContext";
+import { openSettings } from "@/utils/camera/permissions";
 import { Bell, CalendarCheck2Icon, User } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
@@ -75,21 +76,30 @@ const Profile = () => {
               </Text>
               <Text className="font-opensans-medium">
                 {admin.last_login
-                  ? new Date(admin.last_login).toLocaleString("en-US", {
+                  ? new Date(
+                      new Date(admin.last_login).getTime() - 4 * 60 * 60 * 1000
+                    ).toLocaleString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: true,
-                    })
+                    }) + " EST"
                   : "Never"}
               </Text>
             </View>
           </View>
 
           {/* Notifications Section */}
-          <View className="w-full bg-white p-4 px-6 rounded-sm">
+          <Pressable
+            className="w-full bg-white p-4 px-6 rounded-sm"
+            onPress={openSettings}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
             <View className="flex-row items-center gap-2">
               <Bell size={20} color="#000" />
               <Text className="text-black">Notifications</Text>
@@ -100,7 +110,7 @@ const Profile = () => {
                 Manage Notification Preferences
               </Text>
             </View>
-          </View>
+          </Pressable>
 
           {/* Sign Out Button */}
           <Pressable
