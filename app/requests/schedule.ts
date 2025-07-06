@@ -1,5 +1,5 @@
-import { Schedule } from '../_types/schedule';
-import axios from './axios';
+import axios from 'axios';
+import { Schedule } from '../types/schedule';
 
 const typeToEventType = {
   networking: 1,

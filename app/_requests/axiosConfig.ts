@@ -2,18 +2,26 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
 import { authEventEmitter } from '../_utils/eventEmitter';
 import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '../_utils/tokens/secureStorage';
-import { loginEndpoints } from './admin';
 
 // Get base URL from environment variables
 const baseURL = process.env.EXPO_PUBLIC_UOFT_STAGING;
 
+// List of endpoints that don't require token injection
+const ENDPOINTS_WITHOUT_AUTH = [
+  // Auth endpoints
+  '/api/v13/admins/login',
+  '/api/v13/admins/refresh',
+  
+  // Schedule endpoints (public access)
+  '/api/v13/hackers/schedules',
+] as const ;
+
 // Create axios instance with full auth capabilities
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL,
-  timeout: 7500, // 7.5 seconds
+  timeout: 7500,
 });
 
-// Enable request retries for network issues
 axiosRetry(axiosInstance, { 
   retries: 3,
   retryDelay: (retryCount) => retryCount * 1000 // exponential backoff
@@ -43,36 +51,38 @@ const addSubscriber = (callback: (token: string) => void): void => {
 };
 
 /**
+ * Check if an endpoint should skip token injection
+ * @param url The request URL
+ * @returns boolean indicating if auth should be skipped
+ */
+const shouldSkipAuth = (url: string): boolean => {
+  return ENDPOINTS_WITHOUT_AUTH.some(endpoint => url?.includes(endpoint));
+};
+
+/**
  * Handle refresh token error - typically by logging the user out
  */
-  const handleRefreshError = async (): Promise<void> => {
-    // Clear tokens
-    await removeAuthTokens();
-    
-    // Emit an event to notify the auth context to log the user out
-    console.log('Token refresh failed. Emitting onExpiredRefreshToken event.');
-    authEventEmitter.emit('onExpiredRefreshToken');
-    
-    // Reset the refreshing flag
-    isRefreshing = false;
-    
-    // Notify any pending requests that refresh failed
-    refreshSubscribers.forEach(callback => callback(''));
-    refreshSubscribers = [];
-  };
+const handleRefreshError = async (): Promise<void> => {
+  // Clear tokens
+  await removeAuthTokens();
+  
+  // Emit an event to notify the auth context to log the user out
+  console.log('Token refresh failed. Emitting onExpiredRefreshToken event.');
+  authEventEmitter.emit('onExpiredRefreshToken');
+  
+  // Reset the refreshing flag
+  isRefreshing = false;
+  
+  // Notify any pending requests that refresh failed
+  refreshSubscribers.forEach(callback => callback(''));
+  refreshSubscribers = [];
+};
 
 // Request interceptor to add auth token to all requests
 axiosInstance.interceptors.request.use(
   async (config) => {
-    // Skip adding token for auth endpoints and schedule endpoints
-    const isAuthEndpoint = [
-      loginEndpoints.ADMIN_LOGIN,
-      loginEndpoints.ADMIN_TOKEN_REFRESH
-    ].some(endpoint => config.url?.includes(endpoint));
-
-    const isScheduleEndpoint = config.url?.includes('schedules');
-
-    if (!isAuthEndpoint && !isScheduleEndpoint) {
+    // Skip adding token for endpoints that don't need auth
+    if (!shouldSkipAuth(config.url!)) {
       try {
         const tokens = await getAuthTokens();
         if (tokens?.access_token) {

@@ -1,9 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { toZonedTime } from "date-fns-tz";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Clock, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Button,
   Modal,
   Pressable,
   SafeAreaView,
@@ -11,17 +9,13 @@ import {
   Text,
   View,
 } from "react-native";
-import CurrentTimeIndicator from "../components/schedule/CurrentTimeIndicator";
-import DayColumn from "../components/schedule/DayColumn";
-import EventModal from "../components/schedule/EventModal";
-import TimeSlot from "../components/schedule/TimeSlot";
+import { fetchAllSchedules } from "../_requests/schedule";
 import {
-  deleteSchedule as apiDeleteSchedule,
-  createSchedule,
-  fetchAllSchedules,
-  updateSchedule,
-} from "../_requests/schedule";
-import { Schedule as ScheduleInterface, ScheduleType } from "../_types/schedule";
+  Schedule as ScheduleInterface,
+  ScheduleType,
+} from "../_types/schedule";
+import DayColumn from "../components/schedule/DayColumn";
+import TimeSlot from "../components/schedule/TimeSlot";
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {
@@ -54,19 +48,13 @@ function formatTimeTo12Hour(isoString: string) {
 }
 
 const Schedule = () => {
-  const isEditFeatureEnabled = false;
+  const queryClient = useQueryClient();
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [schedules, setSchedules] = useState<ScheduleInterface[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSchedule, setSelectedSchedule] =
     useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [editInitialValues, setEditInitialValues] = useState<Omit<
-    ScheduleInterface,
-    "id"
-  > | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   // June 20, 21, 22 (to match API data), TEMP
   const dates = [
@@ -77,78 +65,31 @@ const Schedule = () => {
 
   useEffect(() => {
     const updateTime = () => {
-      // Get the current time in America/Toronto timezone
-      const now = new Date();
-      const estTime = toZonedTime(now, "America/Toronto");
-      setCurrentTime(estTime);
+      setCurrentTime(new Date());
     };
 
     updateTime();
-
     const timer = setInterval(updateTime, 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch schedules info
-  useEffect(() => {
-    fetchAllSchedules()
-      .then((data) => {
-        const mapped = data.map(mapApiToSchedule);
-        setSchedules(mapped);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch schedules:", err);
-      });
-  }, []);
-
-  const handleAddSchedule = async (event: {
-    title: string;
-    startTime: string;
-    endTime: string;
-    date: Date;
-    type: ScheduleType;
-    description?: string;
-    sponsorId?: string | null;
-    isShift?: boolean;
-    shiftType?: string | null;
-  }) => {
-    const safeEvent = {
-      ...event,
-      description: event.description ?? "",
-      sponsorId: event.sponsorId ?? null,
-      isShift: event.isShift ?? false,
-      shiftType: event.shiftType ?? null,
-    };
-    if (editingId) {
-      // Edit existing schedule
+  // Tanstack Query for schedules
+  const {
+    data: schedules = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["schedules"],
+    queryFn: async () => {
       try {
-        const updated = await updateSchedule(editingId, safeEvent);
-        setSchedules((schedules) =>
-          schedules.map((s) => (s.id === editingId ? { ...s, ...updated } : s))
-        );
-        setEditingId(null);
-      } catch (err) {
-        console.error("Failed to update schedule:", err);
+        const data = await fetchAllSchedules();
+        return data.map(mapApiToSchedule);
+      } catch (error) {
+        console.error("Schedule fetch error:", error);
+        throw error;
       }
-    } else {
-      // Add new schedule
-      try {
-        const created = await createSchedule(safeEvent);
-        setSchedules((schedules) => [...schedules, created]);
-      } catch (err) {
-        console.error("Failed to create schedule:", err);
-      }
-    }
-  };
-
-  const handleDeleteSchedule = async (scheduleId: string) => {
-    try {
-      await apiDeleteSchedule(scheduleId);
-      setSchedules((schedules) => schedules.filter((s) => s.id !== scheduleId));
-    } catch (err) {
-      console.error("Failed to delete schedule:", err);
-    }
-  };
+    },
+  });
 
   // Use device time to get the current hour and minute
   const currentHour = currentTime.getHours();
@@ -156,16 +97,7 @@ const Schedule = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
-      <View className="flex-1 text-uoft_black">
-        {/* <View className="absolute bottom-5 right-5 z-10 bg-[#FF6F51] rounded-full p-2">
-          <Pressable
-            onPress={() => setIsModalVisible(true)}
-            className="ml-auto"
-          >
-            <MaterialCommunityIcons name="plus" size={48} color="white" />
-          </Pressable>
-        </View> */}
-
+      <View className="flex-1 mb-20 text-uoft_black">
         <View className="flex-row h-12 border-b border-gray-200 bg-gray-50">
           <View className="w-12 h-12 border-b border-gray-200 bg-gray-50" />
           {dates.map((date, index) => (
@@ -184,8 +116,8 @@ const Schedule = () => {
         </View>
 
         <View className="flex-1">
-          <ScrollView className="flex-1">
-            <View className="flex-row h-[1358px]">
+          <ScrollView className="flex-1 pb-8">
+            <View className="flex-row">
               {/* Time column */}
               <View className="w-12 border-r border-gray-200">
                 {Array.from({ length: 24 }, (_, i) => (
@@ -195,7 +127,6 @@ const Schedule = () => {
                     isCurrentHour={i === currentHour}
                     schedules={[]}
                     hourHeight={48}
-                    onDeleteSchedule={() => {}}
                     onSchedulePress={() => {}}
                     showTime={true}
                   />
@@ -204,46 +135,103 @@ const Schedule = () => {
 
               {/* Day columns */}
               {dates.map((date, index) => {
-                const filtered = schedules.filter((schedule) => {
-                  const scheduleDate = schedule.date;
-                  return (
-                    scheduleDate.getFullYear() === date.getFullYear() &&
-                    scheduleDate.getMonth() === date.getMonth() &&
-                    scheduleDate.getDate() === date.getDate()
-                  );
+                // Split overnight events so they appear in both days
+                const filtered = schedules.flatMap((schedule) => {
+                  const start = new Date(schedule.startTime);
+                  const end = new Date(schedule.endTime);
+                  // Check if event crosses midnight (end time is on a different day than start time)
+                  const crossesMidnight =
+                    start.getDate() !== end.getDate() ||
+                    start.getMonth() !== end.getMonth() ||
+                    start.getFullYear() !== end.getFullYear();
+                  if (crossesMidnight) {
+                    const results = [];
+                    // First part: ends at 11:59:59 PM on the start day
+                    const startDate = new Date(
+                      start.getFullYear(),
+                      start.getMonth(),
+                      start.getDate()
+                    );
+                    const isStartDay = date.getTime() === startDate.getTime();
+                    if (isStartDay) {
+                      const firstPart = {
+                        ...schedule,
+                        endTime: new Date(
+                          start.getFullYear(),
+                          start.getMonth(),
+                          start.getDate(),
+                          23,
+                          59,
+                          59,
+                          999
+                        ).toISOString(),
+                      };
+                      results.push(firstPart);
+                    }
+                    // Second part: starts at 12:00:00 AM on the end day
+                    const endDate = new Date(
+                      end.getFullYear(),
+                      end.getMonth(),
+                      end.getDate()
+                    );
+                    const isEndDay = date.getTime() === endDate.getTime();
+                    if (isEndDay) {
+                      const secondPart = {
+                        ...schedule,
+                        id: schedule.id + "-part2",
+                        startTime: new Date(
+                          end.getFullYear(),
+                          end.getMonth(),
+                          end.getDate(),
+                          0,
+                          0,
+                          0,
+                          0
+                        ).toISOString(),
+                        endTime: schedule.endTime,
+                        date: endDate,
+                      };
+                      results.push(secondPart);
+                    }
+                    return results;
+                  } else {
+                    // Normal event - check if it belongs to this day
+                    const eventDate = new Date(
+                      start.getFullYear(),
+                      start.getMonth(),
+                      start.getDate()
+                    );
+                    const isCurrentDay = date.getTime() === eventDate.getTime();
+                    if (isCurrentDay) {
+                      return [schedule];
+                    }
+                    return [];
+                  }
                 });
+                // hardcoded date for testing
+                const now = new Date(2025, 5, 21);
+                const isToday =
+                  date.getFullYear() === now.getFullYear() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getDate() === now.getDate();
                 return (
                   <DayColumn
                     key={index}
                     date={date}
                     currentHour={currentHour}
                     schedules={filtered}
-                    onDeleteSchedule={handleDeleteSchedule}
                     onSchedulePress={(schedule) => {
                       setSelectedSchedule(schedule);
                       setIsDetailModalVisible(true);
                     }}
+                    showCurrentTimeIndicator={isToday}
+                    currentMinute={currentMinute}
                   />
                 );
               })}
-              <CurrentTimeIndicator
-                currentHour={currentHour}
-                currentMinute={currentMinute}
-              />
             </View>
           </ScrollView>
         </View>
-
-        <EventModal
-          visible={isModalVisible}
-          onClose={() => {
-            setIsModalVisible(false);
-            setEditInitialValues(null);
-          }}
-          onAddEvent={handleAddSchedule}
-          dates={dates}
-          initialValues={editInitialValues}
-        />
 
         <Modal
           visible={isDetailModalVisible}
@@ -259,7 +247,7 @@ const Schedule = () => {
                 accessibilityLabel="Close details"
                 accessibilityRole="button"
               >
-                <MaterialCommunityIcons name="close" size={24} color="#333" />
+                <X size={24} color="#333" />
               </Pressable>
               {selectedSchedule && (
                 <ScrollView
@@ -273,33 +261,21 @@ const Schedule = () => {
                     {selectedSchedule.description || "No description provided."}
                   </Text>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons
-                      name="clock-outline"
-                      size={20}
-                      color="#FF6F51"
-                    />
+                    <Clock size={20} color="#FF6F51" />
                     <Text className="ml-2 text-base text-uoft_black font-pp">
                       {formatTimeTo12Hour(selectedSchedule.startTime)} -{" "}
                       {formatTimeTo12Hour(selectedSchedule.endTime)}
                     </Text>
                   </View>
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons
-                      name="tag-outline"
-                      size={20}
-                      color="#4A90E2"
-                    />
+                    <Tag size={20} color="#4A90E2" />
                     <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
                       {selectedSchedule.type}
                     </Text>
                   </View>
                   {selectedSchedule.sponsorId && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons
-                        name="account-tie-outline"
-                        size={20}
-                        color="#50E3C2"
-                      />
+                      <UserCog size={20} color="#50E3C2" />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Sponsor: {selectedSchedule.sponsorId}
                       </Text>
@@ -307,62 +283,12 @@ const Schedule = () => {
                   )}
                   {selectedSchedule.isShift && (
                     <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons
-                        name="account-group-outline"
-                        size={20}
-                        color="#FF6F51"
-                      />
+                      <Users size={20} color="#FF6F51" />
                       <Text className="ml-2 text-base text-uoft_black font-pp">
                         Shift: {selectedSchedule.shiftType || "General"}
                       </Text>
                     </View>
                   )}
-                  {isEditFeatureEnabled && (
-                    <Button
-                      title="Edit Event"
-                      color="#4A90E2"
-                      onPress={() => {
-                        if (selectedSchedule) {
-                          setEditInitialValues({
-                            title: selectedSchedule.title,
-                            startTime: selectedSchedule.startTime,
-                            endTime: selectedSchedule.endTime,
-                            date: selectedSchedule.date,
-                            type: selectedSchedule.type,
-                            description: selectedSchedule.description,
-                            sponsorId: selectedSchedule.sponsorId,
-                            isShift: selectedSchedule.isShift,
-                            shiftType: selectedSchedule.shiftType,
-                          });
-                          setIsDetailModalVisible(false);
-                          setIsModalVisible(true);
-                          setEditingId(selectedSchedule.id);
-                        }
-                      }}
-                    />
-                  )}
-                  <Button
-                    title="Delete Event"
-                    color="#FF6F51"
-                    onPress={() => {
-                      Alert.alert(
-                        "Delete Event",
-                        `Are you sure you want to delete "${selectedSchedule.title}"?`,
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Delete",
-                            style: "destructive",
-                            onPress: () => {
-                              handleDeleteSchedule(selectedSchedule.id);
-                              setIsDetailModalVisible(false);
-                              setSelectedSchedule(null);
-                            },
-                          },
-                        ]
-                      );
-                    }}
-                  />
                 </ScrollView>
               )}
             </View>
