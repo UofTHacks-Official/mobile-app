@@ -1,7 +1,7 @@
-import { formatAmount, isValidAmount } from "@/app/_utils/hackerbucks/format";
-import { shortenString } from "@/app/_utils/tokens/format/shorten";
-import NumericKeypad from "@/app/components/hacker_bucks/keyboard";
-import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
+import { shortenString } from "@/utils/tokens/format/shorten";
+import NumericKeypad from "@/components/hacker_bucks/keyboard";
+import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { ArrowDown, ArrowUp } from "lucide-react-native";

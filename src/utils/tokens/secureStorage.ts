@@ -57,13 +57,22 @@ export const setSecureToken = async (ACCESS_KEY: string, ACCESS_VALUE: string): 
   }
 };
 
+export const removeSecureToken = async (ACCESS_KEY: string): Promise< void | null> => {
+  try {
+    await SecureStore.deleteItemAsync(ACCESS_KEY);
+  } catch (_) {
+    return null;
+  }
+};
+
 // Default export for Expo Router
 export default {
   storeAuthTokens,
   getAuthTokens,
   removeAuthTokens,
   getSecureToken,
-  setSecureToken
+  setSecureToken,
+  removeSecureToken
 };
 
 

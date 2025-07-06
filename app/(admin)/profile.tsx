@@ -1,19 +1,14 @@
+import { useAuth } from "@/context/authContext";
 import { Bell, CalendarCheck2Icon, User } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
-import { useAuth } from "../context/authContext";
 
 const Profile = () => {
   const { signOut, adminData, adminLoading } = useAuth();
 
   // Create a safe admin object with defaults
   const admin = adminData || {
-    admin_fname: "",
-    admin_lname: "",
     admin_username: "",
     admin_role: "",
-    is_admin_manager: false,
-    is_marking_manager: false,
-    is_shift_manager: false,
     last_login: null,
   };
 
@@ -57,30 +52,6 @@ const Profile = () => {
                   </Text>
                   <Text className="font-opensans-medium">
                     {admin.admin_role}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
-                    Admin Manager:
-                  </Text>
-                  <Text className="font-opensans-medium">
-                    {admin.is_admin_manager ? "Yes" : "No"}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
-                    Marking Manager:
-                  </Text>
-                  <Text className="font-opensans-medium">
-                    {admin.is_marking_manager ? "Yes" : "No"}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
-                    Shift Manager:
-                  </Text>
-                  <Text className="font-opensans-medium">
-                    {admin.is_shift_manager ? "Yes" : "No"}
                   </Text>
                 </View>
               </View>
@@ -134,10 +105,7 @@ const Profile = () => {
           {/* Sign Out Button */}
           <Pressable
             className="bg-white p-2 px-6 rounded-sm flex-row items-center justify-center"
-            onPress={() => {
-              signOut();
-              //router.push("/");
-            }}
+            onPress={signOut}
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,

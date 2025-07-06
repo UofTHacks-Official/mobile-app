@@ -1,13 +1,24 @@
+import toastConfig from "@/components/config/toastconfig";
+import { AuthProvider } from "@/context/authContext";
+import { useCustomFonts } from "@/utils/fonts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { useCustomFonts } from "./_utils/fonts";
-import toastConfig from "./components/config/toastconfig";
-import { AuthProvider } from "./context/authContext";
 import "./globals.css";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: false,
+    shouldShowList: true,
+  }),
+});
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,6 +44,12 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useCustomFonts();
+  const notificationResponseListener = useRef<
+    Notifications.Subscription | undefined
+  >(undefined);
+  const notificationReceivedListener = useRef<
+    Notifications.Subscription | undefined
+  >(undefined);
 
   console.log(
     "RootLayout rendered. fontsLoaded:",
@@ -42,18 +59,54 @@ export default function RootLayout() {
   );
 
   useEffect(() => {
+    console.log(`Platform: ${Platform.OS}`);
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  // Handle font loading errors
-  if (fontError) {
-    console.error("Font loading error:", fontError);
-  }
+  useEffect(() => {
+    // This listener is fired whenever a user taps on or interacts with a
+    // notification (works when app is foregrounded, backgrounded, or killed)
+    notificationResponseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const { data } = response.notification.request.content;
+        console.log("Notification tapped with data:", data);
 
-  // We don't return null here anymore, as SplashScreen handles the loading state.
-  // The UI will be rendered once fonts are loaded.
+        // Type assertion to define the expected data structure
+        const notificationData = data as { data?: { route?: string } };
+
+        console.log(notificationData.data?.route === "schedule");
+
+        if (notificationData.data?.route === "schedule") {
+          router.push(`/(admin)/schedule`);
+        }
+      });
+
+    // Only set up foreground listener if you want to show custom UI when app is open
+    // This should only fire when the app is actually in the foreground=
+    notificationReceivedListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        console.log("Foreground notification received:", notification);
+
+        // Only show toast if the app is actually in foreground
+        Toast.show({
+          type: "info",
+          text1: notification.request.content.title || "New Notification",
+          text2: notification.request.content.body || "",
+        });
+      });
+
+    return () => {
+      // Clean up the listener when the component unmounts
+      if (notificationResponseListener.current) {
+        notificationResponseListener.current.remove();
+      }
+      if (notificationReceivedListener.current) {
+        notificationReceivedListener.current.remove();
+      }
+    };
+  }, []);
 
   return (
     <SafeAreaProvider>
@@ -61,12 +114,8 @@ export default function RootLayout() {
         <AuthProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen
-              name="_redirect"
-              options={{ headerShown: false, animation: "none" }}
-            />
-            <Stack.Screen
               name="auth/selectRole"
-              options={{ headerShown: false }}
+              options={{ headerShown: false, animation: "fade" }}
             />
             <Stack.Screen
               name="auth/signInAdmin"
@@ -74,7 +123,7 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="(admin)"
-              options={{ headerShown: false, animation: "none" }}
+              options={{ headerShown: false, animation: "fade" }}
             />
           </Stack>
           <Toast config={toastConfig} />

@@ -34,11 +34,20 @@ const DayColumn = ({
           hourHeight={rowHeight ?? 42}
           onSchedulePress={onSchedulePress}
           showTime={false}
-          onLayout={i === 0 ? (e) => setRowHeight(e.nativeEvent.layout.height) : undefined}
+          onLayout={
+            i === 0
+              ? (e) => setRowHeight(e.nativeEvent.layout.height)
+              : undefined
+          }
         />
       ))}
       {showCurrentTimeIndicator && rowHeight && (
-        <CurrentTimeIndicator currentHour={currentHour} currentMinute={currentMinute} firstHour={0} hourHeight={rowHeight} />
+        <CurrentTimeIndicator
+          currentHour={currentHour}
+          currentMinute={currentMinute}
+          firstHour={0}
+          hourHeight={rowHeight}
+        />
       )}
     </View>
   );

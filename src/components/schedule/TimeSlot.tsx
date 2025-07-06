@@ -68,35 +68,32 @@ const TimeSlot = ({
   // Group overlapping events
   function groupOverlappingEvents(events: Schedule[]) {
     if (events.length === 0) return [];
-    
+
     const groups: Schedule[][] = [];
     const processed: Set<string> = new Set();
-    
+
     for (const event of events) {
       if (processed.has(event.id)) continue;
-      
+
       const overlappingEvents = findOverlappingEvents(event);
       const group = overlappingEvents.sort((a, b) => {
         const aStart = getEventRange(a).start;
         const bStart = getEventRange(b).start;
         return aStart - bStart;
       });
-      
+
       // Mark all events in this group as processed
-      group.forEach(e => processed.add(e.id));
+      group.forEach((e) => processed.add(e.id));
       groups.push(group);
     }
-    
+
     return groups;
   }
 
   const overlapGroups = groupOverlappingEvents(eventsStartingInThisHour);
 
   return (
-    <View 
-      className="h-12 border-b border-gray-200"
-      onLayout={onLayout}
-    >
+    <View className="h-12 border-b border-gray-200" onLayout={onLayout}>
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">
@@ -108,27 +105,31 @@ const TimeSlot = ({
         <View className="flex-1 relative h-full">
           {overlapGroups.map((group, groupIdx) => {
             const eventWidth = 100 / group.length;
-            
+
             return group.map((schedule, index) => {
               const { start, end } = getEventRange(schedule);
-              
+
               // Add spacing between events
               const spacing = 4; // 4px spacing between events
-              
+
               // Calculate the full height of the event in pixels
               const eventDurationMinutes = end - start;
-              const eventHeightPixels = (eventDurationMinutes / 60) * hourHeight - spacing;
-              
+              const eventHeightPixels =
+                (eventDurationMinutes / 60) * hourHeight - spacing;
+
               // Calculate the top position relative to the start of the day
               const eventStartHour = Math.floor(start / 60);
               const eventStartMinutes = start % 60;
-              const topPositionFromDayStart = 
-                (eventStartHour - startHour) * hourHeight + 
+              const topPositionFromDayStart =
+                (eventStartHour - startHour) * hourHeight +
                 (eventStartMinutes / 60) * hourHeight;
-              
+
               // Calculate the top position relative to this hour
-              const topPositionFromThisHour = topPositionFromDayStart - ((hour - startHour) * hourHeight) + (spacing / 2);
-              
+              const topPositionFromThisHour =
+                topPositionFromDayStart -
+                (hour - startHour) * hourHeight +
+                spacing / 2;
+
               return (
                 <EventComponent
                   key={schedule.id}
@@ -144,7 +145,7 @@ const TimeSlot = ({
                     left: `${eventWidth * index}%`,
                     top: topPositionFromThisHour,
                     height: eventHeightPixels,
-                    position: 'absolute',
+                    position: "absolute",
                   }}
                 />
               );

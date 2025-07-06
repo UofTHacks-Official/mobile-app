@@ -1,6 +1,16 @@
 // AuthContext.tsx
+import type { Admin } from "@/requests/admin";
+import { getAdminProfile } from "@/requests/admin";
+import { authEventEmitter } from "@/utils/eventEmitter";
+import {
+  FIRST_SIGN_SIGN_IN,
+  getAuthTokens,
+  getSecureToken,
+  removeAuthTokens,
+  removeSecureToken,
+  storeAuthTokens,
+} from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
 import {
   ReactNode,
   createContext,
@@ -10,17 +20,6 @@ import {
   useRef,
   useState,
 } from "react";
-import type { Admin } from "../_requests/admin";
-import { getAdminProfile } from "../_requests/admin";
-import { authEventEmitter } from "../_utils/eventEmitter";
-import {
-  FIRST_SIGN_SIGN_IN,
-  getAuthTokens,
-  getSecureToken,
-  removeAuthTokens,
-  setSecureToken,
-  storeAuthTokens,
-} from "../_utils/tokens/secureStorage";
 
 interface AuthContextType {
   userToken: string | null;
@@ -63,25 +62,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsFirstSignIn(status);
   }, []);
 
-  console.log(
-    "AuthContext: Rendered, loading:",
-    loading,
-    "userToken:",
-    !!userToken,
-    "isFirstSignIn:",
-    isFirstSignIn
-  );
+  const updateFirstSignInStatus = useCallback((status: boolean) => {
+    setIsFirstSignIn(status);
+  }, []);
 
   const signOut = useCallback(async () => {
-    console.log("AuthContext: signOut called.");
+    console.log("[LOG] Signing out");
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await removeAuthTokens();
       setUserToken(null);
-      setIsFirstSignIn(false); // Reset first sign in state on sign out
-      console.log("AuthContext: Signed out, userToken set to null.");
-      // Reset navigation stack to login screen after sign out
-      router.replace("/auth/signInAdmin");
+      setIsFirstSignIn(false);
+      setAdminData(null); // Added
+      await removeSecureToken(FIRST_SIGN_SIGN_IN); //uncomment this line if you want to test onboarding flow
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -149,7 +142,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Only update state if this is the latest fetch
           if (fetchIdRef.current === fetchId) {
             setAdminData(result.response.data as Admin);
-            console.log("AuthContext: Admin data updated.");
           }
         } else {
           // Stale response, do not update state
@@ -169,14 +161,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Listen for token changes and update admin data
   useEffect(() => {
-    console.log("AuthContext: useEffect [userToken] triggered.");
-    fetchIdRef.current += 1;
-    const currentFetchId = fetchIdRef.current;
     if (userToken) {
+      console.log("AuthContext: userToken changed, fetching admin profile.");
+      fetchIdRef.current += 1;
+      const currentFetchId = fetchIdRef.current;
       fetchAdminProfile(userToken, currentFetchId);
-    } else {
-      setAdminData(null);
-      console.log("AuthContext: userToken is null, adminData set to null.");
     }
   }, [userToken, fetchAdminProfile]);
 
@@ -194,7 +183,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     console.log("AuthContext: signIn called.");
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-    console.log("AuthContext: signIn completed.");
+    const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
+    setIsFirstSignIn(firstSignInValue === null);
+    console.log(`[SIGN IN] - First time sign in value ${firstSignInValue}`);
+    console.log(
+      `[SIGN IN]- Is first time sign in? ${firstSignInValue === null}`
+    );
   };
 
   return (

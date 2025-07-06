@@ -1,6 +1,6 @@
 import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 
-type EventType = 'networking' | 'food' | 'activity';
+type EventType = "networking" | "food" | "activity";
 
 interface EventProps {
   title: string;
@@ -14,19 +14,28 @@ interface EventProps {
 }
 
 const eventTypeBgClass = {
-  networking: 'bg-uoft_primary_blue',
-  food: 'bg-uoft_secondary_orange',
-  activity: 'bg-uoft_accent_purple',
+  networking: "bg-uoft_primary_blue",
+  food: "bg-uoft_secondary_orange",
+  activity: "bg-uoft_accent_purple",
 };
 
-const Event = ({ title, startTime, endTime, hourHeight, style, type, id, onPress }: EventProps) => {
+const Event = ({
+  title,
+  startTime,
+  endTime,
+  hourHeight,
+  style,
+  type,
+  id,
+  onPress,
+}: EventProps) => {
   const formatTimeTo12Hour = (isoString: string) => {
     const date = new Date(isoString);
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
+    const period = hours >= 12 ? "PM" : "AM";
     const displayHours = hours % 12 || 12;
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
   };
 
   const handlePress = () => {
@@ -36,14 +45,14 @@ const Event = ({ title, startTime, endTime, hourHeight, style, type, id, onPress
   };
 
   return (
-    <Pressable 
+    <Pressable
       onPress={handlePress}
       className={`absolute rounded-lg px-2 py-1 ${eventTypeBgClass[type]}`}
       style={[
         {
           zIndex: 1,
         },
-        style
+        style,
       ]}
     >
       <Text

@@ -209,5 +209,4 @@ export const FONT_STYLES = {
 export type FontWeight = keyof typeof FONT_WEIGHTS;
 export type FontFamily = typeof FONTS[keyof typeof FONTS];
 
-// Default export for Expo Router
-export default FONTS; 
+ 

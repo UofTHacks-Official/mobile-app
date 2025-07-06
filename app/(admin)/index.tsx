@@ -1,13 +1,13 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { ScanQrCode } from "lucide-react-native";
+import { BellPlus, ScanQrCode } from "lucide-react-native";
 import {
   Calendar,
   MoneyWavy,
-  TextAUnderline,
   UserCircle,
 } from "phosphor-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
+import { schedulePushNotification } from "@/utils/notifications";
 
 const AdminDashboard = () => {
   const handleQRScan = () => {
@@ -25,10 +25,7 @@ const AdminDashboard = () => {
     router.push("/hackerbucks");
   };
 
-  const handleFontExample = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/components/FontExample");
-  };
+  
 
   const handleProfile = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -112,25 +109,23 @@ const AdminDashboard = () => {
             </View>
           </Pressable>
 
+          
+
           <Pressable
-            className="bg-uoft_primary_blue p-6 rounded-lg flex-row items-center mt-6"
-            onPress={handleFontExample}
+            className="bg-uoft_grey_light p-6 rounded-lg flex-row items-center mt-6"
+            onPress={schedulePushNotification}
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <TextAUnderline
-              size={32}
-              color="white"
-              style={{ marginRight: 16 }}
-            />
+            <BellPlus size={32} color="white" style={{ marginRight: 16 }} />
             <View>
               <Text className="text-uoft_white text-xl font-['PPObjectSans-Bold']">
-                Font Examples
+                Notification Exmaple
               </Text>
               <Text className="text-uoft_white/80 font-pp">
-                View available fonts
+                Send a notification from phone async
               </Text>
             </View>
           </Pressable>

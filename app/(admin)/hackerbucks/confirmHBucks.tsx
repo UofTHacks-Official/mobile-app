@@ -1,5 +1,5 @@
-import { shortenString } from "@/app/_utils/tokens/format/shorten";
-import { useHackerBucksStore } from "@/app/reducers/hackerbucks";
+import { shortenString } from "@/utils/tokens/format/shorten";
+import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
