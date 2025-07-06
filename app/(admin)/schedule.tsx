@@ -7,11 +7,9 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  View
+  View,
 } from "react-native";
-import {
-  fetchAllSchedules
-} from "../_requests/schedule";
+import { fetchAllSchedules } from "../_requests/schedule";
 import {
   Schedule as ScheduleInterface,
   ScheduleType,
@@ -83,8 +81,13 @@ const Schedule = () => {
   } = useQuery({
     queryKey: ["schedules"],
     queryFn: async () => {
-      const data = await fetchAllSchedules();
-      return data.map(mapApiToSchedule);
+      try {
+        const data = await fetchAllSchedules();
+        return data.map(mapApiToSchedule);
+      } catch (error) {
+        console.error("Schedule fetch error:", error);
+        throw error;
+      }
     },
   });
 
@@ -94,7 +97,7 @@ const Schedule = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
-      <View className="flex-1 text-uoft_black">
+      <View className="flex-1 mb-20 text-uoft_black">
         <View className="flex-row h-12 border-b border-gray-200 bg-gray-50">
           <View className="w-12 h-12 border-b border-gray-200 bg-gray-50" />
           {dates.map((date, index) => (
@@ -113,7 +116,7 @@ const Schedule = () => {
         </View>
 
         <View className="flex-1">
-          <ScrollView className="flex-1">
+          <ScrollView className="flex-1 pb-8">
             <View className="flex-row">
               {/* Time column */}
               <View className="w-12 border-r border-gray-200">
@@ -137,13 +140,18 @@ const Schedule = () => {
                   const start = new Date(schedule.startTime);
                   const end = new Date(schedule.endTime);
                   // Check if event crosses midnight (end time is on a different day than start time)
-                  const crossesMidnight = start.getDate() !== end.getDate() || 
-                                         start.getMonth() !== end.getMonth() || 
-                                         start.getFullYear() !== end.getFullYear();
+                  const crossesMidnight =
+                    start.getDate() !== end.getDate() ||
+                    start.getMonth() !== end.getMonth() ||
+                    start.getFullYear() !== end.getFullYear();
                   if (crossesMidnight) {
                     const results = [];
                     // First part: ends at 11:59:59 PM on the start day
-                    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                    const startDate = new Date(
+                      start.getFullYear(),
+                      start.getMonth(),
+                      start.getDate()
+                    );
                     const isStartDay = date.getTime() === startDate.getTime();
                     if (isStartDay) {
                       const firstPart = {
@@ -152,13 +160,20 @@ const Schedule = () => {
                           start.getFullYear(),
                           start.getMonth(),
                           start.getDate(),
-                          23, 59, 59, 999
+                          23,
+                          59,
+                          59,
+                          999
                         ).toISOString(),
                       };
                       results.push(firstPart);
                     }
                     // Second part: starts at 12:00:00 AM on the end day
-                    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+                    const endDate = new Date(
+                      end.getFullYear(),
+                      end.getMonth(),
+                      end.getDate()
+                    );
                     const isEndDay = date.getTime() === endDate.getTime();
                     if (isEndDay) {
                       const secondPart = {
@@ -168,7 +183,10 @@ const Schedule = () => {
                           end.getFullYear(),
                           end.getMonth(),
                           end.getDate(),
-                          0, 0, 0, 0
+                          0,
+                          0,
+                          0,
+                          0
                         ).toISOString(),
                         endTime: schedule.endTime,
                         date: endDate,
@@ -178,7 +196,11 @@ const Schedule = () => {
                     return results;
                   } else {
                     // Normal event - check if it belongs to this day
-                    const eventDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                    const eventDate = new Date(
+                      start.getFullYear(),
+                      start.getMonth(),
+                      start.getDate()
+                    );
                     const isCurrentDay = date.getTime() === eventDate.getTime();
                     if (isCurrentDay) {
                       return [schedule];
