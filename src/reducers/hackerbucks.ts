@@ -8,13 +8,19 @@ export interface Recipient {
   id: string;
 }
 
+export interface orderType {
+  send: "send",
+  deduct: "deduct", 
+  empty: null
+}
+
 export interface Transaction {
   id: string;
   recipient: Recipient;
   amount: string | null;
   status: 'pending' | 'confirmed' | 'completed' | 'failed';
   timestamp: Date;
-  orderType: 'send' | 'deduct' | null; 
+  orderType: 'send' | 'deduct' | null;
 }
 
 interface TransactionState {

@@ -4,7 +4,7 @@ import { adminLogin } from "@/requests/admin";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
@@ -96,7 +96,6 @@ const SignInAdmin = () => {
       }
 
       if (!response || !response.data || !response.data.access_token) {
-        console.log("No valid response, showing toast...");
         Toast.show({
           type: "error",
           text1: "Login Failed",
@@ -107,8 +106,6 @@ const SignInAdmin = () => {
       }
 
       const { access_token, refresh_token } = response.data;
-      console.log("authTokens:", access_token);
-      console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
 
       if (isFirstSignIn) {
@@ -118,7 +115,6 @@ const SignInAdmin = () => {
       }
       setLoading(false);
     } catch (e) {
-      console.log("Catch block error:", e);
       Toast.show({
         type: "error",
         text1: "Login Failed",
@@ -204,13 +200,7 @@ const SignInAdmin = () => {
           </Animated.View>
         </Pressable>
 
-        {/* <Pressable onPress={handleSignIn}>
-          <View className="border border-uoft_primary_blue rounded-md py-4 px-2 mt-4 mx-8">
-            <Text className="text-uoft_primary_blue text-center text-lg">
-              Forgot password
-            </Text>
-          </View>
-        </Pressable> */}
+
 
         <View className="w-full px-12 absolute bottom-0 mb-8">
           <Text className="text-xs text-center text-gray-400">

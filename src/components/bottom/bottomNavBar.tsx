@@ -223,14 +223,7 @@ const CustomTabBar = ({
                         color={isFocused ? "white" : "#BFBDBE"}
                       />
                     );
-                  // case "Send":
-                  //   return (
-                  //     <BanknoteArrowUp
-                  //       size={24}
-                  //       strokeWidth={1.5}
-                  //       color={isFocused ? "white" : "#BFBDBE"}
-                  //     />
-                  //   );
+
                   default:
                     return null;
                 }

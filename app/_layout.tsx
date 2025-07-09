@@ -6,7 +6,7 @@ import * as Notifications from "expo-notifications";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
+
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "./globals.css";
@@ -23,22 +23,7 @@ Notifications.setNotificationHandler({
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// // Create a client
-// const queryClient = new QueryClient({
-//   defaultOptions: {
-//     queries: {
-//       staleTime: 5 * 60 * 1000, // 5 minutes
-//       gcTime: 10 * 60 * 1000, // 10 minutes
-//       retry: (failureCount, error) => {
-//         if (failureCount >= 3) return false;
-//         if (error instanceof Error && error.message.includes("404")) {
-//           return false;
-//         }
-//         return true;
-//       },
-//     },
-//   },
-// });
+
 
 const queryClient = new QueryClient();
 
@@ -51,15 +36,7 @@ export default function RootLayout() {
     Notifications.Subscription | undefined
   >(undefined);
 
-  console.log(
-    "RootLayout rendered. fontsLoaded:",
-    fontsLoaded,
-    "fontError:",
-    fontError
-  );
-
   useEffect(() => {
-    console.log(`Platform: ${Platform.OS}`);
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
@@ -71,12 +48,8 @@ export default function RootLayout() {
     notificationResponseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const { data } = response.notification.request.content;
-        console.log("Notification tapped with data:", data);
-
         // Type assertion to define the expected data structure
         const notificationData = data as { data?: { route?: string } };
-
-        console.log(notificationData.data?.route === "schedule");
 
         if (notificationData.data?.route === "schedule") {
           router.push(`/(admin)/schedule`);
@@ -87,8 +60,6 @@ export default function RootLayout() {
     // This should only fire when the app is actually in the foreground=
     notificationReceivedListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Foreground notification received:", notification);
-
         // Only show toast if the app is actually in foreground
         Toast.show({
           type: "info",

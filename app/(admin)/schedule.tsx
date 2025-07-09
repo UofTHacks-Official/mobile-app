@@ -2,7 +2,7 @@ import DayColumn from "@/components/schedule/DayColumn";
 import TimeSlot from "@/components/schedule/TimeSlot";
 import { fetchAllSchedules } from "@/requests/schedule";
 import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Clock, Tag, UserCog, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -45,10 +45,7 @@ function formatTimeTo12Hour(isoString: string) {
 }
 
 const Schedule = () => {
-  const queryClient = useQueryClient();
-
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSchedule, setSelectedSchedule] =
     useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
@@ -73,8 +70,6 @@ const Schedule = () => {
   // Tanstack Query for schedules
   const {
     data: schedules = [],
-    isLoading,
-    error,
   } = useQuery({
     queryKey: ["schedules"],
     queryFn: async () => {
@@ -82,7 +77,6 @@ const Schedule = () => {
         const data = await fetchAllSchedules();
         return data.map(mapApiToSchedule);
       } catch (error) {
-        console.error("Schedule fetch error:", error);
         throw error;
       }
     },

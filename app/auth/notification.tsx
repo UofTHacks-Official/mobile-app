@@ -41,7 +41,6 @@ export default function NotificationPage() {
         });
       }
     } catch (error) {
-      console.error("Error enabling notifications:", error);
       Toast.show({
         type: "error",
         text1: "Unexpected Error",

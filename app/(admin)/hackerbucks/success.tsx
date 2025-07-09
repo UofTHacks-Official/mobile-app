@@ -27,8 +27,8 @@ export default function Success() {
 
   const handleDone = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    clearTransaction();
     router.replace("/(admin)");
-    setTimeout(() => clearTransaction(), 100);
   };
 
   if (!currentTransaction) {
