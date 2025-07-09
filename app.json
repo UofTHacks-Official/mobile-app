@@ -11,10 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.uofthacks.uoft-hacks",
-      "buildNumber": "1",
-      "config": {
-        "googleMapsApiKey": "AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0"
-      },
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "ITSAppUsesNonExemptEncryption": false
