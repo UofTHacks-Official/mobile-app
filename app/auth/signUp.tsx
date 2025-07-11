@@ -36,7 +36,10 @@ const SignUp = () => {
             <Text
               className="text-uoft_white text-center font-pp text-lg font-bold"
               onPress={() => {
-                router.push({ pathname: "/auth/confirmSignIn" as any, params: { email: email } });
+                router.push({
+                  pathname: "/auth/confirmSignIn" as any,
+                  params: { email: email },
+                });
               }}
             >
               Continue
@@ -58,9 +61,7 @@ const SignUp = () => {
         <View className="w-full px-12 absolute bottom-0 mb-8">
           <Text className="font-pp text-xs text-center">
             By signing up, you agree to Paytrie&apos;s Terms and Conditions and
-            Privacy Statement, and iDenfy&apos;s Terms and Conditions and Privacy
-            Statement. By providing your email, you consent to receiving
-            communications from Paytrie. You can opt-out anytime.
+            Privacy Statement.
           </Text>
         </View>
       </View>

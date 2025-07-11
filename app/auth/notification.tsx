@@ -46,6 +46,7 @@ export default function NotificationPage() {
         text1: "Unexpected Error",
         text2: "Something went wrong while enabling notifications",
       });
+      console.log(`[Notifcations Error] ${error}`);
     } finally {
       setIsRegistering(false);
     }

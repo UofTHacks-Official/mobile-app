@@ -23,17 +23,15 @@ Notifications.setNotificationHandler({
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-
-
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useCustomFonts();
   const notificationResponseListener = useRef<
-    Notifications.Subscription | undefined
+    Notifications.EventSubscription | undefined
   >(undefined);
   const notificationReceivedListener = useRef<
-    Notifications.Subscription | undefined
+    Notifications.EventSubscription | undefined
   >(undefined);
 
   useEffect(() => {
@@ -93,8 +91,20 @@ export default function RootLayout() {
               options={{ headerShown: false, animation: "none" }}
             />
             <Stack.Screen
+              name="auth/camera"
+              options={{ headerShown: false, animation: "slide_from_right" }}
+            />
+            <Stack.Screen
+              name="auth/notification"
+              options={{ headerShown: false, animation: "slide_from_right" }}
+            />
+            <Stack.Screen
               name="(admin)"
-              options={{ headerShown: false, animation: "fade" }}
+              options={{
+                headerShown: false,
+                animation: "fade",
+                gestureEnabled: false,
+              }}
             />
           </Stack>
           <Toast config={toastConfig} />

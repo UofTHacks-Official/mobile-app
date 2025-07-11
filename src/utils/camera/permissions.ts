@@ -7,3 +7,5 @@ export const openSettings = async () => {
       console.error("Error opening settings:", error);
     }
   };
+
+  
