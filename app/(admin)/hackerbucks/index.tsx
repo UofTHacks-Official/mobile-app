@@ -26,7 +26,6 @@ export default function App() {
   useEffect(() => {
     clearTransaction();
     isProcessingScan.current = false;
-    console.log(`Current Status`, isProcessingScan.current);
   }, [clearTransaction]);
 
   useFocusEffect(
@@ -71,10 +70,9 @@ export default function App() {
     // Set the flag to true immediately to prevent further calls.
     isProcessingScan.current = true;
 
-    console.log("QR Code scanned:", data);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    //setScannedBounds(bounds); // Only uncomment if you want to visualize the bounds
+
 
     // Navigate to the next screen
     router.push("/hackerbucks/sendHbucks");

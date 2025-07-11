@@ -6,7 +6,6 @@ import { Pressable, SafeAreaView, Text, View } from "react-native";
 const Profile = () => {
   const { signOut, adminData, adminLoading } = useAuth();
 
-  // Create a safe admin object with defaults
   const admin = adminData || {
     admin_username: "",
     admin_role: "",

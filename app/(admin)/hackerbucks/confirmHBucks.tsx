@@ -1,5 +1,6 @@
-import { shortenString } from "@/utils/tokens/format/shorten";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { deductHackerBucks, sendHackerBucks } from "@/requests/hackerBucks";
+import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -16,11 +17,7 @@ export default function ConfirmHBucks() {
   const router = useRouter();
   const { currentTransaction } = useHackerBucksStore();
 
-  if (!currentTransaction || !currentTransaction.recipient) {
-    if (router.canGoBack()) router.back();
-    return null;
-  }
-
+  if (!currentTransaction) return null;
   const { recipient, orderType, amount, status } = currentTransaction;
 
   const transactionDetails = [
@@ -47,9 +44,17 @@ export default function ConfirmHBucks() {
     },
   ];
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const hackerBucksObject = {
+      hacker_id: Number(recipient.id),
+      amount: Number(amount),
+    };
+
     try {
+      orderType === "send"
+        ? await sendHackerBucks(hackerBucksObject)
+        : await deductHackerBucks(hackerBucksObject);
       router.replace("/hackerbucks/success");
     } catch (error) {
       console.error("Transaction error:", error);

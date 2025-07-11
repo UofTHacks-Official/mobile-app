@@ -90,7 +90,6 @@ export default function App() {
     // Set the flag to true immediately to prevent further calls.
     isProcessingScan.current = true;
 
-    console.log("QR Code scanned:", data);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     setHasScanned(true);

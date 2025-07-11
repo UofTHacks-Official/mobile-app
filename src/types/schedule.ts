@@ -12,4 +12,4 @@ export interface Schedule {
   sponsorId: string | null;
   isShift: boolean;
   shiftType: string | null;
-} 
+}

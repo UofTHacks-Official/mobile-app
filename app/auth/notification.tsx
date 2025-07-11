@@ -41,12 +41,12 @@ export default function NotificationPage() {
         });
       }
     } catch (error) {
-      console.error("Error enabling notifications:", error);
       Toast.show({
         type: "error",
         text1: "Unexpected Error",
         text2: "Something went wrong while enabling notifications",
       });
+      console.log(`[Notifcations Error] ${error}`);
     } finally {
       setIsRegistering(false);
     }

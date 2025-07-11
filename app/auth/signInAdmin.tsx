@@ -4,7 +4,7 @@ import { adminLogin } from "@/requests/admin";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
@@ -19,10 +19,15 @@ const SignInAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signIn, isFirstSignIn } = useAuth();
+  // Add state for focus tracking
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  // Add ref for email input
+  //const emailInputRef = useRef<TextInput>(null);
+
+  const { signIn } = useAuth();
 
   // Animation values
   const buttonScale = useSharedValue(0.95);
@@ -75,7 +80,6 @@ const SignInAdmin = () => {
   });
 
   const handleSignIn = async () => {
-    // Prevent submission if form is not valid
     if (!isFormValid) {
       return;
     }
@@ -96,7 +100,6 @@ const SignInAdmin = () => {
       }
 
       if (!response || !response.data || !response.data.access_token) {
-        console.log("No valid response, showing toast...");
         Toast.show({
           type: "error",
           text1: "Login Failed",
@@ -107,18 +110,11 @@ const SignInAdmin = () => {
       }
 
       const { access_token, refresh_token } = response.data;
-      console.log("authTokens:", access_token);
-      console.log("refreshToken:", refresh_token);
       await signIn(access_token, refresh_token);
 
-      if (isFirstSignIn) {
-        router.replace({ pathname: "/auth/camera" });
-      } else {
-        router.replace({ pathname: "/(admin)" });
-      }
+      router.replace("/(admin)");
       setLoading(false);
     } catch (e) {
-      console.log("Catch block error:", e);
       Toast.show({
         type: "error",
         text1: "Login Failed",
@@ -148,15 +144,18 @@ const SignInAdmin = () => {
 
         <View className="space-y-4 px-8">
           <TextInput
-            className="w-full px-4 bg-uoft_grey_lighter rounded-xl text-lg mb-4"
+            className="w-full px-4 bg-uoft_grey_lighter rounded-xl text-lg mb-4 "
             placeholder="Email"
             placeholderTextColor="uoft_grey_medium"
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
             autoCorrect={false}
+            autoFocus={true}
             value={email}
             onChangeText={setEmail}
+            onFocus={() => {}}
+            onBlur={() => {}}
             style={{
               minHeight: 50,
               textAlignVertical: "center",
@@ -177,12 +176,15 @@ const SignInAdmin = () => {
               autoCorrect={false}
               value={password}
               onChangeText={setPassword}
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
               style={{
                 minHeight: 50,
                 textAlignVertical: "center",
                 paddingTop: 4,
                 paddingBottom: 4,
                 lineHeight: 20,
+                color: passwordFocused ? "#000000" : "#666666", // Black text when focused
               }}
             />
             <Pressable onPress={togglePasswordVisibility} className="ml-2">
@@ -203,14 +205,6 @@ const SignInAdmin = () => {
             <Text className="text-center text-lg text-uoft_white">Sign In</Text>
           </Animated.View>
         </Pressable>
-
-        {/* <Pressable onPress={handleSignIn}>
-          <View className="border border-uoft_primary_blue rounded-md py-4 px-2 mt-4 mx-8">
-            <Text className="text-uoft_primary_blue text-center text-lg">
-              Forgot password
-            </Text>
-          </View>
-        </Pressable> */}
 
         <View className="w-full px-12 absolute bottom-0 mb-8">
           <Text className="text-xs text-center text-gray-400">

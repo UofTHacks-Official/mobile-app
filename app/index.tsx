@@ -1,25 +1,18 @@
-import { Redirect } from "expo-router";
 import { useAuth } from "@/context/authContext";
+import { Redirect } from "expo-router";
 
 export default function StartPage() {
   const { userToken, loading } = useAuth();
 
   // Show a loading screen while authentication state is being determined
   if (loading) {
-    console.log("_redirect: Still loading, returning null.");
     return null; // Or a splash screen component
   }
 
   // Redirect based on authentication state
   if (userToken) {
-    console.log(
-      "_redirect: User authenticated, redirecting to /admin. (via <Redirect>)"
-    );
     return <Redirect href="/(admin)" />;
   } else {
-    console.log(
-      "_redirect: User not authenticated, redirecting to /auth/signInAdmin. (via <Redirect>)"
-    );
     return <Redirect href="/auth/selectRole" />;
   }
 }

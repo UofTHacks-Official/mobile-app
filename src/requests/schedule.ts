@@ -1,40 +1,18 @@
 import { Schedule } from '@/types/schedule';
 import axios from './axios';
 
-const typeToEventType = {
-  networking: 1,
-  food: 2,
-  activity: 3,
-};
-
-function toApiPayload(schedule: Partial<Schedule>) {
-  return {
-    schedule_name: schedule.title,
-    schedule_start_time: schedule.startTime,
-    schedule_end_time: schedule.endTime,
-    schedule_description: schedule.description ?? '',
-    event_type: typeof schedule.type === 'number' ? schedule.type : typeToEventType[schedule.type as keyof typeof typeToEventType] ?? 3,
-    sponsor_id: schedule.sponsorId ?? 0,
-    is_shift: schedule.isShift ?? false,
-    shift_type: schedule.shiftType ?? 0,
-    schedule_id: schedule.id ? Number(schedule.id) : undefined,
-  };
+const scheduleEndpoints = {
+  fetchAllSchedules:"/api/v13/hackers/schedules",
+  fetchScheduleByID: "/api/v13/hackers/{id}"
 }
-
 // Fetch all scheduled events
 export async function fetchAllSchedules(): Promise<Schedule[]> {
-  const response = await axios.get('/api/v13/hackers/schedules');
+  const response = await axios.get(scheduleEndpoints.fetchAllSchedules);
   return response.data;
 }
 
 // (Optional) Fetch a scheduled event by ID
 export async function fetchScheduleById(id: string): Promise<Schedule> {
-  const response = await axios.get(`/api/v13/hackers/schedules/${id}`);
+  const response = await axios.get(scheduleEndpoints.fetchScheduleByID.replace('{id}', id));
   return response.data;
 }
-
-// Create a new schedule (admin)
-export async function createSchedule(data: Omit<Schedule, 'id' | 'date'> & { date: Date }): Promise<Schedule> {
-  const payload = toApiPayload(data);
-  return (await axios.post('/api/v13/admins/schedules/', payload)).data;
-} 

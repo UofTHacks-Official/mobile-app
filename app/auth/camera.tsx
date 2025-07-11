@@ -11,22 +11,15 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CameraPage() {
-  const [permission, setPermission] = useState<boolean | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [, setPermission] = useState<boolean | null>(null);
   const { updateFirstSignInStatus } = useAuth();
 
   const requestCameraPermission = async () => {
     try {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setPermission(status === "granted");
-      console.log(status);
-
-      if (status === "granted") {
-        console.log(status);
-        //Alert.alert("Success", "Camera access granted!");
-      }
     } catch (error) {
       console.error("Error requesting camera permission:", error);
-      //Alert.alert("Error", "Failed to request camera permission");
     }
   };
 

@@ -7,7 +7,7 @@ const SignInVolunteer = () => {
   const [password, setPassword] = useState("");
 
   const handleSignIn = () => {
-    router.replace("/volunteer");
+    router.push("/volunteer");
   };
 
   return (
