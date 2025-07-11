@@ -345,97 +345,125 @@ const Schedule = () => {
 
         <View className="flex-1">
           <ScrollView className="flex-1 pb-8 bg-uoft_white">
-            {daysToShow === 1 ? (
-              <ScrollView
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={(event) => {
-                  const screenWidth = Dimensions.get('window').width;
-                  const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-                  if (newIndex >= 0 && newIndex < allDates.length) {
-                    saveDayIndexPreference(newIndex);
-                  }
-                }}
-                contentOffset={{ x: currentDayIndex * Dimensions.get('window').width, y: 0 }}
-              >
-                {allDates.map((date, dayIndex) => (
-                  <View key={dayIndex} style={{ width: Dimensions.get('window').width }}>
-                    <View className="flex-row bg-uoft_white">
-                      <View className="w-12 border-r border-gray-200 bg-uoft_white">
-                        {Array.from({ length: 24 }, (_, i) => (
-                          <TimeSlot
-                            key={i}
-                            hour={i}
-                            isCurrentHour={i === currentHour}
-                            schedules={[]}
-                            hourHeight={hourHeight}
-                            onSchedulePress={() => {}}
-                            showTime={true}
-                          />
-                        ))}
+            <View className="relative">
+              {daysToShow === 1 ? (
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(event) => {
+                    const screenWidth = Dimensions.get('window').width;
+                    const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+                    if (newIndex >= 0 && newIndex < allDates.length) {
+                      saveDayIndexPreference(newIndex);
+                    }
+                  }}
+                  contentOffset={{ x: currentDayIndex * Dimensions.get('window').width, y: 0 }}
+                >
+                  {allDates.map((date, dayIndex) => (
+                    <View key={dayIndex} style={{ width: Dimensions.get('window').width }}>
+                      <View className="flex-row bg-uoft_white">
+                        <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <TimeSlot
+                              key={i}
+                              hour={i}
+                              isCurrentHour={i === currentHour}
+                              schedules={[]}
+                              hourHeight={hourHeight}
+                              onSchedulePress={() => {}}
+                              showTime={true}
+                            />
+                          ))}
+                        </View>
+                        {renderDaySchedules(date, dayIndex)}
                       </View>
-                      {renderDaySchedules(date, dayIndex)}
                     </View>
-                  </View>
-                ))}
-              </ScrollView>
-            ) : daysToShow === 2 ? (
-              <ScrollView
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={(event) => {
-                  const screenWidth = Dimensions.get('window').width;
-                  const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-                  const maxIndex = allDates.length - 2;
-                  if (newIndex >= 0 && newIndex <= maxIndex) {
-                    saveDayIndexPreference(newIndex);
-                  }
-                }}
-                contentOffset={{ x: currentDayIndex * Dimensions.get('window').width, y: 0 }}
-              >
-                {Array.from({ length: allDates.length - 1 }, (_, pageIndex) => (
-                  <View key={pageIndex} style={{ width: Dimensions.get('window').width }}>
-                    <View className="flex-row bg-uoft_white">
-                      <View className="w-12 border-r border-gray-200 bg-uoft_white">
-                        {Array.from({ length: 24 }, (_, i) => (
-                          <TimeSlot
-                            key={i}
-                            hour={i}
-                            isCurrentHour={i === currentHour}
-                            schedules={[]}
-                            hourHeight={hourHeight}
-                            onSchedulePress={() => {}}
-                            showTime={true}
-                          />
-                        ))}
-                      </View>
-                      {allDates.slice(pageIndex, pageIndex + 2).map((date, index) => 
-                        renderDaySchedules(date, pageIndex + index)
-                      )}
-                    </View>
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
-              <View className="flex-row bg-uoft_white">
-                <View className="w-12 border-r border-gray-200 bg-uoft_white">
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <TimeSlot
-                      key={i}
-                      hour={i}
-                      isCurrentHour={i === currentHour}
-                      schedules={[]}
-                      hourHeight={hourHeight}
-                      onSchedulePress={() => {}}
-                      showTime={true}
-                    />
                   ))}
+                </ScrollView>
+              ) : daysToShow === 2 ? (
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(event) => {
+                    const screenWidth = Dimensions.get('window').width;
+                    const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+                    const maxIndex = allDates.length - 2;
+                    if (newIndex >= 0 && newIndex <= maxIndex) {
+                      saveDayIndexPreference(newIndex);
+                    }
+                  }}
+                  contentOffset={{ x: currentDayIndex * Dimensions.get('window').width, y: 0 }}
+                >
+                  {Array.from({ length: allDates.length - 1 }, (_, pageIndex) => (
+                    <View key={pageIndex} style={{ width: Dimensions.get('window').width }}>
+                      <View className="flex-row bg-uoft_white">
+                        <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <TimeSlot
+                              key={i}
+                              hour={i}
+                              isCurrentHour={i === currentHour}
+                              schedules={[]}
+                              hourHeight={hourHeight}
+                              onSchedulePress={() => {}}
+                              showTime={true}
+                            />
+                          ))}
+                        </View>
+                        {allDates.slice(pageIndex, pageIndex + 2).map((date, index) => 
+                          renderDaySchedules(date, pageIndex + index)
+                        )}
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View className="flex-row bg-uoft_white">
+                  <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <TimeSlot
+                        key={i}
+                        hour={i}
+                        isCurrentHour={i === currentHour}
+                        schedules={[]}
+                        hourHeight={hourHeight}
+                        onSchedulePress={() => {}}
+                        showTime={true}
+                      />
+                    ))}
+                  </View>
+                  {dates.map((date, index) => renderDaySchedules(date, index))}
                 </View>
-                {dates.map((date, index) => renderDaySchedules(date, index))}
+              )}
+              
+              <View
+                className="absolute"
+                style={{ 
+                  top: (currentHour + currentMinute / 60) * hourHeight - 2, 
+                  zIndex: 50,
+                  left: 0,
+                  right: 0,
+                  height: 0,
+                }}
+              >
+                {/* Time label positioned independently */}
+                <View className="absolute w-12 flex-row justify-center" style={{ top: -8 }}>
+                  <View className="bg-red-500 px-1 py-1 rounded">
+                    <Text className="text-white font-medium" style={{ fontSize: 8 }}>
+                      {currentTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Red line indicator align */}
+                <View className="absolute flex-row items-center" style={{ top: 0, left: 0, right: 0 }}>
+                  <View className="w-12" />
+                  <View className="flex-1 h-0.5 bg-red-500" />
+                </View>
               </View>
-            )}
+            </View>
           </ScrollView>
         </View>
 

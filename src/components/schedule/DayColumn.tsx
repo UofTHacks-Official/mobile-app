@@ -1,7 +1,6 @@
 import { Schedule } from "@/types/schedule";
 import { useState } from "react";
 import { View } from "react-native";
-import CurrentTimeIndicator from "./CurrentTimeIndicator";
 import TimeSlot from "./TimeSlot";
 
 interface DayColumnProps {
@@ -15,12 +14,9 @@ interface DayColumnProps {
 }
 
 const DayColumn = ({
-  date,
   currentHour,
   schedules,
   onSchedulePress,
-  showCurrentTimeIndicator = false,
-  currentMinute = 0,
   hourHeight = 48,
 }: DayColumnProps) => {
 
@@ -37,14 +33,6 @@ const DayColumn = ({
           showTime={false}
         />
       ))}
-      {showCurrentTimeIndicator && (
-        <CurrentTimeIndicator
-          currentHour={currentHour}
-          currentMinute={currentMinute}
-          firstHour={0}
-          hourHeight={hourHeight}
-        />
-      )}
     </View>
   );
 };
