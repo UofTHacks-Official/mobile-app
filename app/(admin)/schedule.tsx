@@ -1,9 +1,10 @@
 import DayColumn from "@/components/schedule/DayColumn";
 import TimeSlot from "@/components/schedule/TimeSlot";
+import FilterMenu from "@/components/schedule/FilterMenu";
 import { fetchAllSchedules } from "@/requests/schedule";
 import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, Tag, UserCog, Users, X } from "lucide-react-native";
+import { Clock, Tag, UserCog, Users, X, Filter } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -13,6 +14,14 @@ import {
   Text,
   View,
 } from "react-native";
+
+import { getSecureToken, setSecureToken } from "@/utils/tokens/secureStorage";
+
+
+const STORAGE_KEYS = {
+  DAYS_TO_SHOW: 'schedule_days_to_show',
+  SELECTED_EVENT_TYPES: 'schedule_selected_event_types'
+};
 
 // Map API schedule object to local Schedule type
 function mapApiToSchedule(apiEvent: any): ScheduleInterface {
@@ -48,20 +57,67 @@ const Schedule = () => {
   const queryClient = useQueryClient();
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] =
-    useState<ScheduleInterface | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
-  // Configurable hour height - change this value to resize hour blocks
-  const hourHeight = 100; // Change this value to make blocks taller or shorter
+  // Filter states with defaults
+  const [daysToShow, setDaysToShow] = useState(3);
+  const [selectedEventTypes, setSelectedEventTypes] = useState<ScheduleType[]>([
+    "networking", "food", "activity"
+  ]);
+
+  // Load user preferences from secure storage on mount
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      try {
+
+        const savedDays = await getSecureToken(STORAGE_KEYS.DAYS_TO_SHOW);
+        if (savedDays) {
+          setDaysToShow(parseInt(savedDays));
+        }
+
+        const savedEventTypes = await getSecureToken(STORAGE_KEYS.SELECTED_EVENT_TYPES);
+        if (savedEventTypes) {
+          setSelectedEventTypes(JSON.parse(savedEventTypes));
+        }
+      } catch (error) {
+        console.error('Error loading user preferences:', error);
+      }
+    };
+
+    loadUserPreferences();
+  }, []);
+
+  // Save preferences to secure storage when they change
+  const saveDaysPreference = async (days: number) => {
+    try {
+      await setSecureToken(STORAGE_KEYS.DAYS_TO_SHOW, days.toString());
+      setDaysToShow(days);
+    } catch (error) {
+      console.error('Error saving days preference:', error);
+    }
+  };
+
+  const saveEventTypesPreference = async (eventTypes: ScheduleType[]) => {
+    try {
+      await setSecureToken(STORAGE_KEYS.SELECTED_EVENT_TYPES, JSON.stringify(eventTypes));
+      setSelectedEventTypes(eventTypes);
+    } catch (error) {
+      console.error('Error saving event types preference:', error);
+    }
+  };
+
+  const hourHeight = 100;
 
   // June 20, 21, 22 (to match API data), TEMP
-  const dates = [
+  const allDates = [
     new Date(2025, 5, 20),
     new Date(2025, 5, 21),
     new Date(2025, 5, 22),
   ];
+
+  const dates = allDates.slice(0, daysToShow);
 
   useEffect(() => {
     const updateTime = () => {
@@ -73,53 +129,118 @@ const Schedule = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Tanstack Query for schedules
+  // Updated Tanstack Query with filtering
   const {
-    data: schedules = [],
+    data: allSchedules = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["schedules"],
+    queryKey: ["schedules", selectedEventTypes],
     queryFn: async () => {
       try {
         const data = await fetchAllSchedules();
-        return data.map(mapApiToSchedule);
+        const mappedSchedules = data.map(mapApiToSchedule);
+        
+        // Filter schedules based on selected event types
+        return mappedSchedules.filter(schedule => 
+          selectedEventTypes.includes(schedule.type)
+        );
       } catch (error) {
         console.error("Schedule fetch error:", error);
         throw error;
       }
     },
+    // Refetch when selectedEventTypes changes
+    enabled: selectedEventTypes.length > 0,
   });
 
-  // Use device time to get the current hour and minute
+  // Use filtered schedules
+  const schedules = allSchedules;
+
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
+  const currentDate = new Date(2025, 5, 21);
+
+  const toggleEventType = (type: ScheduleType) => {
+    const newEventTypes = selectedEventTypes.includes(type) 
+      ? selectedEventTypes.filter(t => t !== type)
+      : [...selectedEventTypes, type];
+    
+    saveEventTypesPreference(newEventTypes);
+  };
+
+  const clearFilters = async () => {
+    try {
+      await saveDaysPreference(3);
+      await saveEventTypesPreference(["networking", "food", "activity"]);
+    } catch (error) {
+      console.error('Error clearing filters:', error);
+    }
+  };
+
+  const applyFilters = () => {
+    setIsFilterModalVisible(false);
+    queryClient.invalidateQueries({ queryKey: ["schedules"] });
+  };
+
 
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 mb-20 text-uoft_black">
-        <View className="flex-row h-12 border-b border-gray-200 bg-gray-50">
-          <View className="w-12 h-12 border-b border-gray-200 bg-gray-50" />
-          {dates.map((date, index) => (
-            <View
-              key={index}
-              className="flex-1 items-center justify-center px-6"
+        {/* Month Header with Filter Button */}
+        <View className="px-4 py-3 bg-gray-50 flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <Pressable
+              onPress={() => setIsFilterModalVisible(true)}
+              className="p-2 bg-white rounded-lg border border-gray-200 mr-4"
             >
-              <Text className="font-semibold text-lg">
-                {date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </Text>
-            </View>
-          ))}
+              <Filter size={20} color="#333" />
+            </Pressable>
+            <Text className="text-3xl font-bold text-uoft_black">
+              {dates[0].toLocaleDateString("en-US", { month: "long" })}
+            </Text>
+          </View>
+        </View>
+        
+        {/* Day Headers */}
+        <View className="flex-row h-16 border-b border-gray-200 bg-gray-50">
+          <View className="w-12 h-16 border-b border-gray-200 bg-gray-50" />
+          {dates.map((date, index) => {
+            const isCurrentDate = 
+              date.getFullYear() === currentDate.getFullYear() &&
+              date.getMonth() === currentDate.getMonth() &&
+              date.getDate() === currentDate.getDate();
+
+            const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+            const dayNumber = date.getDate();
+
+            return (
+              <View
+                key={index}
+                className="flex-1 items-center justify-center px-6"
+              >
+                <Text className="text-sm text-gray-600 mb-1">
+                  {dayName}
+                </Text>
+                <View className={`w-8 h-8 rounded items-center justify-center ${
+                  isCurrentDate ? 'bg-uoft_secondary_orange' : ''
+                }`}>
+                  <Text className={`text-lg font-semibold ${
+                    isCurrentDate ? 'text-white' : 'text-black'
+                  }`}>
+                    {dayNumber}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
         </View>
 
         <View className="flex-1">
-          <ScrollView className="flex-1 pb-8">
-            <View className="flex-row">
+          <ScrollView className="flex-1 pb-8 bg-uoft_white">
+            <View className="flex-row bg-uoft_white">
               {/* Time column */}
-              <View className="w-12 border-r border-gray-200">
+              <View className="w-12 border-r border-gray-200 bg-uoft_white">
                 {Array.from({ length: 24 }, (_, i) => (
                   <TimeSlot
                     key={i}
@@ -133,17 +254,20 @@ const Schedule = () => {
                 ))}
               </View>
 
-              {/* Day columns */}
+              {/* Day columns*/}
               {dates.map((date, index) => {
                 // Split overnight events so they appear in both days
                 const filtered = schedules.flatMap((schedule) => {
+
                   const start = new Date(schedule.startTime);
                   const end = new Date(schedule.endTime);
+
                   // Check if event crosses midnight (end time is on a different day than start time)
                   const crossesMidnight =
                     start.getDate() !== end.getDate() ||
                     start.getMonth() !== end.getMonth() ||
                     start.getFullYear() !== end.getFullYear();
+                  
                   if (crossesMidnight) {
                     const results = [];
                     // First part: ends at 11:59:59 PM on the start day
@@ -195,7 +319,6 @@ const Schedule = () => {
                     }
                     return results;
                   } else {
-                    // Normal event - check if it belongs to this day
                     const eventDate = new Date(
                       start.getFullYear(),
                       start.getMonth(),
@@ -208,7 +331,8 @@ const Schedule = () => {
                     return [];
                   }
                 });
-                // hardcoded date for testing
+                
+                // Temp current date
                 const now = new Date(2025, 5, 21);
                 const isToday =
                   date.getFullYear() === now.getFullYear() &&
@@ -234,6 +358,19 @@ const Schedule = () => {
           </ScrollView>
         </View>
 
+        {/* Filter Menu Component */}
+        <FilterMenu
+          isVisible={isFilterModalVisible}
+          onClose={() => setIsFilterModalVisible(false)}
+          daysToShow={daysToShow}
+          setDaysToShow={saveDaysPreference}
+          selectedEventTypes={selectedEventTypes}
+          onToggleEventType={toggleEventType}
+          onClearFilters={clearFilters}
+          onApplyFilters={applyFilters}
+        />
+
+        {/* Event Detail Modal*/}
         <Modal
           visible={isDetailModalVisible}
           animationType="fade"
