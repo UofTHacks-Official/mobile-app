@@ -1,17 +1,15 @@
-import DayColumn from "@/components/schedule/DayColumn";
-import TimeSlot from "@/components/schedule/TimeSlot";
+import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import FilterMenu from "@/components/schedule/FilterMenu";
+import ScheduleHeader from "@/components/schedule/ScheduleHeader";
+import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
+import EventDetails from "@/components/schedule/EventDetails";
 import { fetchAllSchedules } from "@/requests/schedule";
 import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
 import { useQuery } from "@tanstack/react-query";
-import { Clock, Tag, UserCog, Users, X, Filter } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  Modal,
-  Pressable,
   SafeAreaView,
   ScrollView,
-  Text,
   View,
   Dimensions,
 } from "react-native";
@@ -296,52 +294,11 @@ const Schedule = () => {
   return (
     <SafeAreaView className="flex-1 bg-uoft_white">
       <View className="flex-1 mb-20 text-uoft_black">
-        <View className="px-4 py-3 bg-gray-50 flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Pressable
-              onPress={() => setIsFilterModalVisible(true)}
-              className="p-2 bg-white rounded-lg border border-gray-200 mr-4"
-            >
-              <Filter size={20} color="#333" />
-            </Pressable>
-            <Text className="text-3xl font-bold text-uoft_black">
-              {dates[0].toLocaleDateString("en-US", { month: "long" })}
-            </Text>
-          </View>
-        </View>
-        
-        <View className="flex-row h-16 border-b border-gray-200 bg-gray-50">
-          <View className="w-12 h-16 border-b border-gray-200 bg-gray-50" />
-          {dates.map((date, index) => {
-            const isCurrentDate = 
-              date.getFullYear() === currentDate.getFullYear() &&
-              date.getMonth() === currentDate.getMonth() &&
-              date.getDate() === currentDate.getDate();
-
-            const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
-            const dayNumber = date.getDate();
-
-            return (
-              <View
-                key={index}
-                className="flex-1 items-center justify-center px-6"
-              >
-                <Text className="text-sm text-gray-600 mb-1">
-                  {dayName}
-                </Text>
-                <View className={`w-8 h-8 rounded items-center justify-center ${
-                  isCurrentDate ? 'bg-uoft_secondary_orange' : ''
-                }`}>
-                  <Text className={`text-lg font-semibold ${
-                    isCurrentDate ? 'text-white' : 'text-black'
-                  }`}>
-                    {dayNumber}
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
+        <ScheduleHeader
+          dates={dates}
+          currentDate={currentDate}
+          onFilterPress={() => setIsFilterModalVisible(true)}
+        />
 
         <View className="flex-1">
           <ScrollView className="flex-1 pb-8 bg-uoft_white">
@@ -438,31 +395,12 @@ const Schedule = () => {
                 </View>
               )}
               
-              <View
-                className="absolute"
-                style={{ 
-                  top: (currentHour + currentMinute / 60) * hourHeight - 2, 
-                  zIndex: 50,
-                  left: 0,
-                  right: 0,
-                  height: 0,
-                }}
-              >
-                {/* Time label positioned independently */}
-                <View className="absolute w-12 flex-row justify-center" style={{ top: -8 }}>
-                  <View className="bg-red-500 px-1 py-1 rounded">
-                    <Text className="text-white font-medium" style={{ fontSize: 8 }}>
-                      {currentTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
-                    </Text>
-                  </View>
-                </View>
-                
-                {/* Red line indicator align */}
-                <View className="absolute flex-row items-center" style={{ top: 0, left: 0, right: 0 }}>
-                  <View className="w-12" />
-                  <View className="flex-1 h-0.5 bg-red-500" />
-                </View>
-              </View>
+              <CurrentTimeIndicator
+                currentTime={currentTime}
+                currentHour={currentHour}
+                currentMinute={currentMinute}
+                hourHeight={hourHeight}
+              />
             </View>
           </ScrollView>
         </View>
@@ -478,67 +416,11 @@ const Schedule = () => {
           onApplyFilters={applyFilters}
         />
 
-        <Modal
+        <EventDetails
           visible={isDetailModalVisible}
-          animationType="fade"
-          onRequestClose={() => setIsDetailModalVisible(false)}
-          transparent
-        >
-          <View className="flex-1 bg-black/40 justify-center items-center px-4">
-            <View className="bg-uoft_white rounded-2xl shadow-lg w-full max-w-xl p-6 relative">
-              <Pressable
-                className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-2"
-                onPress={() => setIsDetailModalVisible(false)}
-                accessibilityLabel="Close details"
-                accessibilityRole="button"
-              >
-                <X size={24} color="#333" />
-              </Pressable>
-              {selectedSchedule && (
-                <ScrollView
-                  className="max-h-[70vh]"
-                  showsVerticalScrollIndicator={false}
-                >
-                  <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-2 text-uoft_black">
-                    {selectedSchedule.title}
-                  </Text>
-                  <Text className="mb-4 text-base text-uoft_black/80">
-                    {selectedSchedule.description || "No description provided."}
-                  </Text>
-                  <View className="flex-row items-center mb-2">
-                    <Clock size={20} color="#FF6F51" />
-                    <Text className="ml-2 text-base text-uoft_black font-pp">
-                      {formatTimeTo12Hour(selectedSchedule.startTime)} -{" "}
-                      {formatTimeTo12Hour(selectedSchedule.endTime)}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center mb-2">
-                    <Tag size={20} color="#4A90E2" />
-                    <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
-                      {selectedSchedule.type}
-                    </Text>
-                  </View>
-                  {selectedSchedule.sponsorId && (
-                    <View className="flex-row items-center mb-2">
-                      <UserCog size={20} color="#50E3C2" />
-                      <Text className="ml-2 text-base text-uoft_black font-pp">
-                        Sponsor: {selectedSchedule.sponsorId}
-                      </Text>
-                    </View>
-                  )}
-                  {selectedSchedule.isShift && (
-                    <View className="flex-row items-center mb-2">
-                      <Users size={20} color="#FF6F51" />
-                      <Text className="ml-2 text-base text-uoft_black font-pp">
-                        Shift: {selectedSchedule.shiftType || "General"}
-                      </Text>
-                    </View>
-                  )}
-                </ScrollView>
-              )}
-            </View>
-          </View>
-        </Modal>
+          schedule={selectedSchedule}
+          onClose={() => setIsDetailModalVisible(false)}
+        />
       </View>
     </SafeAreaView>
   );
