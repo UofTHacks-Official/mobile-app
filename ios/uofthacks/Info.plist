@@ -31,11 +31,15 @@
           <string>com.uofthacks.uoft-hacks</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+uoft-hacks</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>GMSApiKey</key>
-    <string>AIzaSyDrRJHbN1T9Vnp2YN6VIk2SoJ5pfh108G0</string>
+    <string>2</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>LSMinimumSystemVersion</key>

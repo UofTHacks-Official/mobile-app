@@ -10,6 +10,7 @@ export default function NotificationPage() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleEnableNotifications = async () => {
+    console.log("[LOG LOG LOG]");
     setIsRegistering(true);
     try {
       // Request permissions if not already granted
@@ -24,7 +25,7 @@ export default function NotificationPage() {
             text1: "Notifications Enabled",
             text2: "You'll now receive important updates and alerts",
           });
-          // You might want to send this token to your backend here
+          // send this token to your backend here
           router.replace("/auth/camera");
         } else {
           Toast.show({
