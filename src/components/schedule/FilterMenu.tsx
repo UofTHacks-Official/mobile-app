@@ -119,9 +119,9 @@ const FilterMenu = ({
               
               <View>
                 {[
-                  { type: 'networking' as ScheduleType, label: 'Networking Events', icon: Users, color: "#2A398C" },
-                  { type: 'food' as ScheduleType, label: 'Food & Dining', icon: Utensils, color: "#FF6F51" },
-                  { type: 'activity' as ScheduleType, label: 'Activities & Sessions', icon: Target, color: "#E9B6F7" }
+                  { type: 'networking' as ScheduleType, label: 'Networking', icon: Users, color: "#2A398C" },
+                  { type: 'food' as ScheduleType, label: 'Food', icon: Utensils, color: "#FF6F51" },
+                  { type: 'activity' as ScheduleType, label: 'Activities', icon: Target, color: "#E9B6F7" }
                 ].map((option, index) => {
                   const isSelected = selectedEventTypes.includes(option.type);
                   const IconComponent = option.icon;
