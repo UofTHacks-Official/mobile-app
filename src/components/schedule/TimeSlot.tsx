@@ -93,7 +93,11 @@ const TimeSlot = ({
   const overlapGroups = groupOverlappingEvents(eventsStartingInThisHour);
 
   return (
-    <View className="h-12 border-b border-gray-200" onLayout={onLayout}>
+    <View 
+      className="border-b border-gray-200" 
+      style={{ height: hourHeight }} 
+      onLayout={onLayout}
+    >
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">

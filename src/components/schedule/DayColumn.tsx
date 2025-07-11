@@ -11,6 +11,7 @@ interface DayColumnProps {
   onSchedulePress: (schedule: Schedule) => void;
   showCurrentTimeIndicator?: boolean;
   currentMinute?: number;
+  hourHeight?: number;
 }
 
 const DayColumn = ({
@@ -20,8 +21,8 @@ const DayColumn = ({
   onSchedulePress,
   showCurrentTimeIndicator = false,
   currentMinute = 0,
+  hourHeight = 48,
 }: DayColumnProps) => {
-  const [rowHeight, setRowHeight] = useState<number | null>(null);
 
   return (
     <View className="flex-1 border-r border-gray-200 relative">
@@ -31,22 +32,17 @@ const DayColumn = ({
           hour={i}
           isCurrentHour={i === currentHour}
           schedules={schedules}
-          hourHeight={rowHeight ?? 42}
+          hourHeight={hourHeight}
           onSchedulePress={onSchedulePress}
           showTime={false}
-          onLayout={
-            i === 0
-              ? (e) => setRowHeight(e.nativeEvent.layout.height)
-              : undefined
-          }
         />
       ))}
-      {showCurrentTimeIndicator && rowHeight && (
+      {showCurrentTimeIndicator && (
         <CurrentTimeIndicator
           currentHour={currentHour}
           currentMinute={currentMinute}
           firstHour={0}
-          hourHeight={rowHeight}
+          hourHeight={hourHeight}
         />
       )}
     </View>

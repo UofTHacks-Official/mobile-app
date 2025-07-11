@@ -53,6 +53,9 @@ const Schedule = () => {
     useState<ScheduleInterface | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
+  // Configurable hour height - change this value to resize hour blocks
+  const hourHeight = 100; // Change this value to make blocks taller or shorter
+
   // June 20, 21, 22 (to match API data), TEMP
   const dates = [
     new Date(2025, 5, 20),
@@ -123,7 +126,7 @@ const Schedule = () => {
                     hour={i}
                     isCurrentHour={i === currentHour}
                     schedules={[]}
-                    hourHeight={48}
+                    hourHeight={hourHeight}
                     onSchedulePress={() => {}}
                     showTime={true}
                   />
@@ -223,6 +226,7 @@ const Schedule = () => {
                     }}
                     showCurrentTimeIndicator={isToday}
                     currentMinute={currentMinute}
+                    hourHeight={hourHeight}
                   />
                 );
               })}
