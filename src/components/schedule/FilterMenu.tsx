@@ -276,8 +276,8 @@ const FilterMenu = ({
             <View className="px-6 py-6 bg-white border-t border-gray-100">
               <View className="flex-row justify-center items-center">
                 <Pressable onPress={onClearFilters} className="flex-1 mr-3">
-                  <Text className="text-base font-semibold text-gray-700 underline">
-                    Clear all
+                  <Text className="text-base text-gray-700 underline">
+                    Clear all filters
                   </Text>
                 </Pressable>
                 {/* <Pressable
