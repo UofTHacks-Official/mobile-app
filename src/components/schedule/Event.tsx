@@ -13,10 +13,22 @@ interface EventProps {
   onPress?: () => void;
 }
 
-const eventTypeBgClass = {
-  networking: "bg-uoft_primary_blue",
-  food: "bg-uoft_secondary_orange",
-  activity: "bg-uoft_accent_purple",
+const eventTypeColors = {
+  networking: { 
+    borderClass: "border-uoft_primary_blue",
+    textClass: "text-uoft_primary_blue",
+    backgroundColor: "bg-uoft_blue_light",
+  },
+  food: { 
+    borderClass: "border-uoft_secondary_orange",
+    textClass: "text-uoft_secondary_orange", 
+    backgroundColor: "bg-uoft_orange_light",
+  },
+  activity: { 
+    borderClass: "border-uoft_accent_purple",
+    textClass: "text-uoft_accent_purple",
+    backgroundColor: "bg-uoft_purple_light",
+  },
 };
 
 const Event = ({
@@ -44,21 +56,29 @@ const Event = ({
     }
   };
 
+  const colors = eventTypeColors[type];
+
   return (
     <Pressable
       onPress={handlePress}
-      className={`absolute rounded-lg px-2 py-1 ${eventTypeBgClass[type]}`}
+      className={`absolute px-2 py-2 border-l-4 ${colors.borderClass} ${colors.backgroundColor}`}
       style={[
         {
           zIndex: 1,
+          borderRadius: 4,
+          paddingRight: 8,
+          marginRight: 8,
         },
         style,
       ]}
     >
       <Text
-        className="text-white font-pp text-sm"
+        className={`font-pp text-xs font-semibold ${colors.textClass}`}
         numberOfLines={2}
-        style={{ minHeight: 32, lineHeight: 16 }}
+        style={{ 
+          minHeight: 32, 
+          lineHeight: 16,
+        }}
       >
         {title}
       </Text>

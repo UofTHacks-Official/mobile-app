@@ -19,6 +19,9 @@ module.exports = {
         uoft_grey_lighter: "#E0E0E0",
         uoft_dark_grey: "#ecece7",
         uoft_light_grey: "#fbfbf8",
+        uoft_blue_light: "#E3F2FD",
+        uoft_orange_light: "#FFF3E0", 
+        uoft_purple_light: "#F0E6FF",
         navBar: "#1A1819",
         navBar1: "#2F2E2C",
         navIconColor: "#BFBDBE"

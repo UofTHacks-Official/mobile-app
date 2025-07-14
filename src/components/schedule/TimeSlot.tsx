@@ -16,6 +16,17 @@ interface TimeSlotProps {
   endHour?: number;
 }
 
+interface DayColumnProps {
+  date: Date;
+  currentHour: number;
+  schedules: Schedule[];
+  onSchedulePress: (schedule: Schedule) => void;
+  showCurrentTimeIndicator?: boolean;
+  currentMinute?: number;
+  hourHeight?: number;
+  showTimeLabels?: boolean;
+}
+
 const TimeSlot = ({
   hour,
   isCurrentHour,
@@ -93,7 +104,11 @@ const TimeSlot = ({
   const overlapGroups = groupOverlappingEvents(eventsStartingInThisHour);
 
   return (
-    <View className="h-12 border-b border-gray-200" onLayout={onLayout}>
+    <View 
+      className="border-b border-gray-200" 
+      style={{ height: hourHeight }} 
+      onLayout={onLayout}
+    >
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">
@@ -109,10 +124,9 @@ const TimeSlot = ({
             return group.map((schedule, index) => {
               const { start, end } = getEventRange(schedule);
 
-              // Add spacing between events
-              const spacing = 4; // 4px spacing between events
+              const spacing = 4;
 
-              // Calculate the full height of the event in pixels
+              // Calculate the full height of the event
               const eventDurationMinutes = end - start;
               const eventHeightPixels =
                 (eventDurationMinutes / 60) * hourHeight - spacing;
@@ -153,6 +167,31 @@ const TimeSlot = ({
           })}
         </View>
       </View>
+    </View>
+  );
+};
+
+export const DayColumn = ({
+  currentHour,
+  schedules,
+  onSchedulePress,
+  hourHeight = 100,
+  showTimeLabels = false,
+}: DayColumnProps) => {
+  return (
+    <View className="flex-1 border-r border-gray-200 relative">
+      {Array.from({ length: 24 }, (_, i) => (
+        <TimeSlot
+          key={i}
+          hour={i}
+          isCurrentHour={i === currentHour}
+          schedules={schedules}
+          hourHeight={hourHeight}
+          onSchedulePress={onSchedulePress}
+          showTime={showTimeLabels}
+          allSchedules={schedules}
+        />
+      ))}
     </View>
   );
 };
