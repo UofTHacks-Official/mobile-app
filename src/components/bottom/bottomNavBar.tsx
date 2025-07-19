@@ -1,7 +1,11 @@
 // components/CustomTabBar.js
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { useTheme } from "@/context/themeContext";
+import { getThemeStyles, cn } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
+import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
   Calendar,
@@ -10,7 +14,7 @@ import {
   ScanQrCode,
   X,
 } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -20,8 +24,14 @@ const CustomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
-  
-  const [isExpanded, setIsExpanded] = useState(false);
+  const pathname = usePathname();
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
+
+  // Use Zustand store for nav bar state
+  const isExpanded = useBottomNavBarStore((s) => s.isExpanded);
+  const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
+  const closeNavBar = useBottomNavBarStore((s) => s.closeNavBar);
 
   // Animation values for each tab
   const animatedValues = useRef(
@@ -31,28 +41,36 @@ const CustomTabBar = ({
   // Animation for expansion
   const expandAnimation = useRef(new Animated.Value(0)).current;
 
+  // Sync animation with isExpanded state
+  useEffect(() => {
+    Animated.timing(expandAnimation, {
+      toValue: isExpanded ? 1 : 0,
+      duration: 150,
+      useNativeDriver: false,
+    }).start();
+  }, [isExpanded, expandAnimation]);
+
+  // Check if we're on a hackerbucks route
+  const isOnHackerBucksRoute = pathname.includes("/hackerbucks");
+
   // Animate the selected tab
   useEffect(() => {
     state.routes.forEach((_, index) => {
+      const route = state.routes[index];
+      const isSelected =
+        state.index === index || (route.name === "qr" && isOnHackerBucksRoute);
+
       Animated.spring(animatedValues[index], {
-        toValue: state.index === index ? 1 : 0,
+        toValue: isSelected ? 1 : 0,
         useNativeDriver: true,
         tension: 100,
         friction: 8,
       }).start();
     });
-  }, [state.index, animatedValues, state.routes]);
+  }, [state.index, animatedValues, state.routes, isOnHackerBucksRoute]);
 
   const toggleExpansion = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    const toValue = isExpanded ? 0 : 1;
-
-    Animated.timing(expandAnimation, {
-      toValue,
-      duration: 150,
-      useNativeDriver: false, // 'height' is not supported by the native driver
-    }).start();
 
     setIsExpanded(!isExpanded);
   };
@@ -61,7 +79,7 @@ const CustomTabBar = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Collapse the expansion immediately
-    setIsExpanded(false);
+    closeNavBar();
     Animated.timing(expandAnimation, {
       toValue: 0,
       duration: 50,
@@ -124,7 +142,7 @@ const CustomTabBar = ({
         }}
       >
         <Animated.View
-          className="bg-navBar rounded-3xl h-full flex flex-col justify-center"
+          className={cn("rounded-3xl h-full flex flex-col justify-center", themeStyles.navBarBackground)}
           style={{
             width: animatedWidth,
             shadowColor: "#000",
@@ -145,19 +163,19 @@ const CustomTabBar = ({
                 onPress={() => handleScanOption("qr")}
                 className="rounded-xl p-2 flex-row items-center justify-between"
               >
-                <Text className="text-white text-lg font-onest-extralight">
+                <Text className={cn("text-lg font-onest-extralight", themeStyles.navBarText)}>
                   Event Check-in
                 </Text>
-                <ScanLine size={28} strokeWidth={1.5} color="white" />
+                <ScanLine size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleScanOption("hackerbucks")}
-                className=" rounded-xl p-2 flex-row text-lg items-center justify-between"
+                className="rounded-xl p-2 flex-row items-center justify-between"
               >
-                <Text className="text-white text-lg font-onest-extralight">
+                <Text className={cn("text-lg font-onest-extralight", themeStyles.navBarText)}>
                   Send Hacker Bucks
                 </Text>
-                <BanknoteArrowUp size={28} strokeWidth={1.5} color="white" />
+                <BanknoteArrowUp size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
               </TouchableOpacity>
             </View>
             <View className="flex-row justify-end">
@@ -165,7 +183,7 @@ const CustomTabBar = ({
                 onPress={toggleExpansion}
                 className="rounded-full p-2"
               >
-                <X size={28} strokeWidth={1.5} color="white" />
+                <X size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -195,7 +213,9 @@ const CustomTabBar = ({
                   ? options.title
                   : route.name;
 
-              const isFocused = state.index === index;
+              const isFocused =
+                state.index === index ||
+                (route.name === "qr" && isOnHackerBucksRoute);
 
               const iconComponent = () => {
                 switch (label) {
@@ -204,7 +224,7 @@ const CustomTabBar = ({
                       <Home
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? "white" : "#BFBDBE"}
+                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
                       />
                     );
                   case "Schedule":
@@ -212,7 +232,7 @@ const CustomTabBar = ({
                       <Calendar
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? "white" : "#BFBDBE"}
+                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
                       />
                     );
                   case "Scan":
@@ -220,7 +240,7 @@ const CustomTabBar = ({
                       <ScanQrCode
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? "white" : "#BFBDBE"}
+                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
                       />
                     );
 
@@ -238,12 +258,14 @@ const CustomTabBar = ({
                   canPreventDefault: true,
                 });
 
-                if (!isFocused && !event.defaultPrevented) {
-                  if (route.name === "qr") {
+                if (route.name === "qr") {
+                  if (isFocused) {
                     toggleExpansion();
-                  } else {
-                    navigation.navigate(route.name);
+                  } else if (!event.defaultPrevented) {
+                    toggleExpansion();
                   }
+                } else if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
                 }
               };
 
@@ -269,36 +291,37 @@ const CustomTabBar = ({
                     ],
                   }}
                 >
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityState={isFocused ? { selected: true } : {}}
-                    accessibilityLabel={options.tabBarAccessibilityLabel}
-                    onPress={onPress}
-                    onLongPress={onLongPress}
-                    className={`flex-row items-center justify-center rounded-xl ${
-                      isFocused ? "bg-navBar1 px-4 py-2" : "p-2"
-                    }`}
-                  >
-                    {iconComponent()}
-                    {isFocused && label && (
-                      <Animated.Text
-                        className="ml-2 text-white font-semibold font-onest-extralight"
-                        style={{
-                          opacity: animatedValues[index],
-                          transform: [
-                            {
-                              translateX: animatedValues[index].interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [-10, 0],
-                              }),
-                            },
-                          ],
-                        }}
-                      >
-                        {label}
-                      </Animated.Text>
-                    )}
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityState={isFocused ? { selected: true } : {}}
+                      accessibilityLabel={options.tabBarAccessibilityLabel}
+                      onPress={onPress}
+                      onLongPress={onLongPress}
+                      className={cn(
+                        "flex-row items-center justify-center rounded-xl",
+                        isFocused ? cn(themeStyles.navBarSelectedBackground, "px-4 py-2") : "p-2"
+                      )}
+                    >
+                      {iconComponent()}
+                      {isFocused && label && (
+                        <Animated.Text
+                          className={cn("ml-2 font-semibold font-onest-extralight", themeStyles.navBarText)}
+                          style={{
+                            opacity: animatedValues[index],
+                            transform: [
+                              {
+                                translateX: animatedValues[index].interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-10, 0],
+                                }),
+                              },
+                            ],
+                          }}
+                        >
+                          {label}
+                        </Animated.Text>
+                      )}
+                    </TouchableOpacity>
                 </Animated.View>
               );
             })}
@@ -310,3 +333,5 @@ const CustomTabBar = ({
 };
 
 export default CustomTabBar;
+// Optionally export the Zustand hook for use in other files
+export { useBottomNavBarStore };

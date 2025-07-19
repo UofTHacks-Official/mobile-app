@@ -18,7 +18,7 @@ export interface Transaction {
   id: string;
   recipient: Recipient;
   amount: string | null;
-  status: 'pending' | 'confirmed' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'failed';
   timestamp: Date;
   orderType: 'send' | 'deduct' | null;
 }

@@ -3,6 +3,8 @@ import EventDetails from "@/components/schedule/EventDetails";
 import FilterMenu from "@/components/schedule/FilterMenu";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
+import { useTheme } from "@/context/themeContext";
+import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
@@ -12,6 +14,8 @@ import { useState } from "react";
 import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
 
 const Schedule = () => {
+  const { isDark } = useTheme();
+  const scheduleTheme = getScheduleThemeStyles(isDark);
   const currentTime = useCurrentTime();
   const [selectedSchedule, setSelectedSchedule] =
     useState<ScheduleInterface | null>(null);
@@ -161,8 +165,8 @@ const Schedule = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
-      <View className="flex-1 mb-20 text-uoft_black">
+    <SafeAreaView className={cn("flex-1", scheduleTheme.scheduleBackground)}>
+      <View className={cn("flex-1 mb-20", scheduleTheme.primaryText)}>
         <ScheduleHeader
           dates={dates}
           currentDate={currentDate}
@@ -173,7 +177,7 @@ const Schedule = () => {
         />
 
         <View className="flex-1">
-          <ScrollView className="flex-1 pb-8 bg-uoft_white">
+          <ScrollView className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}>
             <View className="relative">
               {daysToShow === 1 ? (
                 <ScrollView
@@ -199,8 +203,11 @@ const Schedule = () => {
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}
                     >
-                      <View className="flex-row bg-uoft_white">
-                        <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                      <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
+                        <View 
+                          className={cn("w-12", scheduleTheme.scheduleBackground)}
+                          style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                        >
                           {Array.from({ length: 24 }, (_, i) => (
                             <TimeSlot
                               key={i}
@@ -245,8 +252,11 @@ const Schedule = () => {
                         key={pageIndex}
                         style={{ width: Dimensions.get("window").width }}
                       >
-                        <View className="flex-row bg-uoft_white">
-                          <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                        <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
+                          <View 
+                            className={cn("w-12", scheduleTheme.scheduleBackground)}
+                            style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                          >
                             {Array.from({ length: 24 }, (_, i) => (
                               <TimeSlot
                                 key={i}
@@ -270,8 +280,11 @@ const Schedule = () => {
                   )}
                 </ScrollView>
               ) : (
-                <View className="flex-row bg-uoft_white">
-                  <View className="w-12 border-r border-gray-200 bg-uoft_white">
+                <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
+                  <View 
+                    className={cn("w-12", scheduleTheme.scheduleBackground)}
+                    style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                  >
                     {Array.from({ length: 24 }, (_, i) => (
                       <TimeSlot
                         key={i}

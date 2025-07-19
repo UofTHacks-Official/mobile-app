@@ -46,10 +46,27 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/lottie/moose.json",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "image": "./assets/images/splash-dark.png",
+            "backgroundColor": "#000000"
+          },
+          "ios": {
+            "image": "./assets/images/splash-ios.png",
+            "tabletImage": "./assets/images/splash-tablet.png"
+          },
+          "android": {
+            "image": "./assets/images/splash-android.png",
+            "mdpi": "./assets/images/splash-mdpi.png",
+            "hdpi": "./assets/images/splash-hdpi.png",
+            "xhdpi": "./assets/images/splash-xhdpi.png",
+            "xxhdpi": "./assets/images/splash-xxhdpi.png",
+            "xxxhdpi": "./assets/images/splash-xxxhdpi.png"
+          },
+          "svg": "./assets/images/logo.svg"
         }
       ],
       [

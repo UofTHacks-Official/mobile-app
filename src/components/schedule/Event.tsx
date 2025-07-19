@@ -14,17 +14,17 @@ interface EventProps {
 }
 
 const eventTypeColors = {
-  networking: { 
+  networking: {
     borderClass: "border-uoft_primary_blue",
     textClass: "text-uoft_primary_blue",
     backgroundColor: "bg-uoft_blue_light",
   },
-  food: { 
-    borderClass: "border-uoft_secondary_orange",
-    textClass: "text-uoft_secondary_orange", 
+  food: {
+    borderClass: "border-uoft__orange",
+    textClass: "text-uoft__orange",
     backgroundColor: "bg-uoft_orange_light",
   },
-  activity: { 
+  activity: {
     borderClass: "border-uoft_accent_purple",
     textClass: "text-uoft_accent_purple",
     backgroundColor: "bg-uoft_purple_light",
@@ -75,8 +75,8 @@ const Event = ({
       <Text
         className={`font-pp text-xs font-semibold ${colors.textClass}`}
         numberOfLines={2}
-        style={{ 
-          minHeight: 32, 
+        style={{
+          minHeight: 32,
           lineHeight: 16,
         }}
       >

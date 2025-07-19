@@ -1,3 +1,4 @@
+import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useAuth } from "@/context/authContext";
 import { Redirect } from "expo-router";
 
@@ -6,7 +7,7 @@ export default function StartPage() {
 
   // Show a loading screen while authentication state is being determined
   if (loading) {
-    return null; // Or a splash screen component
+    return <CustomSplashScreen />;
   }
 
   // Redirect based on authentication state

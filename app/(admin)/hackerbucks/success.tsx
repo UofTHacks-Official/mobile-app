@@ -1,5 +1,8 @@
-import { shortenString } from "@/utils/tokens/format/shorten";
+import { CustomSplashScreen } from "@/components/loading/SplashScreen";
+import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
+import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -14,6 +17,8 @@ import React, { useEffect } from "react";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 
 export default function Success() {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const router = useRouter();
 
   const { currentTransaction, updateTransactionStatus, clearTransaction } =
@@ -28,59 +33,69 @@ export default function Success() {
   const handleDone = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     clearTransaction();
+    router.dismissAll();
     router.replace("/(admin)");
   };
 
   if (!currentTransaction) {
     return (
-      <SafeAreaView className="flex-1 bg-uoft_white">
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-lg">Loading transaction details...</Text>
-        </View>
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <CustomSplashScreen />
       </SafeAreaView>
     );
   }
 
   const { recipient, amount, orderType } = currentTransaction;
+  const statusStyles = getStatusStyles("completed");
 
   const transactionDetails = [
     {
-      icon: <User size={20} color="black" />,
+      icon: <User size={20} color={themeStyles.iconColor} />,
       label: "Recipient",
       value: `${recipient.firstName} ${recipient.lastName}`,
     },
     {
-      icon: <Fingerprint size={20} color="black" />,
+      icon: <Fingerprint size={20} color={themeStyles.iconColor} />,
       label: "Hacker ID",
       value: shortenString(recipient.id),
     },
     {
-      icon: <DollarSign size={20} color="black" />,
+      icon: <DollarSign size={20} color={themeStyles.iconColor} />,
       label: "Amount",
       value: `${amount} HB`,
     },
     {
-      icon: <ArrowLeftRight size={20} color="black" />,
+      icon: <ArrowLeftRight size={20} color={themeStyles.iconColor} />,
       label: "Order Type",
       value: orderType?.toUpperCase(),
     },
     {
-      icon: <CircleDashed size={20} />,
+      icon: <CircleDashed size={20} color={themeStyles.iconColor} />,
       label: "Status",
       value: "Completed",
-      valueClassName: "text-green-600",
+      isStatus: true,
     },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 px-6 py-4">
         <View className="flex-1 justify-center items-center">
-          <View className="bg-green-100 w-20 h-20 rounded-full justify-center items-center mb-6">
+          <View
+            className={cn(
+              "w-20 h-20 rounded-full justify-center items-center mb-6 border border-[#22c55e]",
+              isDark ? "bg-green-900" : "bg-green-100"
+            )}
+          >
             <MaterialCommunityIcons name="check" size={40} color="#22c55e" />
           </View>
 
-          <Text className="text-2xl font-pp font-bold text-center mb-2">
+          <Text
+            className={cn(
+              "text-2xl font-pp font-bold text-center mb-2",
+              themeStyles.primaryText
+            )}
+          >
             Transaction Successful!
           </Text>
 
@@ -90,20 +105,53 @@ export default function Success() {
               : `${amount} HB Sent`}
           </Text>
 
-          <View className="w-full flex flex-col gap-4 bg-uoft_grey_lighter p-4 rounded-lg">
+          <View
+            className={cn(
+              "w-full flex flex-col gap-4 p-4 rounded-lg",
+              themeStyles.cardBackground
+            )}
+          >
             {transactionDetails.map((item, index) => (
               <React.Fragment key={item.label}>
                 <View className="flex flex-row justify-between items-center">
                   <View className="flex flex-row gap-2 items-center">
                     {item.icon}
-                    <Text className="text-gray-600">{item.label}</Text>
+                    <Text className={cn(themeStyles.secondaryText)}>
+                      {item.label}
+                    </Text>
                   </View>
-                  <Text className={`font-medium ${item.valueClassName || ""}`}>
-                    {item.value}
-                  </Text>
+                  {item.isStatus ? (
+                    <View
+                      className="px-3 py-1 rounded-full border"
+                      style={{
+                        backgroundColor: statusStyles.backgroundColor,
+                        borderColor: statusStyles.borderColor,
+                      }}
+                    >
+                      <Text
+                        className="font-medium text-sm"
+                        style={{ color: statusStyles.textColor }}
+                      >
+                        {item.value}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text
+                      className={cn("font-medium", themeStyles.primaryText)}
+                    >
+                      {item.value}
+                    </Text>
+                  )}
                 </View>
                 {index < transactionDetails.length - 1 && (
-                  <View className="h-0.5 bg-gray-200 rounded-full" />
+                  <View
+                    className="h-0.5 rounded-full"
+                    style={{
+                      backgroundColor: isDark
+                        ? "rgba(255,255,255,0.1)"
+                        : "rgba(0,0,0,0.1)",
+                    }}
+                  />
                 )}
               </React.Fragment>
             ))}
@@ -113,7 +161,7 @@ export default function Success() {
 
       <View className="px-6 space-y-3">
         <TouchableOpacity
-          className="bg-uoft_primary_blue border py-4 rounded-lg items-center mb-20"
+          className="bg-uoft_primary_blue py-4 rounded-lg items-center mb-20"
           onPress={handleDone}
         >
           <Text className="text-white text-lg">Done</Text>

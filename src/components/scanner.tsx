@@ -27,7 +27,7 @@ export default function QRCodeScanner({
           We need your permission to use the camera
         </Text>
         <TouchableOpacity
-          className="bg-uoft_secondary_orange px-6 py-3 rounded-lg"
+          className="bg-uoft__orange px-6 py-3 rounded-lg"
           onPress={requestPermission}
         >
           <Text className="text-white font-bold">Grant Permission</Text>
@@ -70,13 +70,13 @@ export default function QRCodeScanner({
         </TouchableOpacity>
         {scanned && (
           <TouchableOpacity
-            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
+            className="bg-uoft__orange px-6 py-3 rounded-lg mb-4"
             onPress={() => setScanned(false)}
           >
             <Text className="text-white font-bold">Tap to Scan Again</Text>
           </TouchableOpacity>
         )}
-        <View className="w-64 h-64 border-4 border-uoft_secondary_orange rounded-xl mb-8" />
+        <View className="w-64 h-64 border-4 border-uoft__orange rounded-xl mb-8" />
         <Text className="text-white text-lg">
           Align QR code within the frame
         </Text>

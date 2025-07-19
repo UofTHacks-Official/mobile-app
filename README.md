@@ -173,7 +173,7 @@ This project uses **NativeWind** for styling, which brings the power of Tailwind
 The project utilizes a custom color palette defined in `tailwind.config.js`. This ensures consistent branding throughout the application. Key colors include:
 
 *   **Primary**: `uoft_primary_blue` (#2A398C)
-*   **Secondary**: `uoft_secondary_orange` (#FF6F51)
+*   **Secondary**: `uoft__orange` (#FF6F51)
 *   **Accents**: `uoft_accent_purple` (#E9B6F7), `uoft_accent_red` (#F85C5C), `uoft_accent_cream` (#F3E7E3)
 *   **Neutrals**: `uoft_black` (#181818), `uoft_white` (#F6F6F6), `uoft_stark_white` (#FFFFFF), `uoft_grey_light` (#C6C6C6), `uoft_grey_medium` (#A0A0A0), `uoft_grey_lighter` (#E0E0E0)
 

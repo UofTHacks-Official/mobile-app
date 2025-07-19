@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
@@ -14,6 +16,8 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onDelete,
   onPresetAmount,
 }) => {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const handleKeyPress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onKeyPress(key);
@@ -27,20 +31,35 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
   const renderKey = (key: string) => (
     <Pressable
       onPress={() => handleKeyPress(key)}
-      className="flex-1 items-center justify-center bg-uoft_light_grey rounded-lg m-1"
+      className={cn(
+        "flex-1 items-center justify-center rounded-lg m-1",
+        themeStyles.hackerBucksKeyboard
+      )}
       style={{ minHeight: 60 }}
     >
-      <Text className="text-2xl font-pp text-gravel">{key}</Text>
+      <Text className={cn("text-2xl font-pp", themeStyles.primaryText)}>
+        {key}
+      </Text>
     </Pressable>
   );
 
   const renderPresetKey = (amount: string) => (
     <Pressable
       onPress={() => onPresetAmount(amount)}
-      className="flex-1 items-center justify-center bg-uoft_light_grey rounded-lg m-1"
+      className={cn(
+        "flex-1 items-center justify-center rounded-lg m-1",
+        themeStyles.lightCardBackground
+      )}
       style={{ minHeight: 40 }}
     >
-      <Text className="text-xl font-pp text-clementine">{amount}</Text>
+      <Text
+        className={cn(
+          "text-xl font-pp",
+          isDark ? "text-white" : "text-orange-600"
+        )}
+      >
+        {amount}
+      </Text>
     </Pressable>
   );
 
@@ -52,7 +71,12 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
         {renderPresetKey("50")}
         {renderPresetKey("100")}
       </View>
-      <View className="h-[1px] bg-black/10 my-1" />
+      <View
+        className="h-[1px] my-1"
+        style={{
+          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+        }}
+      />
       <View className="flex-row">
         {renderKey("1")}
         {renderKey("2")}
@@ -73,10 +97,17 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
         {renderKey("0")}
         <Pressable
           onPress={handleDelete}
-          className="flex-1 items-center justify-center bg-uoft_light_grey rounded-lg m-1"
+          className={cn(
+            "flex-1 items-center justify-center rounded-lg m-1",
+            themeStyles.lightCardBackground
+          )}
           style={{ minHeight: 60 }}
         >
-          <Feather name="chevron-left" size={24} />
+          <Feather
+            name="chevron-left"
+            size={24}
+            color={themeStyles.iconColor}
+          />
         </Pressable>
       </View>
     </View>

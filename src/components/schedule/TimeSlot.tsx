@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/themeContext";
+import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { Schedule } from "@/types/schedule";
 import { LayoutChangeEvent, Text, View } from "react-native";
 import EventComponent from "./Event";
@@ -39,6 +41,8 @@ const TimeSlot = ({
   startHour = 0,
   endHour = 24,
 }: TimeSlotProps) => {
+  const { isDark } = useTheme();
+  const scheduleTheme = getScheduleThemeStyles(isDark);
   // Format hour to 12-hour format with AM/PM
   const formattedHour =
     hour === 0
@@ -105,14 +109,18 @@ const TimeSlot = ({
 
   return (
     <View 
-      className="border-b border-gray-200" 
-      style={{ height: hourHeight }} 
+      className={cn(scheduleTheme.timeBlockBackground)}
+      style={{ 
+        height: hourHeight,
+        borderBottomWidth: 1,
+        borderBottomColor: scheduleTheme.lineColor
+      }} 
       onLayout={onLayout}
     >
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">
-            <Text className="text-xs text-gray-500 ml-1 mt-1">
+            <Text className={cn("text-xs ml-1 mt-1", scheduleTheme.timeText)}>
               {formattedHour}
             </Text>
           </View>
@@ -178,8 +186,17 @@ export const DayColumn = ({
   hourHeight = 100,
   showTimeLabels = false,
 }: DayColumnProps) => {
+  const { isDark } = useTheme();
+  const scheduleTheme = getScheduleThemeStyles(isDark);
+  
   return (
-    <View className="flex-1 border-r border-gray-200 relative">
+    <View 
+      className="flex-1 relative"
+      style={{
+        borderRightWidth: 1,
+        borderRightColor: scheduleTheme.lineColor
+      }}
+    >
       {Array.from({ length: 24 }, (_, i) => (
         <TimeSlot
           key={i}

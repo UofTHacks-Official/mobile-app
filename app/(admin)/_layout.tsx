@@ -26,7 +26,6 @@ export default function AdminLayout() {
         headerShown: false,
       }}
       tabBar={(props) => {
-        // Filter out the profile and hackerbucks screens from the tab bar props
         const filteredProps = {
           ...props,
           state: {

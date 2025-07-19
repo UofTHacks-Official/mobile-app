@@ -1,10 +1,11 @@
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { openSettings } from "@/utils/camera/permissions";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router, useNavigation } from "expo-router";
-import { Home, Settings } from "lucide-react-native";
+import { Settings } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
 import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
@@ -17,6 +18,8 @@ export default function App() {
   const navigation = useNavigation();
 
   const { startTransaction, clearTransaction } = useHackerBucksStore();
+
+  const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
 
   // NEW: A ref to control whether a scan is currently being processed
   const isProcessingScan = useRef(false);
@@ -71,8 +74,7 @@ export default function App() {
     isProcessingScan.current = true;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-
+    setIsExpanded(false);
 
     // Navigate to the next screen
     router.push("/hackerbucks/sendHbucks");
@@ -103,7 +105,7 @@ export default function App() {
           </Text>
 
           <TouchableOpacity
-            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
+            className="bg-uoft__orange px-6 py-3 rounded-lg mb-4"
             onPress={requestPermission}
           >
             <Text className="text-black text-center">Grant Permission</Text>
@@ -176,7 +178,7 @@ export default function App() {
             />
           </Svg>
 
-          <View className="absolute bottom-40 right-10">
+          {/* <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -187,7 +189,7 @@ export default function App() {
             >
               <Home size={32} color="white" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </CameraView>
       )}
     </View>

@@ -19,7 +19,7 @@ const SignUp = () => {
 
         <View className="space-y-2 flex-row items-center px-12">
           <TextInput
-            className="w-full border-b border-uoft_black py-3 font-pp text-lg text-uoft_secondary_orange  mb-1"
+            className="w-full border-b border-uoft_black py-3 font-pp text-lg text-uoft__orange  mb-1"
             placeholder="Email"
             placeholderTextColor="uoft_grey_medium"
             keyboardType="email-address"

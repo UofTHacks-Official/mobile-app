@@ -3,16 +3,29 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}",
     "./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
-        uoft_primary_blue: "#2A398C",
-        uoft_secondary_orange: "#FF6F51",
+        uoft_primary_blue: "#75EDEF",
+        uoft_yellow: "#FFDD80",
+        uoft__orange: "#FF9F6E",
+        uoft_pink: "#F17AAD",
         uoft_accent_purple: "#E9B6F7",
         uoft_accent_red: "#F85C5C",
         uoft_accent_cream: "#F3E7E3",
+        uoft_grey : "##D3D3D3",
+
         uoft_black: "#181818",
         uoft_white: "#F6F6F6",
+
+
+        uoft_dark_bg_black: "#1A1A1A",
+        uoft_dark_mode_bg_light_black:"#262626",
+        uoft_dark_mode_text:"#808080",
+        uoft_dark_bg: "#212121",
+
+        
         uoft_stark_white: "#FFFFFF",
         uoft_grey_light: "#C6C6C6",
         uoft_grey_medium: "#A0A0A0",

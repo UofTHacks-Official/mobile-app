@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/themeContext";
+import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { SlidersHorizontal } from "lucide-react-native";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
@@ -13,23 +15,32 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   currentDate,
   onFilterPress,
 }) => {
+  const { isDark } = useTheme();
+  const scheduleTheme = getScheduleThemeStyles(isDark);
+  
   return (
     <>
       {/* Main Header */}
-      <View className="px-4 py-3 bg-gray-50 flex-row items-center justify-between">
+      <View className={cn("px-4 py-3 flex-row items-center justify-between", scheduleTheme.headerBackground)}>
         <View className="flex-row items-center">
           <Pressable onPress={onFilterPress} className="ml-2 mr-4">
-            <SlidersHorizontal size={24} fontSize={2} color="#333" />
+            <SlidersHorizontal size={24} fontSize={2} color={scheduleTheme.iconColor} />
           </Pressable>
-          <Text className="text-3xl font-bold text-uoft_black">
+          <Text className={cn("text-3xl font-bold", scheduleTheme.headerText)}>
             {dates[0].toLocaleDateString("en-US", { month: "long" })}
           </Text>
         </View>
       </View>
 
       {/* Date Tabs */}
-      <View className="flex-row h-16 border-b border-gray-200 bg-gray-50">
-        <View className="w-12 h-16 border-b border-gray-200 bg-gray-50" />
+      <View 
+        className={cn("flex-row h-16", scheduleTheme.headerBackground)}
+        style={{ borderBottomWidth: 1, borderBottomColor: scheduleTheme.lineColor }}
+      >
+        <View 
+          className={cn("w-12 h-16", scheduleTheme.headerBackground)}
+          style={{ borderBottomWidth: 1, borderBottomColor: scheduleTheme.lineColor }}
+        />
         {dates.map((date, index) => {
           const isCurrentDate =
             date.getFullYear() === currentDate.getFullYear() &&
@@ -46,16 +57,18 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               key={index}
               className="flex-1 items-center justify-center px-6"
             >
-              <Text className="text-sm text-gray-600 mb-1">{dayName}</Text>
+              <Text className={cn("text-sm mb-1", scheduleTheme.secondaryText)}>{dayName}</Text>
               <View
-                className={`w-8 h-8 rounded items-center justify-center ${
-                  isCurrentDate ? "bg-uoft_secondary_orange" : ""
-                }`}
+                className={cn(
+                  "w-8 h-8 rounded items-center justify-center",
+                  isCurrentDate ? "bg-uoft__orange" : ""
+                )}
               >
                 <Text
-                  className={`text-lg font-semibold ${
-                    isCurrentDate ? "text-white" : "text-black"
-                  }`}
+                  className={cn(
+                    "text-lg font-semibold",
+                    isCurrentDate ? "text-white" : scheduleTheme.primaryText
+                  )}
                 >
                   {dayNumber}
                 </Text>

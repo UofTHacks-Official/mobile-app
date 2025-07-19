@@ -1,5 +1,6 @@
 import toastConfig from "@/components/config/toastconfig";
 import { AuthProvider } from "@/context/authContext";
+import { ThemeProvider } from "@/context/themeContext";
 import { useCustomFonts } from "@/utils/fonts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
@@ -80,35 +81,39 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen
-              name="auth/selectRole"
-              options={{ headerShown: false, animation: "fade" }}
-            />
-            <Stack.Screen
-              name="auth/signInAdmin"
-              options={{ headerShown: false, animation: "none" }}
-            />
-            <Stack.Screen
-              name="auth/camera"
-              options={{ headerShown: false, animation: "slide_from_right" }}
-            />
-            <Stack.Screen
-              name="auth/notification"
-              options={{ headerShown: false, animation: "slide_from_right" }}
-            />
-            <Stack.Screen
-              name="(admin)"
-              options={{
-                headerShown: false,
-                animation: "fade",
-                gestureEnabled: false,
-              }}
-            />
-          </Stack>
-          <Toast config={toastConfig} />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen
+                name="auth/selectRole"
+                options={{ headerShown: false, animation: "fade" }}
+              />
+              <Stack.Screen
+                name="auth/signInAdmin"
+                options={{ headerShown: false, animation: "slide_from_right" }}
+              />
+              <Stack.Screen
+                name="auth/camera"
+                options={{ headerShown: false, animation: "slide_from_right" }}
+              />
+              <Stack.Screen
+                name="auth/notification"
+                options={{ headerShown: false, animation: "slide_from_right" }}
+              />
+              <Stack.Screen
+                name="(admin)"
+                options={{
+                  headerShown: false,
+                  animation: "fade",
+                  gestureEnabled: false,
+                }}
+              />
+
+            </Stack>
+
+            <Toast config={toastConfig} />
+          </AuthProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );

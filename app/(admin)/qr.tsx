@@ -2,9 +2,11 @@ import { useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useNavigation } from "expo-router";
-import { Home, Settings } from "lucide-react-native";
+import { Camera, Settings } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { openSettings } from "@/utils/camera/permissions";
 import {
   Button,
   Dimensions,
@@ -14,7 +16,6 @@ import {
   View,
 } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
-import { openSettings } from "@/utils/camera/permissions";
 
 const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
@@ -24,6 +25,7 @@ export default function App() {
   const navigation = useNavigation();
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
 
   const isProcessingScan = useRef(false);
 
@@ -93,6 +95,7 @@ export default function App() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     setHasScanned(true);
+    setIsExpanded(false);
     setPopupMessage("QR Code scanned: " + data);
     setScannedBounds(bounds);
 
@@ -108,37 +111,34 @@ export default function App() {
     return (
       <View className="flex-1 justify-center items-center bg-uoft_white">
         <View className="px-6">
-          <Text className="text-black text-center text-lg mb-4">
-            Camera Permission Required
-          </Text>
-          <Text className="text-black text-center mb-8">
-            We need camera access to scan QR codes. Please grant permission to
-            continue.
-          </Text>
+          <View className="flex-1 justify-center items-center">
+            <View className="mb-4">
+              <Camera color="black" size={32} />
+            </View>
 
-          <TouchableOpacity
-            className="bg-uoft_secondary_orange px-6 py-3 rounded-lg mb-4"
-            onPress={requestPermission}
-          >
-            <Text className="text-black text-center font-bold">
-              Grant Permission
+            <Text className="text-xl font-bold text-center text-lg mb-4">
+              Camera Permission Required
             </Text>
-          </TouchableOpacity>
+            <Text className="text-black text-center mb-8">
+              We need camera access to scan QR codes. Grant permission to
+              continue.
+            </Text>
 
-          <TouchableOpacity
-            className="bg-black px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
-            onPress={openSettings}
-          >
-            <Settings size={20} color="white" style={{ marginRight: 8 }} />
-            <Text className="text-white text-center">Open Settings</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              className="bg-uoft_primary_blue w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+              onPress={openSettings}
+            >
+              <Settings size={20} color="black" style={{ marginRight: 8 }} />
+              <Text className="text-center">Open Settings</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            className="px-6 py-3 rounded-lg border border-black"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-black font-bold text-center">Go Back</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              className="px-6 py-3 rounded-lg w-full bg-uoft_grey"
+              onPress={() => navigation.goBack()}
+            >
+              <Text className="text-center">Go Back</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -201,7 +201,7 @@ export default function App() {
             )}
           </Svg>
 
-          <View className="absolute bottom-40 right-10">
+          {/* <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -211,7 +211,7 @@ export default function App() {
             >
               <Home size={32} color="white" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </CameraView>
       )}
 

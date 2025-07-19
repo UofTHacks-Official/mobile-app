@@ -1,10 +1,16 @@
+import { CustomSplashScreen } from "@/components/loading/SplashScreen";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/authContext";
+import { useTheme } from "@/context/themeContext";
 import { openSettings } from "@/utils/camera/permissions";
+import { cn, getThemeStyles } from "@/utils/theme";
 import { Bell, CalendarCheck2Icon, User } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const Profile = () => {
   const { signOut, adminData, adminLoading } = useAuth();
+  const { isDark } = useTheme();
+  const theme = getThemeStyles(isDark);
 
   const admin = adminData || {
     admin_username: "",
@@ -13,67 +19,99 @@ const Profile = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
-      <View className="flex-1 px-6 text-uoft_black">
+    <SafeAreaView className={cn("flex-1", theme.background)}>
+      <View className="flex-1 px-6">
         <View className="mt-6">
-          <Text className="text-3xl font-onest-bold mb-2">Profile</Text>
-          <Text className="text-lg font-opensans text-uoft_black">
+          <Text
+            className={cn("text-3xl font-onest-bold mb-2", theme.primaryText)}
+          >
+            Profile
+          </Text>
+          <Text className={cn("text-lg font-opensans", theme.primaryText)}>
             Manage your account settings
           </Text>
         </View>
 
         <View className="mt-12 gap-y-6">
-          {/* Admin Information Section */}
-          <View className="w-full bg-white p-4 px-6 rounded-sm">
+          <View className={cn(theme.cardStyle, theme.cardBackground)}>
             <View className="flex-row items-center gap-2 mb-4">
-              <User size={20} color="#000" />
-              <Text className="text-black font-opensans-medium">
+              <User size={20} color={theme.iconColor} />
+              <Text className={cn(theme.textPrimary, theme.cardText)}>
                 Account Information
               </Text>
             </View>
 
             {adminLoading ? (
-              <View className="my-4 p-2 bg-uoft_grey_light items-center rounded-sm">
-                <Text className="font-opensans">Loading profile...</Text>
-              </View>
+              <CustomSplashScreen />
             ) : adminData ? (
               <View className="space-y-3">
                 <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
                     Username:
                   </Text>
-                  <Text className="font-opensans-medium">
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
                     {admin.admin_username}
                   </Text>
                 </View>
                 <View className="flex-row justify-between">
-                  <Text className="font-opensans text-uoft_grey_medium">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
                     Role:
                   </Text>
-                  <Text className="font-opensans-medium">
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
                     {admin.admin_role}
                   </Text>
                 </View>
               </View>
             ) : (
-              <View className="my-4 p-2 bg-uoft_grey_light items-center rounded-sm">
-                <Text className="font-opensans">
+              <View
+                className={cn(
+                  "my-4 p-2 items-center rounded-md",
+                  theme.errorBackground
+                )}
+              >
+                <Text className={cn(theme.textSecondary, theme.cardText)}>
                   Unable to load profile data
                 </Text>
               </View>
             )}
           </View>
 
-          <View className="w-full bg-white p-4 px-6 rounded-sm">
+          {/* Notifications Section */}
+          <Pressable
+            className={cn(theme.cardStyle, theme.cardBackground)}
+            onPress={openSettings}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
             <View className="flex-row items-center gap-2">
-              <CalendarCheck2Icon size={20} color="#000" />
-              <Text className="text-black">Last Sign In</Text>
+              <Bell size={20} color={theme.iconColor} />
+              <Text className={theme.cardText}>Notifications</Text>
+            </View>
+
+            <View
+              className={cn(
+                "my-4 p-2 items-center rounded-md",
+                theme.errorBackground
+              )}
+            >
+              <Text className={cn(theme.textSecondary, "text-black")}>
+                Manage Notification Preferences
+              </Text>
+            </View>
+          </Pressable>
+
+          <View className={cn(theme.cardStyle, theme.cardBackground)}>
+            <View className="flex-row items-center gap-2">
+              <CalendarCheck2Icon size={20} color={theme.iconColor} />
+              <Text className={theme.cardText}>Last Sign In</Text>
             </View>
             <View className="flex-row justify-between py-4">
-              <Text className="font-opensans text-uoft_grey_medium">
+              <Text className={cn(theme.textSecondary, theme.cardText)}>
                 Last Sign In:
               </Text>
-              <Text className="font-opensans-medium">
+              <Text className={cn(theme.textPrimary, theme.cardText)}>
                 {admin.last_login
                   ? new Date(
                       new Date(admin.last_login).getTime() - 4 * 60 * 60 * 1000
@@ -90,41 +128,20 @@ const Profile = () => {
             </View>
           </View>
 
-          {/* Notifications Section */}
-          <Pressable
-            className="w-full bg-white p-4 px-6 rounded-sm"
-            onPress={openSettings}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <View className="flex-row items-center gap-2">
-              <Bell size={20} color="#000" />
-              <Text className="text-black">Notifications</Text>
-            </View>
+          <ThemeToggle />
 
-            <View className="my-4 p-2 bg-uoft_grey_light items-center rounded-sm">
-              <Text className="font-opensans">
-                Manage Notification Preferences
-              </Text>
-            </View>
-          </Pressable>
-
-          {/* Sign Out Button */}
           <Pressable
-            className="bg-white p-2 px-6 rounded-sm flex-row items-center justify-center"
+            className={cn(
+              "p-2 px-6 rounded-md flex-row items-center justify-center",
+              theme.cardBackground
+            )}
             onPress={signOut}
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <View>
-              <Text className="text-red-500 items-center text-opensans">
-                Sign Out
-              </Text>
-            </View>
+            <Text className="text-red-500 font-opensans">Sign Out</Text>
           </Pressable>
         </View>
       </View>

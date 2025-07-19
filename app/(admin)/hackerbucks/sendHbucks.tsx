@@ -1,7 +1,9 @@
-import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
-import { shortenString } from "@/utils/tokens/format/shorten";
 import NumericKeypad from "@/components/hacker_bucks/keyboard";
+import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
+import { cn, getThemeStyles } from "@/utils/theme";
+import { shortenString } from "@/utils/tokens/format/shorten";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { ArrowDown, ArrowUp } from "lucide-react-native";
@@ -13,6 +15,8 @@ import Icon from "react-native-vector-icons/Feather";
 // Validation functions
 
 export default function SwapScreen() {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const [amount, setAmount] = useState("0");
   const [isDeducting, setIsDeducting] = useState(false);
 
@@ -85,25 +89,40 @@ export default function SwapScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_dark_grey">
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 px-4">
         <View className="flex flex-row items-center px-4 pt-4 pb-12">
           <Pressable onPress={() => router.back()}>
-            <Icon name="chevron-left" size={28} />
+            <Icon name="chevron-left" size={28} color={themeStyles.iconColor} />
           </Pressable>
-          <Text className="text-lg font-bold text-black flex-1 text-center">
+          <Text
+            className={cn(
+              "text-lg font-bold flex-1 text-center",
+              themeStyles.primaryText
+            )}
+          >
             {isDeducting ? "Deduct Order" : "Send Order"}
           </Text>
         </View>
 
-        <View className="flex-row items-center bg-uoft_light_grey px-6 py-4 min-h-[100px] rounded-lg">
+        <View
+          className={cn(
+            "flex-row items-center px-6 py-4 min-h-[100px] rounded-lg",
+            themeStyles.cardBackground
+          )}
+        >
           <View className="flex-1">
-            <Text className="text-xl pt-2 font-pp">
+            <Text
+              className={cn("text-xl pt-2 font-pp", themeStyles.primaryText)}
+            >
               {isDeducting ? "Deducting" : "Sending"}
             </Text>
             <TextInput
-              className="flex-1 font-pp text-4xl text-clementine border-0 p-0"
-              placeholderTextColor="rock"
+              className={cn(
+                "flex-1 font-pp text-4xl border-0 p-0",
+                themeStyles.primaryText
+              )}
+              placeholderTextColor={isDark ? "#888" : "#666"}
               keyboardType="numeric"
               autoCorrect={false}
               autoFocus={true}
@@ -118,28 +137,35 @@ export default function SwapScreen() {
           className="absolute left-0 right-0 top-[165px] items-center z-10"
           onPress={handleDirectionToggle}
         >
-          <View className="bg-uoft_dark_grey p-1 rounded-lg">
+          <View className={cn("p-1 rounded-lg", themeStyles.background)}>
             {isDeducting ? (
-              <ArrowUp size={36} color="#666666" />
+              <ArrowUp size={36} color={themeStyles.iconColor} />
             ) : (
-              <ArrowDown size={36} color="#666666" />
+              <ArrowDown size={36} color={themeStyles.iconColor} />
             )}
           </View>
         </Pressable>
 
-        <View className="flex-row items-center bg-uoft_light_grey rounded-lg px-6 py-4 min-h-[100px] mt-2 rounded-lg">
+        <View
+          className={cn(
+            "flex-row items-center rounded-lg px-6 py-4 min-h-[100px] mt-2",
+            themeStyles.cardBackground
+          )}
+        >
           <View className="flex-1">
             <View className="flex-row justify-between items-center">
               <View className="flex-1 ml-2">
-                <Text className="text-xl font-pp">
+                <Text
+                  className={cn("text-xl font-pp", themeStyles.primaryText)}
+                >
                   {isDeducting ? "Taking" : "Receiving"}
                 </Text>
                 {currentRecipient?.firstName ? (
                   <>
-                    <Text className="text-2xl text-gravel">
+                    <Text className={cn("text-2xl", themeStyles.primaryText)}>
                       {currentRecipient?.firstName} {currentRecipient?.lastName}
                     </Text>
-                    <Text className="text-sm text-uoft_grey_medium">
+                    <Text className={cn("text-sm", themeStyles.secondaryText)}>
                       {shortenString(
                         hackerBucksTransaction.currentTransaction?.recipient.id!
                       )}
@@ -148,12 +174,17 @@ export default function SwapScreen() {
                 ) : null}
               </View>
               <Pressable
-                className="text-sm text-center px-4 py-3 bg-uoft_dark_grey rounded-lg"
+                className={cn(
+                  "text-sm text-center px-4 py-3 rounded-lg",
+                  themeStyles.lightCardBackground
+                )}
                 onPress={() => {
                   router.back();
                 }}
               >
-                <Text className="text-sm text-balck">Change</Text>
+                <Text className={cn("text-sm", themeStyles.iconColor)}>
+                  Change
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -167,13 +198,24 @@ export default function SwapScreen() {
         </View>
         <Pressable onPress={handleSendPress} disabled={!isAmountValid}>
           <View
-            className={`rounded-md items-center py-4 mt-4 mb-20 ${
-              isAmountValid ? "bg-uoft_primary_blue" : "bg-gray-300"
-            }`}
+            className={cn(
+              "rounded-md items-center py-4 mt-4 mb-20",
+              isAmountValid
+                ? "bg-uoft_primary_blue"
+                : isDark
+                ? "bg-gray-600"
+                : "bg-gray-300"
+            )}
           >
             <Text
-              className={`text-center text-lg font-pp
-              ${isAmountValid ? "text-white" : "text-whitetext-gray-100"}`}
+              className={cn(
+                "text-center text-lg font-pp",
+                isAmountValid
+                  ? "text-white"
+                  : isDark
+                  ? "text-white"
+                  : "text-gray-500"
+              )}
             >
               Send
             </Text>

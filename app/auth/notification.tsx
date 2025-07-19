@@ -1,4 +1,7 @@
+import { CustomSplashScreen } from "@/components/loading/SplashScreen";
+import { useTheme } from "@/context/themeContext";
 import { registerForPushNotificationsAsync } from "@/utils/notifications";
+import { cn, getThemeStyles } from "@/utils/theme";
 import { router } from "expo-router";
 import { BellPlus } from "lucide-react-native";
 import { useState } from "react";
@@ -7,10 +10,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function NotificationPage() {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleEnableNotifications = async () => {
-    console.log("[LOG LOG LOG]");
     setIsRegistering(true);
     try {
       // Request permissions if not already granted
@@ -56,26 +60,28 @@ export default function NotificationPage() {
   // Show loading state while checking initial permission status
   if (isRegistering) {
     return (
-      <SafeAreaView className="flex-1 bg-uoft_white">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0066CC" />
-          <Text className="mt-4 text-gray-600">Checking permissions...</Text>
-        </View>
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <CustomSplashScreen />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 px-8">
         <View className="flex-1 justify-center items-center">
           <View className="mb-4">
-            <BellPlus color="black" size={32} />
+            <BellPlus color={themeStyles.iconColor} size={32} />
           </View>
-          <Text className="text-xl font-bold flex-col text-center mb-4">
+          <Text
+            className={cn(
+              "text-xl font-bold flex-col text-center mb-4",
+              themeStyles.primaryText
+            )}
+          >
             Allow notifications
           </Text>
-          <Text className="text-gray-600 text-center px-2">
+          <Text className={cn("text-center px-2", themeStyles.secondaryText)}>
             We only send notifications for food alerts, event details, and
             important updates. No spam, promise!
           </Text>
@@ -86,9 +92,7 @@ export default function NotificationPage() {
             {isRegistering ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-center text-white">
-                Enable push notifications
-              </Text>
+              <Text className="text-center">Enable push notifications</Text>
             )}
           </View>
         </Pressable>
@@ -98,10 +102,13 @@ export default function NotificationPage() {
             router.replace("/auth/camera");
           }}
         >
-          <View className="py-4 px-2 rounded-md mb-4 items-center">
-            <Text className="text-center text-uoft_primary_blue">
-              Maybe Later
-            </Text>
+          <View
+            className={cn(
+              "py-4 px-2 rounded-md mb-4 items-center",
+              themeStyles.lightCardBackground
+            )}
+          >
+            <Text className="text-center text-black">Maybe Later</Text>
           </View>
         </Pressable>
       </View>

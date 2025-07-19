@@ -1,5 +1,6 @@
+import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
-import { deductHackerBucks, sendHackerBucks } from "@/requests/hackerBucks";
+import { cn, getThemeStyles, getStatusStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -16,31 +17,34 @@ import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 export default function ConfirmHBucks() {
   const router = useRouter();
   const { currentTransaction } = useHackerBucksStore();
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
 
   if (!currentTransaction) return null;
   const { recipient, orderType, amount, status } = currentTransaction;
+  const statusStyles = getStatusStyles(status);
 
   const transactionDetails = [
     {
-      icon: <User size={20} color="black" />,
+      icon: <User size={20} color={themeStyles.iconColor} />,
       label: "Recipient",
       value: `${recipient.firstName} ${recipient.lastName}`,
     },
     {
-      icon: <Fingerprint size={20} color="black" />,
+      icon: <Fingerprint size={20} color={themeStyles.iconColor} />,
       label: "Hacker ID",
       value: shortenString(recipient.id),
     },
     {
-      icon: <ArrowLeftRight size={20} color="black" />,
+      icon: <ArrowLeftRight size={20} color={themeStyles.iconColor} />,
       label: "Order Type",
       value: orderType?.toUpperCase(),
     },
     {
-      icon: <CircleDashed size={20} />,
+      icon: <CircleDashed size={20} color={themeStyles.iconColor} />,
       label: "Status",
       value: status,
-      valueClassName: "text-green-600",
+      isStatus: true,
     },
   ];
 
@@ -52,17 +56,18 @@ export default function ConfirmHBucks() {
     };
 
     try {
-      orderType === "send"
-        ? await sendHackerBucks(hackerBucksObject)
-        : await deductHackerBucks(hackerBucksObject);
       router.replace("/hackerbucks/success");
+      // orderType === "send"
+      //   ? await sendHackerBucks(hackerBucksObject)
+      //   : await deductHackerBucks(hackerBucksObject);
+      // router.replace("/hackerbucks/success");
     } catch (error) {
       console.error("Transaction error:", error);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 flex flex-col">
         <View className="flex-1 px-6 py-4">
           <View>
@@ -73,27 +78,66 @@ export default function ConfirmHBucks() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 router.back();
               }}
+              color={themeStyles.iconColor}
             />
           </View>
           <View className="px py-4">
-            <Text className="text-3xl font-pp font-semibold">
+            <Text
+              className={cn(
+                "text-3xl font-pp font-semibold",
+                themeStyles.primaryText
+              )}
+            >
               {orderType === "deduct" ? "-" : "+"}
               {amount} HB
             </Text>
           </View>
 
-          <View className="flex flex-col gap-4 bg-uoft_grey_lighter p-4 rounded-lg">
+          <View
+            className={cn(
+              "flex flex-col gap-4 p-4 rounded-lg",
+              themeStyles.cardBackground
+            )}
+          >
             {transactionDetails.map((item, index) => (
               <React.Fragment key={item.label}>
                 <View className="flex flex-row justify-between items-center">
                   <View className="flex flex-row gap-2 items-center">
                     {item.icon}
-                    <Text className="text-gray-600">{item.label}</Text>
+                    <Text className={cn(themeStyles.secondaryText)}>
+                      {item.label}
+                    </Text>
                   </View>
-                  <Text className="font-medium">{item.value}</Text>
+                  {item.isStatus ? (
+                    <View
+                      className="px-3 py-1 rounded-full border"
+                      style={{
+                        backgroundColor: statusStyles.backgroundColor,
+                        borderColor: statusStyles.borderColor,
+                      }}
+                    >
+                      <Text
+                        className="font-medium text-sm"
+                        style={{ color: statusStyles.textColor }}
+                      >
+                        {item.value}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className={cn("font-medium", themeStyles.primaryText)}>
+                      {item.value}
+                    </Text>
+                  )}
                 </View>
                 {index < transactionDetails.length - 1 && (
-                  <View className="h-0.5 bg-gray-200 rounded-full" />
+                  <View
+                    className="h-0.5 rounded-full"
+                    style={{
+                      backgroundColor: isDark
+                        ? "rgba(255,255,255,0.1)"
+                        : "rgba(0,0,0,0.1)",
+                    }}
+                  />
                 )}
               </React.Fragment>
             ))}
@@ -106,7 +150,7 @@ export default function ConfirmHBucks() {
           className="bg-uoft_primary_blue py-4 rounded-lg items-center"
           onPress={handleConfirm}
         >
-          <Text className="text-white text-lg">Confirm</Text>
+          <Text className="text-white text-lg font-medium">Confirm</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

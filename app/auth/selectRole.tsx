@@ -1,9 +1,14 @@
+import { useTheme } from "@/context/themeContext";
+import { getThemeStyles, cn } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Gavel, Laptop, ShieldUser, Users } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const SelectRole = () => {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
+  
   const handleRoleSelection = (
     role: "Admin" | "Volunteer" | "Judge" | "Hacker"
   ) => {
@@ -28,7 +33,7 @@ const SelectRole = () => {
     {
       name: "Judge",
       icon: Gavel,
-      color: "bg-uoft_secondary_orange",
+      color: "bg-uoft__orange",
       available: false,
     },
     {
@@ -40,12 +45,12 @@ const SelectRole = () => {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-uoft_white">
-      <View className="flex-1 px-6 text-uoft_black">
-        <Text className="text-3xl mt-24 text-center font-['PPObjectSans-Heavy']">
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+      <View className={cn("flex-1 px-6", themeStyles.primaryText)}>
+        <Text className={cn("text-3xl mt-24 text-center font-['PPObjectSans-Heavy']", themeStyles.primaryText)}>
           Select your role
         </Text>
-        <Text className="text-md font-pp text-center mt-4">
+        <Text className={cn("text-md font-pp text-center mt-4", themeStyles.secondaryText)}>
           Choose how you&apos;ll be using the app
         </Text>
 
