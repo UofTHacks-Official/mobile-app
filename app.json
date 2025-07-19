@@ -24,7 +24,7 @@
         }
       },
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -36,37 +36,19 @@
       ],
       "package": "com.uofthacks.uofthacks"
     },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/lottie/moose.json",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#F6F6F6",
           "dark": {
-            "image": "./assets/images/splash-dark.png",
-            "backgroundColor": "#000000"
-          },
-          "ios": {
-            "image": "./assets/images/splash-ios.png",
-            "tabletImage": "./assets/images/splash-tablet.png"
-          },
-          "android": {
-            "image": "./assets/images/splash-android.png",
-            "mdpi": "./assets/images/splash-mdpi.png",
-            "hdpi": "./assets/images/splash-hdpi.png",
-            "xhdpi": "./assets/images/splash-xhdpi.png",
-            "xxhdpi": "./assets/images/splash-xxhdpi.png",
-            "xxxhdpi": "./assets/images/splash-xxxhdpi.png"
-          },
-          "svg": "./assets/images/logo.svg"
+            "image": "./assets/images/icon.png",
+            "backgroundColor": "#1A1A1A"
+          }
         }
       ],
       [

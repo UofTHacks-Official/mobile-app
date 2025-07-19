@@ -1,23 +1,39 @@
 import { useTheme } from "@/context/themeContext";
-import { getThemeStyles, cn } from "@/utils/theme";
+import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Gavel, Laptop, ShieldUser, Users } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
+type RoleType = "Admin" | "Volunteer" | "Judge" | "Hacker";
+
 const SelectRole = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  
-  const handleRoleSelection = (
-    role: "Admin" | "Volunteer" | "Judge" | "Hacker"
-  ) => {
+
+  const handleRoleSelection = (role: RoleType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Here you would typically save the role selection to your auth state/context
-    router.push(`/auth/signIn${role}` as any); // Navigate to the main app after role selection
+    switch (role) {
+      case "Admin":
+        router.push("/auth/signInAdmin?role=Admin");
+        break;
+      case "Volunteer":
+        router.push("/auth/signInAdmin?role=Volunteer");
+        break;
+
+      case "Judge":
+      case "Hacker":
+        // These roles are not available yet
+        break;
+    }
   };
 
-  const roles = [
+  const roles: Array<{
+    name: RoleType;
+    icon: any;
+    color: string;
+    available: boolean;
+  }> = [
     {
       name: "Admin",
       icon: ShieldUser,
@@ -28,7 +44,7 @@ const SelectRole = () => {
       name: "Volunteer",
       icon: Users,
       color: "bg-uoft_accent_purple",
-      available: false,
+      available: true,
     },
     {
       name: "Judge",
@@ -47,10 +63,20 @@ const SelectRole = () => {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className={cn("flex-1 px-6", themeStyles.primaryText)}>
-        <Text className={cn("text-3xl mt-24 text-center font-['PPObjectSans-Heavy']", themeStyles.primaryText)}>
+        <Text
+          className={cn(
+            "text-3xl mt-24 text-center font-['PPObjectSans-Heavy']",
+            themeStyles.primaryText
+          )}
+        >
           Select your role
         </Text>
-        <Text className={cn("text-md font-pp text-center mt-4", themeStyles.secondaryText)}>
+        <Text
+          className={cn(
+            "text-md font-pp text-center mt-4",
+            themeStyles.secondaryText
+          )}
+        >
           Choose how you&apos;ll be using the app
         </Text>
 

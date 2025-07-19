@@ -4,7 +4,7 @@ import { useTheme } from "@/context/themeContext";
 import { adminLogin } from "@/requests/admin";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
@@ -20,6 +20,7 @@ import Toast from "react-native-toast-message";
 const SignInAdmin = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const { role } = useLocalSearchParams<{ role?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,13 @@ const SignInAdmin = () => {
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { signIn } = useAuth();
+
+  // Determine if this is for volunteer or admin
+  const isVolunteer = role === "Volunteer";
+  const roleTitle = isVolunteer ? "Volunteer Sign In" : "Admin Sign In";
+  const roleDescription = isVolunteer
+    ? "Sign in to access your Volunteer dashboard"
+    : "Sign in to access your Admin dashboard";
 
   // Animation values
   const buttonScale = useSharedValue(0.95);
@@ -141,10 +149,10 @@ const SignInAdmin = () => {
               themeStyles.primaryText
             )}
           >
-            Admin Sign In
+            {roleTitle}
           </Text>
           <Text className={cn("text-lg", themeStyles.secondaryText)}>
-            Sign in to access your Admin dashboard
+            {roleDescription}
           </Text>
         </View>
 

@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
@@ -62,28 +63,29 @@ const DashboardHeader = ({
 }: {
   onProfilePress: () => void;
   themeStyles: ReturnType<typeof getThemeStyles>;
-}) => (
-  <View className="mt-6 flex-row justify-between">
-    <View>
-      <Text
-        className={cn("text-3xl font-onest-bold mb-2", themeStyles.primaryText)}
-      >
-        Admin Dashboard
-      </Text>
-      <Text
-        className={cn(
-          "text-md font-opensans-medium",
-          themeStyles.secondaryText
-        )}
-      >
-        Manage your events and volunteers
-      </Text>
+}) => {
+  const { adminData } = useAuth();
+
+  return (
+    <View className="mt-6 flex-row items-center justify-between">
+      <View>
+        <Text
+          className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
+        >
+          {adminData?.admin_role
+            ? adminData.admin_role.charAt(0).toUpperCase() +
+              adminData.admin_role.slice(1) +
+              " "
+            : ""}
+          Dashboard
+        </Text>
+      </View>
+      <Pressable onPress={onProfilePress} className="p-2">
+        <UserCircle size={32} color={themeStyles.iconColor} />
+      </Pressable>
     </View>
-    <Pressable onPress={onProfilePress} className="p-2">
-      <UserCircle size={32} color={themeStyles.iconColor} />
-    </Pressable>
-  </View>
-);
+  );
+};
 
 const DashboardCard = ({
   item,
