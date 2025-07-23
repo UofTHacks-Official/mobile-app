@@ -1,11 +1,12 @@
 import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { adminLogin } from "@/requests/admin";
+import { useAdminLogin } from "@/queries/user";
+
 import { cn, getThemeStyles } from "@/utils/theme";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
+import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
@@ -23,12 +24,11 @@ const SignInAdmin = () => {
   const { role } = useLocalSearchParams<{ role?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { signIn } = useAuth();
+  const adminLoginMutation = useAdminLogin();
 
   // Determine if this is for volunteer or admin
   const isVolunteer = role === "Volunteer";
@@ -92,42 +92,22 @@ const SignInAdmin = () => {
     }
 
     impactAsync(ImpactFeedbackStyle.Medium);
-    setLoading(true);
+
     try {
-      const { response, error } = await adminLogin(email, password);
+      const result = await adminLoginMutation.mutateAsync({ email, password });
+      const { access_token, refresh_token } = result;
 
-      if (error) {
-        Toast.show({
-          type: "error",
-          text1: "Login Failed",
-          text2: "Invalid email or password. Please try again.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (!response || !response.data || !response.data.access_token) {
-        Toast.show({
-          type: "error",
-          text1: "Login Failed",
-          text2: "Something went wrong. Please try again.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const { access_token, refresh_token } = response.data;
       await signIn(access_token, refresh_token);
-
       router.replace("/(admin)");
-      setLoading(false);
-    } catch (e) {
+    } catch (error) {
       Toast.show({
         type: "error",
         text1: "Login Failed",
-        text2: "An unexpected error occurred. Please try again.",
+        text2:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred. Please try again.",
       });
-      setLoading(false);
     }
   };
 
@@ -135,13 +115,21 @@ const SignInAdmin = () => {
     setShowPassword(!showPassword);
   };
 
-  if (loading) {
+  const handleGoBack = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    router.back();
+  };
+
+  if (adminLoginMutation.isPending) {
     return <CustomSplashScreen />;
   }
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className={cn("flex-1 pt-12", themeStyles.primaryText)}>
+        <Pressable onPress={handleGoBack} className="px-8">
+          <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
+        </Pressable>
         <View className="px-8 flex-col mt-6 mb-12">
           <Text
             className={cn(
@@ -220,12 +208,17 @@ const SignInAdmin = () => {
           </View>
         </View>
 
-        <Pressable onPress={handleSignIn} disabled={!isFormValid}>
+        <Pressable
+          onPress={handleSignIn}
+          disabled={!isFormValid || adminLoginMutation.isPending}
+        >
           <Animated.View
             style={[animatedButtonStyle, animatedBackgroundStyle]}
             className="rounded-md py-4 mt-8 mx-8"
           >
-            <Text className="text-center text-lg text-black">Sign In</Text>
+            <Text className="text-center text-lg text-black">
+              {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}
+            </Text>
           </Animated.View>
         </Pressable>
 

@@ -1,4 +1,6 @@
+import { useTheme } from "@/context/themeContext";
 import { ScheduleType } from "@/types/schedule";
+import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
   Check,
   Columns2,
@@ -19,7 +21,6 @@ interface FilterMenuProps {
   selectedEventTypes: ScheduleType[];
   onToggleEventType: (type: ScheduleType) => void;
   onClearFilters: () => void;
-  onApplyFilters: () => void;
 }
 
 const FilterMenu = ({
@@ -30,12 +31,13 @@ const FilterMenu = ({
   selectedEventTypes,
   onToggleEventType,
   onClearFilters,
-  onApplyFilters,
 }: FilterMenuProps) => {
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;
   const [internalVisible, setInternalVisible] = useState(isVisible);
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const { isDark } = useTheme();
+  const themeStyles = getScheduleThemeStyles(isDark);
 
   useEffect(() => {
     if (isVisible) {
@@ -137,7 +139,7 @@ const FilterMenu = ({
         </Animated.View>
         {/* Side Menu */}
         <Animated.View
-          className="w-80 bg-white h-full"
+          className={cn(`w-80 ${themeStyles.scheduleBackground}`)}
           style={[
             {
               position: "absolute",
@@ -197,20 +199,24 @@ const FilterMenu = ({
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
                         daysToShow === option.value
-                          ? "bg-gray-100 border-black"
-                          : "bg-white border-gray-200"
+                          ? `${themeStyles.timeBlockBackground} border-2 border-gray-300`
+                          : `${themeStyles.headerBackground} border `
                       }`}
                     >
                       <View className="flex-row items-center">
                         <IconComponent
                           size={20}
-                          //color={daysToShow === option.value ? "black" : "#"}
+                          color={
+                            daysToShow === option.value
+                              ? themeStyles.iconColor
+                              : themeStyles.iconColor
+                          }
                         />
                         <Text
                           className={`ml-2 text-sm font-medium ${
                             daysToShow === option.value
-                              ? "text-black"
-                              : "text-gray-700"
+                              ? themeStyles.primaryText
+                              : themeStyles.secondaryText
                           }`}
                         >
                           {option.label}
@@ -221,7 +227,9 @@ const FilterMenu = ({
                 })}
               </View>
               <View className="mb-4">
-                <Text className="text-lg font-semibold text-black mb-4">
+                <Text
+                  className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
+                >
                   Event Types
                 </Text>
 
@@ -254,17 +262,23 @@ const FilterMenu = ({
                         onPress={() => onToggleEventType(option.type)}
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
-                          isSelected ? "bg-gray-100" : "bg-white"
+                          isSelected
+                            ? themeStyles.timeBlockBackground
+                            : themeStyles.headerBackground
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
                           <View className="flex-row items-center">
                             <IconComponent size={16} color={option.color} />
-                            <Text className="text-base text-black ml-4">
+                            <Text
+                              className={`text-base ${themeStyles.primaryText} ml-4`}
+                            >
                               {option.label}
                             </Text>
                           </View>
-                          {isSelected && <Check size={16} color="black" />}
+                          {isSelected && (
+                            <Check size={16} color={themeStyles.iconColor} />
+                          )}
                         </View>
                       </Pressable>
                     );
@@ -273,10 +287,15 @@ const FilterMenu = ({
               </View>
             </View>
 
-            <View className="px-6 py-6 bg-white border-t border-gray-100">
+            <View
+              className={`px-6 py-6 ${themeStyles.headerBackground} border-t`}
+              style={{ borderTopColor: themeStyles.lineColor }}
+            >
               <View className="flex-row justify-center items-center">
                 <Pressable onPress={onClearFilters} className="flex-1 mr-3">
-                  <Text className="text-base text-gray-700 underline">
+                  <Text
+                    className={`text-base ${themeStyles.secondaryText} underline`}
+                  >
                     Clear all filters
                   </Text>
                 </Pressable>

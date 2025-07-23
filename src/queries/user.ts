@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import type { Admin } from '@/requests/admin';
-import { getAdminByToken, getAdminProfile } from '@/requests/admin';
+import { adminLogin, getAdminByToken, getAdminProfile } from '@/requests/admin';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 /**
  * TanStack Query hook for fetching admin data by token
@@ -78,6 +78,28 @@ export const useAdminProfile = (bearerToken: string | null, enabled: boolean = t
       }
       
       return true;
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for admin login
+ * @returns Mutation result for admin login
+ */
+export const useAdminLogin = () => {
+  return useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const result = await adminLogin(email, password);
+      
+      if (result.error) {
+        throw new Error('Login failed. Please check your credentials.');
+      }
+      
+      if (result.response) {
+        return result.response.data;
+      }
+      
+      throw new Error('No response received from login attempt');
     },
   });
 };

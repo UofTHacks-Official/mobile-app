@@ -1,5 +1,6 @@
 import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useTheme } from "@/context/themeContext";
+import { devLog } from "@/utils/logger";
 import { registerForPushNotificationsAsync } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { router } from "expo-router";
@@ -51,13 +52,12 @@ export default function NotificationPage() {
         text1: "Unexpected Error",
         text2: "Something went wrong while enabling notifications",
       });
-      console.log(`[Notifcations Error] ${error}`);
+      devLog(`[Notifcations Error] ${error}`);
     } finally {
       setIsRegistering(false);
     }
   };
 
-  // Show loading state while checking initial permission status
   if (isRegistering) {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>

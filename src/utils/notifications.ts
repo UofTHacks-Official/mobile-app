@@ -1,6 +1,7 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { devLog } from './logger';
 
 export async function registerForPushNotificationsAsync(): Promise<string | undefined> {
   let token;
@@ -15,32 +16,32 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
   }
 
   if (Device.isDevice) {
-    console.log('Registering for push notifications on device...');
+    devLog('Registering for push notifications on device...');
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    console.log('Existing permission status:', existingStatus);
+    devLog('Existing permission status:', existingStatus);
     if (existingStatus !== 'granted') {
-      console.log('Requesting new permissions...');
+      devLog('Requesting new permissions...');
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
-      console.log('New permission status:', finalStatus);
+      devLog('New permission status:', finalStatus);
     }
     if (finalStatus !== 'granted') {
-      console.log('Permission not granted, alerting user.');
+      devLog('Permission not granted, alerting user.');
       alert('Failed to get push token for push notification!');
       return;
     }
     try {
       // projectId is required for EAS Build
       token = (await Notifications.getExpoPushTokenAsync({ projectId: process.env.EXPO_PUBLIC_PUSH_ID })).data;
-      console.log('Expo Push Token obtained:', token);
+      devLog('Expo Push Token obtained:', token);
     } catch (error) {
       console.error('Error getting Expo Push Token:', error);
       alert('Error getting push token. See console for details.');
       return;
     }
   } else {
-    console.log('Not on a physical device, alerting user.');
+    devLog('Not on a physical device, alerting user.');
     alert('Must use physical device for Push Notifications');
   }
 

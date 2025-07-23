@@ -1,4 +1,5 @@
 import { authEventEmitter } from '@/utils/eventEmitter';
+import { devLog } from '@/utils/logger';
 import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '@/utils/tokens/secureStorage';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
@@ -67,7 +68,7 @@ const handleRefreshError = async (): Promise<void> => {
   await removeAuthTokens();
   
   // Emit an event to notify the auth context to log the user out
-  console.log('Token refresh failed. Emitting onExpiredRefreshToken event.');
+  devLog('Token refresh failed. Emitting onExpiredRefreshToken event.');
   authEventEmitter.emit('onExpiredRefreshToken');
   
   // Reset the refreshing flag
