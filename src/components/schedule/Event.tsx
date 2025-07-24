@@ -15,19 +15,19 @@ interface EventProps {
 
 const eventTypeColors = {
   networking: {
-    borderClass: "border-uoft_primary_blue",
-    textClass: "text-uoft_primary_blue",
-    backgroundColor: "bg-uoft_blue_light",
+    borderClass: "border-blue-600",
+    textClass: "text-blue-800",
+    backgroundColor: "bg-blue-100",
   },
   food: {
-    borderClass: "border-uoft__orange",
-    textClass: "text-uoft__orange",
-    backgroundColor: "bg-uoft_orange_light",
+    borderClass: "border-orange-600",
+    textClass: "text-orange-800",
+    backgroundColor: "bg-orange-100",
   },
   activity: {
-    borderClass: "border-uoft_accent_purple",
-    textClass: "text-uoft_accent_purple",
-    backgroundColor: "bg-uoft_purple_light",
+    borderClass: "border-pink-400",
+    textClass: "text-pink-600",
+    backgroundColor: "bg-pink-100",
   },
 };
 
