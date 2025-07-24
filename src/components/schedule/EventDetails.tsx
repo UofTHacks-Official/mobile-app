@@ -21,6 +21,12 @@ function formatTimeTo12Hour(isoString: string) {
   return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
 }
 
+const eventIconColors = {
+  networking: "#1D4ED8", // blue-700
+  food: "#EA580C", // orange-600  
+  activity: "#EC4899", // pink-500
+};
+
 export const EventDetails: React.FC<EventDetailsProps> = ({
   visible,
   schedule,
@@ -30,6 +36,10 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
   const themeStyles = getThemeStyles(isDark);
   
   if (!schedule) return null;
+  
+  const getEventIconColor = (eventType: string) => {
+    return eventIconColors[eventType as keyof typeof eventIconColors] || "#666";
+  };
 
   return (
     <Modal
@@ -89,7 +99,7 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
           <View className="px-6 mb-6">
             <View className="flex-row">
               <View className="w-6 mr-4">
-                <Tag size={20} color="#666" />
+                <Tag size={20} color={getEventIconColor(schedule?.type)} />
               </View>
               <Text className="text-lg text-black capitalize">
                 {schedule?.type}
