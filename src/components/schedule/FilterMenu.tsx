@@ -202,7 +202,8 @@ const FilterMenu = ({
                           : themeStyles.timeBlockBackground
                       }`}
                       style={{
-                        borderWidth: 0,
+                        borderWidth: isSelected ? 1 : 0,
+                        borderColor: isSelected ? "#9CA3AF" : "transparent", // Tailwind gray-400
                       }}
                     >
                       <View className="flex-row items-center">
