@@ -3,7 +3,6 @@ import { ScheduleType } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
   Check,
-  Columns2,
   Columns3,
   Square,
   Target,
@@ -189,35 +188,27 @@ const FilterMenu = ({
               <View className="flex-col flex-wrap mb-8">
                 {[
                   { value: 1, label: "1 day", icon: Square },
-                  { value: 2, label: "2 days", icon: Columns2 },
                   { value: 3, label: "3 days", icon: Columns3 },
                 ].map((option) => {
                   const IconComponent = option.icon;
+                  const isSelected = daysToShow === option.value;
                   return (
                     <Pressable
                       key={option.value}
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
-                        daysToShow === option.value
-                          ? `${themeStyles.timeBlockBackground} border-2 border-gray-300`
-                          : `${themeStyles.headerBackground} border `
+                        isSelected
+                          ? themeStyles.headerBackground
+                          : themeStyles.timeBlockBackground
                       }`}
+                      style={{
+                        borderWidth: 0,
+                      }}
                     >
                       <View className="flex-row items-center">
-                        <IconComponent
-                          size={20}
-                          color={
-                            daysToShow === option.value
-                              ? themeStyles.iconColor
-                              : themeStyles.iconColor
-                          }
-                        />
+                        <IconComponent size={20} color={themeStyles.iconColor} />
                         <Text
-                          className={`ml-2 text-sm font-medium ${
-                            daysToShow === option.value
-                              ? themeStyles.primaryText
-                              : themeStyles.secondaryText
-                          }`}
+                          className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
                         >
                           {option.label}
                         </Text>
