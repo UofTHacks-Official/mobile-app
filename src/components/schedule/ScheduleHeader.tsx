@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { getScheduleThemeStyles, cn } from "@/utils/theme";
-import { SlidersHorizontal } from "lucide-react-native";
+import { ListFilter } from "lucide-react-native";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -24,7 +24,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
       <View className={cn("px-4 py-3 flex-row items-center justify-between", scheduleTheme.headerBackground)}>
         <View className="flex-row items-center">
           <Pressable onPress={onFilterPress} className="ml-2 mr-4">
-            <SlidersHorizontal size={24} fontSize={2} color={scheduleTheme.iconColor} />
+            <ListFilter size={24} color={scheduleTheme.iconColor} />
           </Pressable>
           <Text className={cn("text-3xl font-bold", scheduleTheme.headerText)}>
             {dates[0].toLocaleDateString("en-US", { month: "long" })}
