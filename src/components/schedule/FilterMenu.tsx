@@ -20,6 +20,7 @@ interface FilterMenuProps {
   selectedEventTypes: ScheduleType[];
   onToggleEventType: (type: ScheduleType) => void;
   onClearFilters: () => void;
+  onApplyFilters: () => void;
 }
 
 const FilterMenu = ({
@@ -30,6 +31,7 @@ const FilterMenu = ({
   selectedEventTypes,
   onToggleEventType,
   onClearFilters,
+  onApplyFilters,
 }: FilterMenuProps) => {
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;

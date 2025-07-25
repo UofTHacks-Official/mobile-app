@@ -48,10 +48,15 @@ export default function RootLayout() {
       Notifications.addNotificationResponseReceivedListener((response) => {
         const { data } = response.notification.request.content;
         // Type assertion to define the expected data structure
-        const notificationData = data as { data?: { route?: string } };
+        const notificationData = data as { data?: { route?: string; scheduleId?: string } };
 
         if (notificationData.data?.route === "schedule") {
-          router.push(`/(admin)/schedule`);
+          const scheduleId = notificationData.data?.scheduleId;
+          if (scheduleId) {
+            router.push(`/(admin)/schedule/${scheduleId}`);
+          } else {
+            router.push(`/(admin)/schedule`);
+          }
         }
       });
 
@@ -106,6 +111,13 @@ export default function RootLayout() {
                   headerShown: false,
                   animation: "fade",
                   gestureEnabled: false,
+                }}
+              />
+              <Stack.Screen
+                name="(admin)/schedule/[scheduleID]"
+                options={{
+                  presentation: "modal",
+                  headerShown: false,
                 }}
               />
 

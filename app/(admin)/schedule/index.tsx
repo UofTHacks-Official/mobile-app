@@ -12,6 +12,7 @@ import { Schedule as ScheduleInterface } from "@/types/schedule";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
+import { router } from "expo-router";
 
 const Schedule = () => {
   const { isDark } = useTheme();
@@ -66,6 +67,11 @@ const Schedule = () => {
     if (daysToShow === 1) {
       saveDayIndexPreference(0);
     }
+  };
+
+  const handleSchedulePress = (schedule: ScheduleInterface) => {
+    setSelectedSchedule(schedule);
+    setIsDetailModalVisible(true);
   };
 
   const renderDaySchedules = (date: Date, index: number) => {
@@ -151,10 +157,7 @@ const Schedule = () => {
         date={date}
         currentHour={currentHour}
         schedules={filtered}
-        onSchedulePress={(schedule) => {
-          setSelectedSchedule(schedule);
-          setIsDetailModalVisible(true);
-        }}
+        onSchedulePress={handleSchedulePress}
         showCurrentTimeIndicator={isToday}
         currentMinute={currentMinute}
         hourHeight={hourHeight}
