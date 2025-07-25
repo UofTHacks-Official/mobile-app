@@ -12,6 +12,7 @@ import { Schedule as ScheduleInterface } from "@/types/schedule";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
+import { router } from "expo-router";
 
 const Schedule = () => {
   const { isDark } = useTheme();
@@ -50,8 +51,6 @@ const Schedule = () => {
   const getDatesToShow = () => {
     if (daysToShow === 1) {
       return [allDates[currentDayIndex]];
-    } else if (daysToShow === 2) {
-      return allDates.slice(currentDayIndex, currentDayIndex + 2);
     } else {
       return allDates.slice(0, daysToShow);
     }
@@ -68,6 +67,11 @@ const Schedule = () => {
     if (daysToShow === 1) {
       saveDayIndexPreference(0);
     }
+  };
+
+  const handleSchedulePress = (schedule: ScheduleInterface) => {
+    setSelectedSchedule(schedule);
+    setIsDetailModalVisible(true);
   };
 
   const renderDaySchedules = (date: Date, index: number) => {
@@ -153,10 +157,7 @@ const Schedule = () => {
         date={date}
         currentHour={currentHour}
         schedules={filtered}
-        onSchedulePress={(schedule) => {
-          setSelectedSchedule(schedule);
-          setIsDetailModalVisible(true);
-        }}
+        onSchedulePress={handleSchedulePress}
         showCurrentTimeIndicator={isToday}
         currentMinute={currentMinute}
         hourHeight={hourHeight}
@@ -224,60 +225,6 @@ const Schedule = () => {
                       </View>
                     </View>
                   ))}
-                </ScrollView>
-              ) : daysToShow === 2 ? (
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={(event) => {
-                    const screenWidth = Dimensions.get("window").width;
-                    const newIndex = Math.round(
-                      event.nativeEvent.contentOffset.x / screenWidth
-                    );
-                    const maxIndex = allDates.length - 2;
-                    if (newIndex >= 0 && newIndex <= maxIndex) {
-                      saveDayIndexPreference(newIndex);
-                    }
-                  }}
-                  contentOffset={{
-                    x: currentDayIndex * Dimensions.get("window").width,
-                    y: 0,
-                  }}
-                >
-                  {Array.from(
-                    { length: allDates.length - 1 },
-                    (_, pageIndex) => (
-                      <View
-                        key={pageIndex}
-                        style={{ width: Dimensions.get("window").width }}
-                      >
-                        <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                          <View 
-                            className={cn("w-12", scheduleTheme.scheduleBackground)}
-                            style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
-                          >
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <TimeSlot
-                                key={i}
-                                hour={i}
-                                isCurrentHour={i === currentHour}
-                                schedules={[]}
-                                hourHeight={hourHeight}
-                                onSchedulePress={() => {}}
-                                showTime={true}
-                              />
-                            ))}
-                          </View>
-                          {allDates
-                            .slice(pageIndex, pageIndex + 2)
-                            .map((date, index) =>
-                              renderDaySchedules(date, pageIndex + index)
-                            )}
-                        </View>
-                      </View>
-                    )
-                  )}
                 </ScrollView>
               ) : (
                 <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>

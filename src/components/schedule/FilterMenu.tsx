@@ -3,7 +3,6 @@ import { ScheduleType } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
   Check,
-  Columns2,
   Columns3,
   Square,
   Target,
@@ -21,6 +20,7 @@ interface FilterMenuProps {
   selectedEventTypes: ScheduleType[];
   onToggleEventType: (type: ScheduleType) => void;
   onClearFilters: () => void;
+  onApplyFilters: () => void;
 }
 
 const FilterMenu = ({
@@ -31,6 +31,7 @@ const FilterMenu = ({
   selectedEventTypes,
   onToggleEventType,
   onClearFilters,
+  onApplyFilters,
 }: FilterMenuProps) => {
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;
@@ -189,35 +190,24 @@ const FilterMenu = ({
               <View className="flex-col flex-wrap mb-8">
                 {[
                   { value: 1, label: "1 day", icon: Square },
-                  { value: 2, label: "2 days", icon: Columns2 },
                   { value: 3, label: "3 days", icon: Columns3 },
                 ].map((option) => {
                   const IconComponent = option.icon;
+                  const isSelected = daysToShow === option.value;
                   return (
                     <Pressable
                       key={option.value}
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
-                        daysToShow === option.value
-                          ? `${themeStyles.timeBlockBackground} border-2 border-gray-300`
-                          : `${themeStyles.headerBackground} border `
+                        isSelected
+                          ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                          : "transparent"
                       }`}
                     >
                       <View className="flex-row items-center">
-                        <IconComponent
-                          size={20}
-                          color={
-                            daysToShow === option.value
-                              ? themeStyles.iconColor
-                              : themeStyles.iconColor
-                          }
-                        />
+                        <IconComponent size={20} color={themeStyles.iconColor} />
                         <Text
-                          className={`ml-2 text-sm font-medium ${
-                            daysToShow === option.value
-                              ? themeStyles.primaryText
-                              : themeStyles.secondaryText
-                          }`}
+                          className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
                         >
                           {option.label}
                         </Text>
@@ -239,19 +229,19 @@ const FilterMenu = ({
                       type: "networking" as ScheduleType,
                       label: "Networking",
                       icon: Users,
-                      color: "#2A398C",
+                      color: "#2563EB",
                     },
                     {
                       type: "food" as ScheduleType,
                       label: "Food",
                       icon: Utensils,
-                      color: "#FF6F51",
+                      color: "#EA580C",
                     },
                     {
                       type: "activity" as ScheduleType,
                       label: "Activities",
                       icon: Target,
-                      color: "#E9B6F7",
+                      color: "#F472B6",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);
@@ -263,8 +253,8 @@ const FilterMenu = ({
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
                           isSelected
-                            ? themeStyles.timeBlockBackground
-                            : themeStyles.headerBackground
+                            ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                            : "transparent"
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
