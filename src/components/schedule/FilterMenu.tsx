@@ -200,12 +200,12 @@ const FilterMenu = ({
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
                         isSelected
-                          ? themeStyles.headerBackground
-                          : themeStyles.timeBlockBackground
+                          ? themeStyles.timeBlockBackground
+                          : themeStyles.headerBackground
                       }`}
                       style={{
                         borderWidth: isSelected ? 1 : 0,
-                        borderColor: isSelected ? "#9CA3AF" : "transparent", // Tailwind gray-400
+                        borderColor: isSelected ? "#FFFFFF" : "transparent",
                       }}
                     >
                       <View className="flex-row items-center">
@@ -233,19 +233,19 @@ const FilterMenu = ({
                       type: "networking" as ScheduleType,
                       label: "Networking",
                       icon: Users,
-                      color: "#2A398C",
+                      color: "#DBEAFE",
                     },
                     {
                       type: "food" as ScheduleType,
                       label: "Food",
                       icon: Utensils,
-                      color: "#FF6F51",
+                      color: "#FED7AA",
                     },
                     {
                       type: "activity" as ScheduleType,
                       label: "Activities",
                       icon: Target,
-                      color: "#E9B6F7",
+                      color: "#FBCFE8",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);
