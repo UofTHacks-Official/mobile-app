@@ -200,13 +200,9 @@ const FilterMenu = ({
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
                         isSelected
-                          ? themeStyles.timeBlockBackground
-                          : themeStyles.headerBackground
+                          ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                          : "transparent"
                       }`}
-                      style={{
-                        borderWidth: isSelected ? 1 : 0,
-                        borderColor: isSelected ? "#FFFFFF" : "transparent",
-                      }}
                     >
                       <View className="flex-row items-center">
                         <IconComponent size={20} color={themeStyles.iconColor} />
@@ -233,19 +229,19 @@ const FilterMenu = ({
                       type: "networking" as ScheduleType,
                       label: "Networking",
                       icon: Users,
-                      color: "#DBEAFE",
+                      color: "#2563EB",
                     },
                     {
                       type: "food" as ScheduleType,
                       label: "Food",
                       icon: Utensils,
-                      color: "#FED7AA",
+                      color: "#EA580C",
                     },
                     {
                       type: "activity" as ScheduleType,
                       label: "Activities",
                       icon: Target,
-                      color: "#FBCFE8",
+                      color: "#F472B6",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);
@@ -257,8 +253,8 @@ const FilterMenu = ({
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
                           isSelected
-                            ? themeStyles.timeBlockBackground
-                            : themeStyles.headerBackground
+                            ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                            : "transparent"
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
