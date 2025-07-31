@@ -164,7 +164,7 @@ export default function Success() {
           className="bg-uoft_primary_blue py-4 rounded-lg items-center mb-20"
           onPress={handleDone}
         >
-          <Text className="text-white text-lg">Done</Text>
+          <Text className="text-black text-lg">Done</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

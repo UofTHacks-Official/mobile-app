@@ -2,7 +2,7 @@
 export type ScheduleType = "networking" | "food" | "activity";
 
 export interface Schedule {
-  id: string;
+  id: number;
   title: string;
   description: string;
   startTime: string; 

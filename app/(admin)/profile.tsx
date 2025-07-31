@@ -4,7 +4,7 @@ import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { openSettings } from "@/utils/camera/permissions";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { Bell, CalendarCheck2Icon, User } from "lucide-react-native";
+import { Bell, CalendarCheck2Icon, LogOut, User } from "lucide-react-native";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 const Profile = () => {
@@ -36,7 +36,13 @@ const Profile = () => {
           <View className={cn(theme.cardStyle, theme.cardBackground)}>
             <View className="flex-row items-center gap-2 mb-4">
               <User size={20} color={theme.iconColor} />
-              <Text className={cn(theme.textPrimary, theme.cardText)}>
+              <Text
+                className={cn(
+                  "font-bold",
+                  theme.textPrimaryBold,
+                  theme.cardText
+                )}
+              >
                 Account Information
               </Text>
             </View>
@@ -87,7 +93,9 @@ const Profile = () => {
           >
             <View className="flex-row items-center gap-2">
               <Bell size={20} color={theme.iconColor} />
-              <Text className={theme.cardText}>Notifications</Text>
+              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                Notifications
+              </Text>
             </View>
 
             <View
@@ -105,7 +113,9 @@ const Profile = () => {
           <View className={cn(theme.cardStyle, theme.cardBackground)}>
             <View className="flex-row items-center gap-2">
               <CalendarCheck2Icon size={20} color={theme.iconColor} />
-              <Text className={theme.cardText}>Last Sign In</Text>
+              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                Last Sign In
+              </Text>
             </View>
             <View className="flex-row justify-between py-4">
               <Text className={cn(theme.textSecondary, theme.cardText)}>
@@ -141,7 +151,10 @@ const Profile = () => {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Text className="text-red-500 font-opensans">Sign Out</Text>
+            <View className="flex flex-row items-center gap-x-2">
+              <LogOut color="#ef4444" size={18} />
+              <Text className="text-red-500 font-opensans">Sign Out</Text>
+            </View>
           </Pressable>
         </View>
       </View>

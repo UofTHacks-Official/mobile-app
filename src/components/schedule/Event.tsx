@@ -1,5 +1,16 @@
 import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 
+// Dummy event object for testing
+const dummyEvent = {
+  title: "Sample Event",
+  startTime: "2024-01-15T10:00:00Z",
+  endTime: "2024-01-15T11:00:00Z",
+  hourHeight: 60,
+  type: "activity" as const,
+  id: "dummy-event-1",
+  onPress: () => console.log("Dummy event pressed"),
+};
+
 type EventType = "networking" | "food" | "activity";
 
 interface EventProps {
@@ -15,19 +26,19 @@ interface EventProps {
 
 const eventTypeColors = {
   networking: {
-    borderClass: "border-uoft_primary_blue",
-    textClass: "text-uoft_primary_blue",
-    backgroundColor: "bg-uoft_blue_light",
+    borderClass: "border-blue-600",
+    textClass: "text-blue-800",
+    backgroundColor: "bg-blue-100",
   },
   food: {
-    borderClass: "border-uoft__orange",
-    textClass: "text-uoft__orange",
-    backgroundColor: "bg-uoft_orange_light",
+    borderClass: "border-orange-600",
+    textClass: "text-orange-800",
+    backgroundColor: "bg-orange-100",
   },
   activity: {
-    borderClass: "border-uoft_accent_purple",
-    textClass: "text-uoft_accent_purple",
-    backgroundColor: "bg-uoft_purple_light",
+    borderClass: "border-pink-400",
+    textClass: "text-pink-600",
+    backgroundColor: "bg-pink-100",
   },
 };
 

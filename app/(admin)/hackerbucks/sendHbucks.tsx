@@ -122,7 +122,7 @@ export default function SwapScreen() {
                 "flex-1 font-pp text-4xl border-0 p-0",
                 themeStyles.primaryText
               )}
-              placeholderTextColor={isDark ? "#888" : "#666"}
+              placeholderTextColor={isDark ? "#888" : "#ffff"}
               keyboardType="numeric"
               autoCorrect={false}
               autoFocus={true}
@@ -211,7 +211,7 @@ export default function SwapScreen() {
               className={cn(
                 "text-center text-lg font-pp",
                 isAmountValid
-                  ? "text-white"
+                  ? "text-black"
                   : isDark
                   ? "text-white"
                   : "text-gray-500"

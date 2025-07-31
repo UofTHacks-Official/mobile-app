@@ -3,7 +3,7 @@
 
 export const devLog = (...args: any[]) => {
     if (__DEV__) {
-      devLog(...args);
+      console.log(...args);
     }
   };
   

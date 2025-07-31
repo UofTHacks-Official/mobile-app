@@ -32,7 +32,9 @@ export default function AdminLayout() {
             ...props.state,
             routes: props.state.routes.filter(
               (route) =>
-                route.name !== "profile" && route.name !== "hackerbucks"
+                route.name !== "profile" &&
+                route.name !== "hackerbucks" &&
+                !route.name.startsWith("schedule-detail")
             ),
           },
         };

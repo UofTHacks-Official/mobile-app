@@ -1,5 +1,5 @@
+import { deductHackerBucks, hackerBucksObject, sendHackerBucks } from '@/requests/hackerBucks';
 import { useMutation } from '@tanstack/react-query';
-import { sendHackerBucks, deductHackerBucks, hackerBucksObject } from '@/requests/hackerBucks';
 
 // Send hacker bucks mutation
 export const useSendHackerBucks = () => {

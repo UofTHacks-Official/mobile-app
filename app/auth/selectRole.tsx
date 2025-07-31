@@ -62,7 +62,7 @@ const SelectRole = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <View className={cn("flex-1 px-6", themeStyles.primaryText)}>
+      <View className={cn("flex-1 px-6")}>
         <Text
           className={cn(
             "text-3xl mt-24 text-center font-['PPObjectSans-Heavy']",
@@ -72,10 +72,7 @@ const SelectRole = () => {
           Select your role
         </Text>
         <Text
-          className={cn(
-            "text-md font-pp text-center mt-4",
-            themeStyles.secondaryText
-          )}
+          className={cn("font-pp text-center mt-4", themeStyles.secondaryText)}
         >
           Choose how you&apos;ll be using the app
         </Text>
@@ -105,12 +102,12 @@ const SelectRole = () => {
                     role.available && handleRoleSelection(role.name as any)
                   }
                 >
-                  <IconComponent size={40} color="white" />
-                  <Text className="text-uoft_white text-center font-pp text-base font-bold mt-2">
+                  <IconComponent size={40} color="black" />
+                  <Text className="text-black text-center font-pp text-base font-bold mt-2">
                     {role.name}
                   </Text>
                   {!role.available && (
-                    <Text className="text-uoft_white text-center font-pp text-xs mt-1">
+                    <Text className="text-black text-center font-pp text-xs mt-1">
                       Coming Soon
                     </Text>
                   )}
@@ -143,18 +140,24 @@ const SelectRole = () => {
                     role.available && handleRoleSelection(role.name as any)
                   }
                 >
-                  <IconComponent size={40} color="white" />
-                  <Text className="text-uoft_white text-center font-pp text-base font-bold mt-2">
+                  <IconComponent size={40} color="black" />
+                  <Text className="text-black text-center font-pp text-base font-bold mt-2">
                     {role.name}
                   </Text>
                   {!role.available && (
-                    <Text className="text-uoft_white text-center font-pp text-xs mt-1">
+                    <Text className="text-black text-center font-pp text-xs mt-1">
                       Coming Soon
                     </Text>
                   )}
                 </Pressable>
               );
             })}
+          </View>
+
+          <View className="mt-8 justify-center items-center">
+            <Text className={cn("underline", themeStyles.secondaryText2)}>
+              What role am I?
+            </Text>
           </View>
         </View>
       </View>

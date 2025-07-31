@@ -1,9 +1,9 @@
 // components/CustomTabBar.js
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { useTheme } from "@/context/themeContext";
-import { getThemeStyles, cn } from "@/utils/theme";
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { usePathname } from "expo-router";
 import {
@@ -142,7 +142,10 @@ const CustomTabBar = ({
         }}
       >
         <Animated.View
-          className={cn("rounded-3xl h-full flex flex-col justify-center", themeStyles.navBarBackground)}
+          className={cn(
+            "rounded-3xl h-full flex flex-col justify-center",
+            themeStyles.navBarBackground
+          )}
           style={{
             width: animatedWidth,
             shadowColor: "#000",
@@ -163,19 +166,37 @@ const CustomTabBar = ({
                 onPress={() => handleScanOption("qr")}
                 className="rounded-xl p-2 flex-row items-center justify-between"
               >
-                <Text className={cn("text-lg font-onest-extralight", themeStyles.navBarText)}>
+                <Text
+                  className={cn(
+                    "text-lg font-onest-extralight",
+                    themeStyles.navBarText
+                  )}
+                >
                   Event Check-in
                 </Text>
-                <ScanLine size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
+                <ScanLine
+                  size={28}
+                  strokeWidth={1.5}
+                  color={themeStyles.navBarIconActive}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleScanOption("hackerbucks")}
                 className="rounded-xl p-2 flex-row items-center justify-between"
               >
-                <Text className={cn("text-lg font-onest-extralight", themeStyles.navBarText)}>
+                <Text
+                  className={cn(
+                    "text-lg font-onest-extralight",
+                    themeStyles.navBarText
+                  )}
+                >
                   Send Hacker Bucks
                 </Text>
-                <BanknoteArrowUp size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
+                <BanknoteArrowUp
+                  size={28}
+                  strokeWidth={1.5}
+                  color={themeStyles.navBarIconActive}
+                />
               </TouchableOpacity>
             </View>
             <View className="flex-row justify-end">
@@ -183,7 +204,11 @@ const CustomTabBar = ({
                 onPress={toggleExpansion}
                 className="rounded-full p-2"
               >
-                <X size={28} strokeWidth={1.5} color={themeStyles.navBarIconActive} />
+                <X
+                  size={28}
+                  strokeWidth={1.5}
+                  color={themeStyles.navBarIconActive}
+                />
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -192,7 +217,7 @@ const CustomTabBar = ({
           <Animated.View
             className="flex-row justify-around items-center w-full"
             style={{
-              padding: 10,
+              padding: 15,
               opacity: tabBarOpacity,
               transform: [
                 {
@@ -224,7 +249,11 @@ const CustomTabBar = ({
                       <Home
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
                       />
                     );
                   case "Schedule":
@@ -232,7 +261,11 @@ const CustomTabBar = ({
                       <Calendar
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
                       />
                     );
                   case "Scan":
@@ -240,7 +273,11 @@ const CustomTabBar = ({
                       <ScanQrCode
                         size={24}
                         strokeWidth={1.5}
-                        color={isFocused ? themeStyles.navBarIconActive : themeStyles.navBarIconInactive}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
                       />
                     );
 
@@ -291,37 +328,42 @@ const CustomTabBar = ({
                     ],
                   }}
                 >
-                    <TouchableOpacity
-                      accessibilityRole="button"
-                      accessibilityState={isFocused ? { selected: true } : {}}
-                      accessibilityLabel={options.tabBarAccessibilityLabel}
-                      onPress={onPress}
-                      onLongPress={onLongPress}
-                      className={cn(
-                        "flex-row items-center justify-center rounded-xl",
-                        isFocused ? cn(themeStyles.navBarSelectedBackground, "px-4 py-2") : "p-2"
-                      )}
-                    >
-                      {iconComponent()}
-                      {isFocused && label && (
-                        <Animated.Text
-                          className={cn("ml-2 font-semibold font-onest-extralight", themeStyles.navBarText)}
-                          style={{
-                            opacity: animatedValues[index],
-                            transform: [
-                              {
-                                translateX: animatedValues[index].interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [-10, 0],
-                                }),
-                              },
-                            ],
-                          }}
-                        >
-                          {label}
-                        </Animated.Text>
-                      )}
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityState={isFocused ? { selected: true } : {}}
+                    accessibilityLabel={options.tabBarAccessibilityLabel}
+                    onPress={onPress}
+                    onLongPress={onLongPress}
+                    className={cn(
+                      "flex-row items-center justify-center rounded-xl",
+                      isFocused
+                        ? cn(themeStyles.navBarSelectedBackground, "px-3 py-2")
+                        : "p-3"
+                    )}
+                  >
+                    {iconComponent()}
+                    {isFocused && label && (
+                      <Animated.Text
+                        className={cn(
+                          "ml-2 font-semibold font-onest-extralight",
+                          themeStyles.navBarText
+                        )}
+                        style={{
+                          opacity: animatedValues[index],
+                          transform: [
+                            {
+                              translateX: animatedValues[index].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [-10, 0],
+                              }),
+                            },
+                          ],
+                        }}
+                      >
+                        {label}
+                      </Animated.Text>
+                    )}
+                  </TouchableOpacity>
                 </Animated.View>
               );
             })}
@@ -333,5 +375,5 @@ const CustomTabBar = ({
 };
 
 export default CustomTabBar;
-// Optionally export the Zustand hook for use in other files
+
 export { useBottomNavBarStore };
