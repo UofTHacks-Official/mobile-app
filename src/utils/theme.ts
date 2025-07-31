@@ -58,7 +58,7 @@ export const getScheduleThemeStyles = (isDark: boolean) => ({
   iconColor: isDark ? "#FFFFFF" : "#333333",
   
   // Background for main schedule area
-  scheduleBackground: isDark ? "bg-[#1A1A1A]" : "bg-white",
+  scheduleBackground: isDark ? "bg-[#1A1A1A]" : "bg-[#F9FAFB]",
 });
 
 export const getStatusStyles = (status: string) => {
