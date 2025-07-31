@@ -1,26 +1,24 @@
 import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
-import EventDetails from "@/components/schedule/EventDetails";
+
 import FilterMenu from "@/components/schedule/FilterMenu";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
-import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { useState } from "react";
 import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
-import { router } from "expo-router";
 
 const Schedule = () => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
   const currentTime = useCurrentTime();
-  const [selectedSchedule, setSelectedSchedule] =
-    useState<ScheduleInterface | null>(null);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
   const {
@@ -70,8 +68,13 @@ const Schedule = () => {
   };
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
-    setSelectedSchedule(schedule);
-    setIsDetailModalVisible(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: "/schedule-detail/[scheduleID]" as any,
+      params: {
+        scheduleID: schedule.id,
+      },
+    });
   };
 
   const renderDaySchedules = (date: Date, index: number) => {
@@ -115,7 +118,7 @@ const Schedule = () => {
         if (isEndDay) {
           const secondPart = {
             ...schedule,
-            id: schedule.id + "-part2",
+            id: schedule.id, // Use a unique number instead of string
             startTime: new Date(
               end.getFullYear(),
               end.getMonth(),
@@ -178,7 +181,9 @@ const Schedule = () => {
         />
 
         <View className="flex-1">
-          <ScrollView className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}>
+          <ScrollView
+            className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}
+          >
             <View className="relative">
               {daysToShow === 1 ? (
                 <ScrollView
@@ -204,10 +209,21 @@ const Schedule = () => {
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}
                     >
-                      <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                        <View 
-                          className={cn("w-12", scheduleTheme.scheduleBackground)}
-                          style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                      <View
+                        className={cn(
+                          "flex-row",
+                          scheduleTheme.scheduleBackground
+                        )}
+                      >
+                        <View
+                          className={cn(
+                            "w-12",
+                            scheduleTheme.scheduleBackground
+                          )}
+                          style={{
+                            borderRightWidth: 1,
+                            borderRightColor: scheduleTheme.lineColor,
+                          }}
                         >
                           {Array.from({ length: 24 }, (_, i) => (
                             <TimeSlot
@@ -227,10 +243,15 @@ const Schedule = () => {
                   ))}
                 </ScrollView>
               ) : (
-                <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                  <View 
+                <View
+                  className={cn("flex-row", scheduleTheme.scheduleBackground)}
+                >
+                  <View
                     className={cn("w-12", scheduleTheme.scheduleBackground)}
-                    style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                    style={{
+                      borderRightWidth: 1,
+                      borderRightColor: scheduleTheme.lineColor,
+                    }}
                   >
                     {Array.from({ length: 24 }, (_, i) => (
                       <TimeSlot
@@ -267,12 +288,6 @@ const Schedule = () => {
           onToggleEventType={toggleEventType}
           onClearFilters={clearFilters}
           onApplyFilters={applyFilters}
-        />
-
-        <EventDetails
-          visible={isDetailModalVisible}
-          schedule={selectedSchedule}
-          onClose={() => setIsDetailModalVisible(false)}
         />
       </View>
     </SafeAreaView>

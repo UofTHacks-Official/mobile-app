@@ -14,6 +14,6 @@ export default function StartPage() {
   if (userToken) {
     return <Redirect href="/(admin)" />;
   } else {
-    return <Redirect href="/auth/selectRole" />;
+    return <Redirect href="/auth/landing" />;
   }
 }

@@ -1,5 +1,16 @@
 import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 
+// Dummy event object for testing
+const dummyEvent = {
+  title: "Sample Event",
+  startTime: "2024-01-15T10:00:00Z",
+  endTime: "2024-01-15T11:00:00Z",
+  hourHeight: 60,
+  type: "activity" as const,
+  id: "dummy-event-1",
+  onPress: () => console.log("Dummy event pressed"),
+};
+
 type EventType = "networking" | "food" | "activity";
 
 interface EventProps {

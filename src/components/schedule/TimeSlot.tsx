@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
-import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { Schedule } from "@/types/schedule";
+import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import { LayoutChangeEvent, Text, View } from "react-native";
 import EventComponent from "./Event";
 
@@ -88,7 +88,7 @@ const TimeSlot = ({
     const processed: Set<string> = new Set();
 
     for (const event of events) {
-      if (processed.has(event.id)) continue;
+      if (processed.has(event.id.toString())) continue;
 
       const overlappingEvents = findOverlappingEvents(event);
       const group = overlappingEvents.sort((a, b) => {
@@ -98,7 +98,7 @@ const TimeSlot = ({
       });
 
       // Mark all events in this group as processed
-      group.forEach((e) => processed.add(e.id));
+      group.forEach((e) => processed.add(e.id.toString()));
       groups.push(group);
     }
 
@@ -108,13 +108,13 @@ const TimeSlot = ({
   const overlapGroups = groupOverlappingEvents(eventsStartingInThisHour);
 
   return (
-    <View 
+    <View
       className={cn(scheduleTheme.timeBlockBackground)}
-      style={{ 
+      style={{
         height: hourHeight,
         borderBottomWidth: 1,
-        borderBottomColor: scheduleTheme.lineColor
-      }} 
+        borderBottomColor: scheduleTheme.lineColor,
+      }}
       onLayout={onLayout}
     >
       <View className="flex-row h-full">
@@ -155,7 +155,7 @@ const TimeSlot = ({
               return (
                 <EventComponent
                   key={schedule.id}
-                  id={schedule.id}
+                  id={schedule.id.toString()}
                   title={schedule.title}
                   startTime={schedule.startTime}
                   endTime={schedule.endTime}
@@ -188,13 +188,13 @@ export const DayColumn = ({
 }: DayColumnProps) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
-  
+
   return (
-    <View 
+    <View
       className="flex-1 relative"
       style={{
         borderRightWidth: 1,
-        borderRightColor: scheduleTheme.lineColor
+        borderRightColor: scheduleTheme.lineColor,
       }}
     >
       {Array.from({ length: 24 }, (_, i) => (

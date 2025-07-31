@@ -7,8 +7,11 @@ export const getThemeStyles = (isDark: boolean) => ({
   
   // Text colors
   primaryText: isDark ? "text-white" : "text-black",
+  primaryText1: isDark ? "text-black" : "text-white",
   cardText: isDark ? "text-white" : "text-black",
   secondaryText: isDark ? "text-white" : "text-uoft_dark_mode_bg_light_black",
+  secondaryText2: isDark ? "text-white" : "text-gray-400",
+  
   
   // Icon colors
   iconColor: isDark ? "#FFF" : "#000",
@@ -31,6 +34,7 @@ export const getThemeStyles = (isDark: boolean) => ({
   
   // Common styles
   cardStyle: `w-full p-4 px-6 rounded-sm`,
+  textPrimaryBold: `font-opensans-bold`,
   textPrimary: `font-opensans-medium`,
   textSecondary: `font-opensans`,
 
@@ -57,35 +61,34 @@ export const getScheduleThemeStyles = (isDark: boolean) => ({
   scheduleBackground: isDark ? "bg-[#1A1A1A]" : "bg-white",
 });
 
-// For hackerbucks status colors
 export const getStatusStyles = (status: string) => {
   const normalizedStatus = status.toLowerCase();
 
   switch (normalizedStatus) {
     case 'completed':
       return {
-        backgroundColor: '#dcfce7', // green-100
-        borderColor: '#16a34a', // green-600
-        textColor: '#15803d', // green-700
+        backgroundColor: '#dcfce7', 
+        borderColor: '#16a34a', 
+        textColor: '#15803d', 
       };
     case 'pending':
       return {
-        backgroundColor: '#fef3c7', // yellow-100
-        borderColor: '#d97706', // yellow-600
-        textColor: '#b45309', // yellow-700
+        backgroundColor: '#fef3c7', 
+        borderColor: '#d97706', 
+        textColor: '#b45309', 
       };
     case 'failed':
 
       return {
-        backgroundColor: '#fee2e2', // red-100
-        borderColor: '#dc2626', // red-600
-        textColor: '#b91c1c', // red-700
+        backgroundColor: '#fee2e2', 
+        borderColor: '#dc2626', 
+        textColor: '#b91c1c', 
       };
     default:
       return {
-        backgroundColor: '#f3f4f6', // gray-100
-        borderColor: '#6b7280', // gray-500
-        textColor: '#374151', // gray-700
+        backgroundColor: '#f3f4f6', 
+        borderColor: '#6b7280', 
+        textColor: '#374151', 
       };
   }
 };

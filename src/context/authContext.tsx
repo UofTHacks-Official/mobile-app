@@ -2,6 +2,7 @@
 import type { Admin } from "@/requests/admin";
 import { getAdminProfile } from "@/requests/admin";
 import { authEventEmitter } from "@/utils/eventEmitter";
+import { devError } from "@/utils/logger";
 import {
   FIRST_SIGN_SIGN_IN,
   getAuthTokens,
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setAdminData(null);
       await removeSecureToken(FIRST_SIGN_SIGN_IN);
     } catch (error) {
-      console.error("Error during sign out:", error);
+      devError("Error during sign out:", error);
     }
   }, []);
 
@@ -100,7 +101,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setIsFirstSignIn(firstSignInValue === null);
         }
       } catch (error) {
-        console.error("AuthContext: Error restoring session:", error);
+        devError("AuthContext: Error restoring session:", error);
       } finally {
         setLoading(false);
       }
@@ -116,7 +117,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         const result = await getAdminProfile(token);
         if (result.error) {
-          console.error("Error fetching admin profile:", result.error);
+          devError(
+            "Error fetching admin profile:",
+            result.error,
+            result.response
+          );
           return;
         }
         if (result.response) {
@@ -125,7 +130,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           }
         }
       } catch (error) {
-        console.error("Error fetching admin profile:", error);
+        devError("Error fetching admin profile:", error);
       } finally {
         if (fetchIdRef.current === fetchId) {
           setAdminLoading(false);

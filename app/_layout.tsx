@@ -48,12 +48,14 @@ export default function RootLayout() {
       Notifications.addNotificationResponseReceivedListener((response) => {
         const { data } = response.notification.request.content;
         // Type assertion to define the expected data structure
-        const notificationData = data as { data?: { route?: string; scheduleId?: string } };
+        const notificationData = data as {
+          data?: { route?: string; scheduleId?: string };
+        };
 
         if (notificationData.data?.route === "schedule") {
           const scheduleId = notificationData.data?.scheduleId;
           if (scheduleId) {
-            router.push(`/(admin)/schedule/${scheduleId}`);
+            router.push(`/schedule-detail/${scheduleId}`);
           } else {
             router.push(`/(admin)/schedule`);
           }
@@ -90,8 +92,12 @@ export default function RootLayout() {
           <AuthProvider>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen
-                name="auth/selectRole"
+                name="auth/landing"
                 options={{ headerShown: false, animation: "fade" }}
+              />
+              <Stack.Screen
+                name="auth/selectRole"
+                options={{ headerShown: false, animation: "slide_from_right" }}
               />
               <Stack.Screen
                 name="auth/signInAdmin"
@@ -113,14 +119,17 @@ export default function RootLayout() {
                   gestureEnabled: false,
                 }}
               />
+
               <Stack.Screen
-                name="(admin)/schedule/[scheduleID]"
+                name="schedule-detail/[scheduleID]"
                 options={{
-                  presentation: "modal",
                   headerShown: false,
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  gestureDirection: "vertical",
+                  animationTypeForReplace: "push",
                 }}
               />
-
             </Stack>
 
             <Toast config={toastConfig} />

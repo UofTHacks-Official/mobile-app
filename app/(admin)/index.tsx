@@ -4,7 +4,7 @@ import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { BellPlus, ScanQrCode } from "lucide-react-native";
+import { BellPlus, Route, ScanQrCode } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
 import { useCallback } from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
@@ -18,6 +18,10 @@ interface DashboardItem {
   backgroundColor: string;
   route?: string;
   onPress?: () => void;
+  params?: {
+    scheduleID: string;
+    schedule: string;
+  };
 }
 
 // Constants
@@ -135,6 +139,42 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => (
   </View>
 );
 
+const ModalTestWidget = () => {
+  const handleModalTestPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: "/schedule-detail/[scheduleID]" as any,
+      params: {
+        scheduleID: "2",
+      },
+    });
+  };
+
+  return (
+    <View className="mt-8 p-4 bg-uoft_primary_blue rounded-lg">
+      <View className="flex-row items-center mb-3">
+        <Route size={24} color="black" />
+        <Text className="text-black text-lg font-['PPObjectSans-Bold'] ml-2">
+          Modal Test Widget
+        </Text>
+      </View>
+      <Text className="text-black/80 font-pp mb-4">
+        Testing the modal functionality with route parameters
+      </Text>
+      <Pressable
+        onPress={handleModalTestPress}
+        className="bg-white/20 p-3 rounded-lg self-start"
+        android_ripple={null}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
+        <Text className="text-black font-pp font-semibold">Test Modal</Text>
+      </Pressable>
+    </View>
+  );
+};
+
 // Main Component
 const AdminDashboard = () => {
   const { isDark } = useTheme();
@@ -153,6 +193,7 @@ const AdminDashboard = () => {
           themeStyles={themeStyles}
         />
         <DashboardGrid items={DASHBOARD_ITEMS} />
+        <ModalTestWidget />
       </View>
       {/* <View className="items-center justify-center pb-8">
         <LottieView
