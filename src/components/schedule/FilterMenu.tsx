@@ -3,7 +3,6 @@ import { ScheduleType } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
   Check,
-  Columns2,
   Columns3,
   Square,
   Target,
@@ -72,7 +71,8 @@ const FilterMenu = ({
       });
     }
     return () => {
-      if (closeTimeout.current) clearTimeout(closeTimeout.current);
+      const timeout = closeTimeout.current;
+      if (timeout) clearTimeout(timeout);
     };
   }, [isVisible, slideAnim, bgOpacity, onClose]);
 
@@ -151,73 +151,30 @@ const FilterMenu = ({
             },
           ]}
         >
-          {/* Header */}
-          {/* <View className="px-6 pt-16 pb-6 bg-white border-b border-gray-100">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-2xl font-semibold text-black">Filters</Text>
-              <Pressable
-                onPress={() => {
-                  Animated.parallel([
-                    Animated.timing(slideAnim, {
-                      toValue: -320,
-                      duration: 400,
-                      useNativeDriver: true,
-                    }),
-                    Animated.timing(bgOpacity, {
-                      toValue: 0,
-                      duration: 400,
-                      useNativeDriver: true,
-                    }),
-                  ]).start(() => {
-                    setInternalVisible(false);
-                    onClose();
-                  });
-                }}
-                className="p-1"
-              >
-                <X size={20} color="#666" />
-              </Pressable>
-            </View>
-          </View> */}
 
-          {/* <ScrollView
-            className="flex-1 px-6 py-6 mt-12"
-            showsVerticalScrollIndicator={false}
-          > */}
           <View className="flex-1 px-4 py-6 mt-12">
             <View className="flex-1">
               <View className="flex-col flex-wrap mb-8">
                 {[
                   { value: 1, label: "1 day", icon: Square },
-                  { value: 2, label: "2 days", icon: Columns2 },
                   { value: 3, label: "3 days", icon: Columns3 },
                 ].map((option) => {
                   const IconComponent = option.icon;
+                  const isSelected = daysToShow === option.value;
                   return (
                     <Pressable
                       key={option.value}
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
-                        daysToShow === option.value
-                          ? `${themeStyles.timeBlockBackground} border-2 border-gray-300`
-                          : `${themeStyles.headerBackground} border `
+                        isSelected
+                          ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                          : "transparent"
                       }`}
                     >
                       <View className="flex-row items-center">
-                        <IconComponent
-                          size={20}
-                          color={
-                            daysToShow === option.value
-                              ? themeStyles.iconColor
-                              : themeStyles.iconColor
-                          }
-                        />
+                        <IconComponent size={20} color={themeStyles.iconColor} />
                         <Text
-                          className={`ml-2 text-sm font-medium ${
-                            daysToShow === option.value
-                              ? themeStyles.primaryText
-                              : themeStyles.secondaryText
-                          }`}
+                          className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
                         >
                           {option.label}
                         </Text>
@@ -239,19 +196,19 @@ const FilterMenu = ({
                       type: "networking" as ScheduleType,
                       label: "Networking",
                       icon: Users,
-                      color: "#2A398C",
+                      color: "#2563EB",
                     },
                     {
                       type: "food" as ScheduleType,
                       label: "Food",
                       icon: Utensils,
-                      color: "#FF6F51",
+                      color: "#EA580C",
                     },
                     {
                       type: "activity" as ScheduleType,
                       label: "Activities",
                       icon: Target,
-                      color: "#E9B6F7",
+                      color: "#F472B6",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);
@@ -263,8 +220,8 @@ const FilterMenu = ({
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
                           isSelected
-                            ? themeStyles.timeBlockBackground
-                            : themeStyles.headerBackground
+                            ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                            : "transparent"
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
@@ -299,14 +256,7 @@ const FilterMenu = ({
                     Clear all filters
                   </Text>
                 </Pressable>
-                {/* <Pressable
-                onPress={onApplyFilters}
-                className="flex-1 bg-black py-4 px-6 rounded-xl"
-              >
-                <Text className="text-center font-semibold text-white text-base">
-                  Show events
-                </Text>
-              </Pressable> */}
+
               </View>
             </View>
           </View>

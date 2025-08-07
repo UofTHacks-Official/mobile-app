@@ -10,10 +10,9 @@ export default function StartPage() {
     return <CustomSplashScreen />;
   }
 
-  // Redirect based on authentication state
   if (userToken) {
     return <Redirect href="/(admin)" />;
   } else {
-    return <Redirect href="/auth/selectRole" />;
+    return <Redirect href="/auth/landing" />;
   }
 }

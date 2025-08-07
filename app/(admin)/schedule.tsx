@@ -1,33 +1,40 @@
 import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
-import EventDetails from "@/components/schedule/EventDetails";
+
 import FilterMenu from "@/components/schedule/FilterMenu";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
-import { getScheduleThemeStyles, cn } from "@/utils/theme";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
-import { useState } from "react";
-import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
+import { router } from "expo-router";
+import { useRef, useState } from "react";
+import { Dimensions, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Schedule = () => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
   const currentTime = useCurrentTime();
-  const [selectedSchedule, setSelectedSchedule] =
-    useState<ScheduleInterface | null>(null);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  
+  // Bottom nav bar controls
+  const { hideNavBar, showNavBar } = useBottomNavBarStore();
+  const scrollY = useRef(0);
+  const lastScrollY = useRef(0);
+  const scrollDirection = useRef<'up' | 'down'>('up');
 
   const {
     daysToShow,
     selectedEventTypes,
     currentDayIndex,
     saveDaysPreference,
-    saveEventTypesPreference,
     saveDayIndexPreference,
     toggleEventType,
     clearFilters,
@@ -35,8 +42,6 @@ const Schedule = () => {
 
   const {
     data: schedules = [],
-    isLoading,
-    error,
   } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
@@ -50,8 +55,6 @@ const Schedule = () => {
   const getDatesToShow = () => {
     if (daysToShow === 1) {
       return [allDates[currentDayIndex]];
-    } else if (daysToShow === 2) {
-      return allDates.slice(currentDayIndex, currentDayIndex + 2);
     } else {
       return allDates.slice(0, daysToShow);
     }
@@ -63,11 +66,41 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
 
-  const applyFilters = () => {
-    setIsFilterModalVisible(false);
-    if (daysToShow === 1) {
-      saveDayIndexPreference(0);
+
+
+  const handleSchedulePress = (schedule: ScheduleInterface) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: "/schedule-detail/[scheduleID]" as any,
+      params: {
+        scheduleID: schedule.id,
+      },
+    });
+  };
+
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDelta = currentScrollY - lastScrollY.current;
+    
+    // Only trigger if scroll delta is significant enough (prevents jitter)
+    if (Math.abs(scrollDelta) > 5) {
+      if (scrollDelta > 0 && currentScrollY > 50) {
+        // Scrolling down and past threshold
+        if (scrollDirection.current !== 'down') {
+          scrollDirection.current = 'down';
+          hideNavBar();
+        }
+      } else if (scrollDelta < 0) {
+        // Scrolling up
+        if (scrollDirection.current !== 'up') {
+          scrollDirection.current = 'up';
+          showNavBar();
+        }
+      }
     }
+    
+    lastScrollY.current = currentScrollY;
+    scrollY.current = currentScrollY;
   };
 
   const renderDaySchedules = (date: Date, index: number) => {
@@ -111,7 +144,7 @@ const Schedule = () => {
         if (isEndDay) {
           const secondPart = {
             ...schedule,
-            id: schedule.id + "-part2",
+            id: schedule.id, // Use a unique number instead of string
             startTime: new Date(
               end.getFullYear(),
               end.getMonth(),
@@ -153,10 +186,7 @@ const Schedule = () => {
         date={date}
         currentHour={currentHour}
         schedules={filtered}
-        onSchedulePress={(schedule) => {
-          setSelectedSchedule(schedule);
-          setIsDetailModalVisible(true);
-        }}
+        onSchedulePress={handleSchedulePress}
         showCurrentTimeIndicator={isToday}
         currentMinute={currentMinute}
         hourHeight={hourHeight}
@@ -165,8 +195,11 @@ const Schedule = () => {
   };
 
   return (
-    <SafeAreaView className={cn("flex-1", scheduleTheme.scheduleBackground)}>
-      <View className={cn("flex-1 mb-20", scheduleTheme.primaryText)}>
+    <View 
+      className={cn("flex-1", scheduleTheme.scheduleBackground)}
+      style={{ paddingTop: insets.top }}
+    >
+      <View className={cn("flex-1", scheduleTheme.primaryText)}>
         <ScheduleHeader
           dates={dates}
           currentDate={currentDate}
@@ -177,36 +210,52 @@ const Schedule = () => {
         />
 
         <View className="flex-1">
-          <ScrollView className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}>
+          <ScrollView
+            className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
             <View className="relative">
               {daysToShow === 1 ? (
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={(event) => {
-                    const screenWidth = Dimensions.get("window").width;
-                    const newIndex = Math.round(
-                      event.nativeEvent.contentOffset.x / screenWidth
-                    );
-                    if (newIndex >= 0 && newIndex < allDates.length) {
-                      saveDayIndexPreference(newIndex);
-                    }
-                  }}
-                  contentOffset={{
-                    x: currentDayIndex * Dimensions.get("window").width,
-                    y: 0,
-                  }}
-                >
-                  {allDates.map((date, dayIndex) => (
+                  <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={(event) => {
+                      const screenWidth = Dimensions.get("window").width;
+                      const newIndex = Math.round(
+                        event.nativeEvent.contentOffset.x / screenWidth
+                      );
+                      if (newIndex >= 0 && newIndex < allDates.length) {
+                        saveDayIndexPreference(newIndex);
+                      }
+                    }}
+                    contentOffset={{
+                      x: currentDayIndex * Dimensions.get("window").width,
+                      y: 0,
+                    }}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                  >                  {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}
                     >
-                      <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                        <View 
-                          className={cn("w-12", scheduleTheme.scheduleBackground)}
-                          style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                      <View
+                        className={cn(
+                          "flex-row",
+                          scheduleTheme.scheduleBackground
+                        )}
+                      >
+                        <View
+                          className={cn(
+                            "w-12",
+                            scheduleTheme.scheduleBackground
+                          )}
+                          style={{
+                            borderRightWidth: 1,
+                            borderRightColor: scheduleTheme.lineColor,
+                          }}
                         >
                           {Array.from({ length: 24 }, (_, i) => (
                             <TimeSlot
@@ -225,65 +274,16 @@ const Schedule = () => {
                     </View>
                   ))}
                 </ScrollView>
-              ) : daysToShow === 2 ? (
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={(event) => {
-                    const screenWidth = Dimensions.get("window").width;
-                    const newIndex = Math.round(
-                      event.nativeEvent.contentOffset.x / screenWidth
-                    );
-                    const maxIndex = allDates.length - 2;
-                    if (newIndex >= 0 && newIndex <= maxIndex) {
-                      saveDayIndexPreference(newIndex);
-                    }
-                  }}
-                  contentOffset={{
-                    x: currentDayIndex * Dimensions.get("window").width,
-                    y: 0,
-                  }}
-                >
-                  {Array.from(
-                    { length: allDates.length - 1 },
-                    (_, pageIndex) => (
-                      <View
-                        key={pageIndex}
-                        style={{ width: Dimensions.get("window").width }}
-                      >
-                        <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                          <View 
-                            className={cn("w-12", scheduleTheme.scheduleBackground)}
-                            style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
-                          >
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <TimeSlot
-                                key={i}
-                                hour={i}
-                                isCurrentHour={i === currentHour}
-                                schedules={[]}
-                                hourHeight={hourHeight}
-                                onSchedulePress={() => {}}
-                                showTime={true}
-                              />
-                            ))}
-                          </View>
-                          {allDates
-                            .slice(pageIndex, pageIndex + 2)
-                            .map((date, index) =>
-                              renderDaySchedules(date, pageIndex + index)
-                            )}
-                        </View>
-                      </View>
-                    )
-                  )}
-                </ScrollView>
               ) : (
-                <View className={cn("flex-row", scheduleTheme.scheduleBackground)}>
-                  <View 
+                <View
+                  className={cn("flex-row", scheduleTheme.scheduleBackground)}
+                >
+                  <View
                     className={cn("w-12", scheduleTheme.scheduleBackground)}
-                    style={{ borderRightWidth: 1, borderRightColor: scheduleTheme.lineColor }}
+                    style={{
+                      borderRightWidth: 1,
+                      borderRightColor: scheduleTheme.lineColor,
+                    }}
                   >
                     {Array.from({ length: 24 }, (_, i) => (
                       <TimeSlot
@@ -319,16 +319,9 @@ const Schedule = () => {
           selectedEventTypes={selectedEventTypes}
           onToggleEventType={toggleEventType}
           onClearFilters={clearFilters}
-          onApplyFilters={applyFilters}
-        />
-
-        <EventDetails
-          visible={isDetailModalVisible}
-          schedule={selectedSchedule}
-          onClose={() => setIsDetailModalVisible(false)}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

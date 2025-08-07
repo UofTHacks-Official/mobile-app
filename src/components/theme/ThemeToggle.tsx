@@ -28,7 +28,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = "" }) => {
       <View className="flex-row gap-2">
         <PaintBucket color={cn(themeStyles.iconColor)} />
         <Text
-          className={cn(themeStyles.textPrimary, "mb-4", themeStyles.cardText)}
+          className={cn(
+            themeStyles.textPrimaryBold,
+            "mb-4",
+            themeStyles.cardText
+          )}
         >
           Theme
         </Text>

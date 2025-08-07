@@ -1,8 +1,9 @@
 // src/components/schedule/EventDetails.tsx
 import React from 'react';
-import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
-import { Clock, Tag, UserCog, Users, X } from 'lucide-react-native';
+import { Modal, View, Text, Pressable } from 'react-native';
+import { Clock, Tag, UserCog, X, Info, Globe } from 'lucide-react-native';
 import { Schedule } from '@/types/schedule';
+import { formatTimeTo12Hour } from '@/utils/time';
 
 interface EventDetailsProps {
   visible: boolean;
@@ -10,84 +11,119 @@ interface EventDetailsProps {
   onClose: () => void;
 }
 
-function formatTimeTo12Hour(isoString: string) {
-  const date = new Date(isoString);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const period = hours >= 12 ? "PM" : "AM";
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
-}
+
+
+const eventIconColors = {
+  networking: "#1D4ED8", // blue-700
+  food: "#EA580C", // orange-600  
+  activity: "#EC4899", // pink-500
+};
 
 export const EventDetails: React.FC<EventDetailsProps> = ({
   visible,
   schedule,
   onClose
 }) => {
+  
   if (!schedule) return null;
+  
+  const getEventIconColor = (eventType: string) => {
+    return eventIconColors[eventType as keyof typeof eventIconColors] || "#666";
+  };
 
   return (
     <Modal
       visible={visible}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
       transparent
     >
-      <View className="flex-1 bg-black/40 justify-center items-center px-4">
-        <View className="bg-uoft_white rounded-2xl shadow-lg w-full max-w-xl p-6 relative">
-          <Pressable
-            className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-2"
-            onPress={onClose}
-            accessibilityLabel="Close details"
-            accessibilityRole="button"
-          >
-            <X size={24} color="#333" />
-          </Pressable>
+      <View className="flex-1 bg-black/40 justify-end">
+        <View className="bg-white rounded-t-3xl w-full" style={{ height: 500 }}>
+          {/* Bottom modal handle bar */}
+          <View className="w-12 h-1 bg-gray-300 rounded-full self-center mt-3 mb-4" />
           
-          <ScrollView
-            className="max-h-[70vh]"
-            showsVerticalScrollIndicator={false}
-          >
-            <Text className="text-2xl font-['PPObjectSans-Heavy'] mb-2 text-uoft_black">
-              {schedule.title}
+          {/* Header */}
+          <View className="flex-row items-center justify-between px-6 mb-6">
+            <View className="flex-row items-center">
+              <Text className="text-lg font-medium text-gray-600 mr-2">Event</Text>
+            </View>
+            <Pressable onPress={onClose}>
+              <X size={24} color="#666" />
+            </Pressable>
+          </View>
+          
+          {/* Event Title */}
+          <View className="px-6 mb-6">
+            <Text className="text-2xl font-bold text-black mb-4">
+              {schedule?.title}
             </Text>
-            <Text className="mb-4 text-base text-uoft_black/80">
-              {schedule.description || "No description provided."}
-            </Text>
-            
-            <View className="flex-row items-center mb-2">
-              <Clock size={20} color="#FF6F51" />
-              <Text className="ml-2 text-base text-uoft_black font-pp">
-                {formatTimeTo12Hour(schedule.startTime)} -{" "}
-                {formatTimeTo12Hour(schedule.endTime)}
+            <View className="h-px bg-gray-200 w-full" />
+          </View>
+          
+          {/* Time Section */}
+          <View className="px-6 mb-6">
+            <View className="flex-row">
+              <View className="w-6 mr-4">
+                <Clock size={20} color="#666" />
+              </View>
+              <View className="flex-1">
+                <View className="flex-row items-center mb-1">
+                  <Text className="text-lg font-semibold text-black mr-4">
+                    {formatTimeTo12Hour(schedule.startTime)}
+                  </Text>
+                  <Text className="text-gray-400 mr-4">→</Text>
+                  <Text className="text-lg font-semibold text-black">
+                    {formatTimeTo12Hour(schedule.endTime)}
+                  </Text>
+                </View>
+                <View className="flex-row items-center">
+                  <Globe size={14} color="#999" />
+                  <Text className="text-sm text-gray-500 ml-1">EST Toronto</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          {/* Type Section */}
+          <View className="px-6 mb-6">
+            <View className="flex-row">
+              <View className="w-6 mr-4">
+                <Tag size={20} color={getEventIconColor(schedule?.type)} />
+              </View>
+              <Text className="text-lg text-black capitalize">
+                {schedule?.type}
               </Text>
             </View>
-            
-            <View className="flex-row items-center mb-2">
-              <Tag size={20} color="#4A90E2" />
-              <Text className="ml-2 text-base text-uoft_black font-pp capitalize">
-                {schedule.type}
-              </Text>
+          </View>
+          
+          {/* Description Section */}
+          {schedule?.description && (
+            <View className="px-6 mb-6">
+              <View className="flex-row">
+                <View className="w-6 mr-4 mt-1">
+                  <Info size={20} color="#666" />
+                </View>
+                <Text className="text-base text-gray-700 flex-1 leading-6">
+                  {schedule.description}
+                </Text>
+              </View>
             </View>
-            
-            {schedule.sponsorId && (
-              <View className="flex-row items-center mb-2">
-                <UserCog size={20} color="#50E3C2" />
-                <Text className="ml-2 text-base text-uoft_black font-pp">
-                  Sponsor: {schedule.sponsorId}
+          )}
+          
+          {/* Sponsor Section */}
+          {schedule?.sponsorId && (
+            <View className="px-6 mb-6">
+              <View className="flex-row">
+                <View className="w-6 mr-4">
+                  <UserCog size={20} color="#666" />
+                </View>
+                <Text className="text-base text-gray-700">
+                  Sponsored by {schedule.sponsorId}
                 </Text>
               </View>
-            )}
-            
-            {schedule.isShift && (
-              <View className="flex-row items-center mb-2">
-                <Users size={20} color="#FF6F51" />
-                <Text className="ml-2 text-base text-uoft_black font-pp">
-                  Shift: {schedule.shiftType || "General"}
-                </Text>
-              </View>
-            )}
-          </ScrollView>
+            </View>
+          )}
         </View>
       </View>
     </Modal>

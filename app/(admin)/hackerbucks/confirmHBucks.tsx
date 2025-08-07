@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
-import { cn, getThemeStyles, getStatusStyles } from "@/utils/theme";
+import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -124,7 +124,9 @@ export default function ConfirmHBucks() {
                       </Text>
                     </View>
                   ) : (
-                    <Text className={cn("font-medium", themeStyles.primaryText)}>
+                    <Text
+                      className={cn("font-medium", themeStyles.primaryText)}
+                    >
                       {item.value}
                     </Text>
                   )}
@@ -150,7 +152,7 @@ export default function ConfirmHBucks() {
           className="bg-uoft_primary_blue py-4 rounded-lg items-center"
           onPress={handleConfirm}
         >
-          <Text className="text-white text-lg font-medium">Confirm</Text>
+          <Text className="text-black text-lg font-medium">Confirm</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
