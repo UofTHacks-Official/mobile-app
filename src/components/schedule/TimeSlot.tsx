@@ -31,7 +31,7 @@ interface DayColumnProps {
 
 const TimeSlot = ({
   hour,
-  isCurrentHour,
+  isCurrentHour: _isCurrentHour,
   schedules,
   hourHeight,
   onSchedulePress,
@@ -39,7 +39,7 @@ const TimeSlot = ({
   onLayout,
   allSchedules = schedules,
   startHour = 0,
-  endHour = 24,
+  endHour: _endHour = 24,
 }: TimeSlotProps) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
@@ -126,7 +126,7 @@ const TimeSlot = ({
           </View>
         )}
         <View className="flex-1 relative h-full">
-          {overlapGroups.map((group, groupIdx) => {
+          {overlapGroups.map((group, _groupIdx) => {
             const eventWidth = 100 / group.length;
 
             return group.map((schedule, index) => {

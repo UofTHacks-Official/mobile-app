@@ -1,10 +1,9 @@
 // src/components/schedule/EventDetails.tsx
 import React from 'react';
-import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
-import { Clock, Tag, UserCog, Users, X, Info, Globe } from 'lucide-react-native';
+import { Modal, View, Text, Pressable } from 'react-native';
+import { Clock, Tag, UserCog, X, Info, Globe } from 'lucide-react-native';
 import { Schedule } from '@/types/schedule';
-import { useTheme } from '@/context/themeContext';
-import { getThemeStyles } from '@/utils/theme';
+import { formatTimeTo12Hour } from '@/utils/time';
 
 interface EventDetailsProps {
   visible: boolean;
@@ -12,14 +11,7 @@ interface EventDetailsProps {
   onClose: () => void;
 }
 
-function formatTimeTo12Hour(isoString: string) {
-  const date = new Date(isoString);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const period = hours >= 12 ? "PM" : "AM";
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
-}
+
 
 const eventIconColors = {
   networking: "#1D4ED8", // blue-700
@@ -32,8 +24,6 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
   schedule,
   onClose
 }) => {
-  const { isDark } = useTheme();
-  const themeStyles = getThemeStyles(isDark);
   
   if (!schedule) return null;
   

@@ -20,7 +20,6 @@ interface FilterMenuProps {
   selectedEventTypes: ScheduleType[];
   onToggleEventType: (type: ScheduleType) => void;
   onClearFilters: () => void;
-  onApplyFilters: () => void;
 }
 
 const FilterMenu = ({
@@ -31,7 +30,6 @@ const FilterMenu = ({
   selectedEventTypes,
   onToggleEventType,
   onClearFilters,
-  onApplyFilters,
 }: FilterMenuProps) => {
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;
@@ -73,7 +71,8 @@ const FilterMenu = ({
       });
     }
     return () => {
-      if (closeTimeout.current) clearTimeout(closeTimeout.current);
+      const timeout = closeTimeout.current;
+      if (timeout) clearTimeout(timeout);
     };
   }, [isVisible, slideAnim, bgOpacity, onClose]);
 
@@ -152,39 +151,7 @@ const FilterMenu = ({
             },
           ]}
         >
-          {/* Header */}
-          {/* <View className="px-6 pt-16 pb-6 bg-white border-b border-gray-100">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-2xl font-semibold text-black">Filters</Text>
-              <Pressable
-                onPress={() => {
-                  Animated.parallel([
-                    Animated.timing(slideAnim, {
-                      toValue: -320,
-                      duration: 400,
-                      useNativeDriver: true,
-                    }),
-                    Animated.timing(bgOpacity, {
-                      toValue: 0,
-                      duration: 400,
-                      useNativeDriver: true,
-                    }),
-                  ]).start(() => {
-                    setInternalVisible(false);
-                    onClose();
-                  });
-                }}
-                className="p-1"
-              >
-                <X size={20} color="#666" />
-              </Pressable>
-            </View>
-          </View> */}
 
-          {/* <ScrollView
-            className="flex-1 px-6 py-6 mt-12"
-            showsVerticalScrollIndicator={false}
-          > */}
           <View className="flex-1 px-4 py-6 mt-12">
             <View className="flex-1">
               <View className="flex-col flex-wrap mb-8">
@@ -289,14 +256,7 @@ const FilterMenu = ({
                     Clear all filters
                   </Text>
                 </Pressable>
-                {/* <Pressable
-                onPress={onApplyFilters}
-                className="flex-1 bg-black py-4 px-6 rounded-xl"
-              >
-                <Text className="text-center font-semibold text-white text-base">
-                  Show events
-                </Text>
-              </Pressable> */}
+
               </View>
             </View>
           </View>

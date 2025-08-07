@@ -25,7 +25,7 @@ const Schedule = () => {
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   
   // Bottom nav bar controls
-  const { hideNavBar, showNavBar, isVisible: isNavBarVisible } = useBottomNavBarStore();
+  const { hideNavBar, showNavBar } = useBottomNavBarStore();
   const scrollY = useRef(0);
   const lastScrollY = useRef(0);
   const scrollDirection = useRef<'up' | 'down'>('up');
@@ -35,7 +35,6 @@ const Schedule = () => {
     selectedEventTypes,
     currentDayIndex,
     saveDaysPreference,
-    saveEventTypesPreference,
     saveDayIndexPreference,
     toggleEventType,
     clearFilters,
@@ -43,8 +42,6 @@ const Schedule = () => {
 
   const {
     data: schedules = [],
-    isLoading,
-    error,
   } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
@@ -69,12 +66,7 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
 
-  const applyFilters = () => {
-    setIsFilterModalVisible(false);
-    if (daysToShow === 1) {
-      saveDayIndexPreference(0);
-    }
-  };
+
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -327,7 +319,6 @@ const Schedule = () => {
           selectedEventTypes={selectedEventTypes}
           onToggleEventType={toggleEventType}
           onClearFilters={clearFilters}
-          onApplyFilters={applyFilters}
         />
       </View>
     </View>
