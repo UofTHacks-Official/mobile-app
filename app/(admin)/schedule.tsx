@@ -7,19 +7,28 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useState } from "react";
-import { Dimensions, SafeAreaView, ScrollView, View } from "react-native";
+import { useRef, useState } from "react";
+import { Dimensions, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Schedule = () => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
   const currentTime = useCurrentTime();
+  const insets = useSafeAreaInsets();
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  
+  // Bottom nav bar controls
+  const { hideNavBar, showNavBar, isVisible: isNavBarVisible } = useBottomNavBarStore();
+  const scrollY = useRef(0);
+  const lastScrollY = useRef(0);
+  const scrollDirection = useRef<'up' | 'down'>('up');
 
   const {
     daysToShow,
@@ -75,6 +84,31 @@ const Schedule = () => {
         scheduleID: schedule.id,
       },
     });
+  };
+
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDelta = currentScrollY - lastScrollY.current;
+    
+    // Only trigger if scroll delta is significant enough (prevents jitter)
+    if (Math.abs(scrollDelta) > 5) {
+      if (scrollDelta > 0 && currentScrollY > 50) {
+        // Scrolling down and past threshold
+        if (scrollDirection.current !== 'down') {
+          scrollDirection.current = 'down';
+          hideNavBar();
+        }
+      } else if (scrollDelta < 0) {
+        // Scrolling up
+        if (scrollDirection.current !== 'up') {
+          scrollDirection.current = 'up';
+          showNavBar();
+        }
+      }
+    }
+    
+    lastScrollY.current = currentScrollY;
+    scrollY.current = currentScrollY;
   };
 
   const renderDaySchedules = (date: Date, index: number) => {
@@ -169,8 +203,11 @@ const Schedule = () => {
   };
 
   return (
-    <SafeAreaView className={cn("flex-1", scheduleTheme.scheduleBackground)}>
-      <View className={cn("flex-1 mb-20", scheduleTheme.primaryText)}>
+    <View 
+      className={cn("flex-1", scheduleTheme.scheduleBackground)}
+      style={{ paddingTop: insets.top }}
+    >
+      <View className={cn("flex-1", scheduleTheme.primaryText)}>
         <ScheduleHeader
           dates={dates}
           currentDate={currentDate}
@@ -183,28 +220,31 @@ const Schedule = () => {
         <View className="flex-1">
           <ScrollView
             className={cn("flex-1 pb-8", scheduleTheme.scheduleBackground)}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
             <View className="relative">
               {daysToShow === 1 ? (
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={(event) => {
-                    const screenWidth = Dimensions.get("window").width;
-                    const newIndex = Math.round(
-                      event.nativeEvent.contentOffset.x / screenWidth
-                    );
-                    if (newIndex >= 0 && newIndex < allDates.length) {
-                      saveDayIndexPreference(newIndex);
-                    }
-                  }}
-                  contentOffset={{
-                    x: currentDayIndex * Dimensions.get("window").width,
-                    y: 0,
-                  }}
-                >
-                  {allDates.map((date, dayIndex) => (
+                  <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={(event) => {
+                      const screenWidth = Dimensions.get("window").width;
+                      const newIndex = Math.round(
+                        event.nativeEvent.contentOffset.x / screenWidth
+                      );
+                      if (newIndex >= 0 && newIndex < allDates.length) {
+                        saveDayIndexPreference(newIndex);
+                      }
+                    }}
+                    contentOffset={{
+                      x: currentDayIndex * Dimensions.get("window").width,
+                      y: 0,
+                    }}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                  >                  {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}
@@ -290,7 +330,7 @@ const Schedule = () => {
           onApplyFilters={applyFilters}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

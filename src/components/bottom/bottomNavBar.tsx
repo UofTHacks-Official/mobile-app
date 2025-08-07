@@ -30,6 +30,7 @@ const CustomTabBar = ({
 
   // Use Zustand store for nav bar state
   const isExpanded = useBottomNavBarStore((s) => s.isExpanded);
+  const isVisible = useBottomNavBarStore((s) => s.isVisible);
   const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
   const closeNavBar = useBottomNavBarStore((s) => s.closeNavBar);
 
@@ -40,6 +41,9 @@ const CustomTabBar = ({
 
   // Animation for expansion
   const expandAnimation = useRef(new Animated.Value(0)).current;
+  
+  // Animation for visibility
+  const visibilityAnimation = useRef(new Animated.Value(1)).current;
 
   // Sync animation with isExpanded state
   useEffect(() => {
@@ -49,6 +53,15 @@ const CustomTabBar = ({
       useNativeDriver: false,
     }).start();
   }, [isExpanded, expandAnimation]);
+
+  // Sync animation with isVisible state
+  useEffect(() => {
+    Animated.timing(visibilityAnimation, {
+      toValue: isVisible ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isVisible, visibilityAnimation]);
 
   // Check if we're on a hackerbucks route
   const isOnHackerBucksRoute = pathname.includes("/hackerbucks");
@@ -139,6 +152,15 @@ const CustomTabBar = ({
           height: animatedHeight,
           alignItems: "center",
           zIndex: 2, // Higher zIndex than the overlay
+          transform: [
+            {
+              translateY: visibilityAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [100, 0], // Slide down when hidden, slide up when visible
+              }),
+            },
+          ],
+          opacity: visibilityAnimation,
         }}
       >
         <Animated.View
