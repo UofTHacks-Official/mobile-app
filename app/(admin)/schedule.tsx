@@ -1,6 +1,8 @@
 import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
+import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
 
 import FilterMenu from "@/components/schedule/FilterMenu";
+import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
@@ -8,6 +10,7 @@ import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { useScrollNavBar } from "@/utils/navigation";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
@@ -37,6 +40,7 @@ const Schedule = () => {
     clearFilters,
   } = useScheduleFilters();
 
+  const { data: schedules = [] } = useScheduleData(selectedEventTypes);
   const { data: schedules = [] } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
@@ -164,6 +168,7 @@ const Schedule = () => {
 
   return (
     <View
+    <View
       className={cn("flex-1", scheduleTheme.scheduleBackground)}
       style={{ paddingTop: insets.top }}
     >
@@ -205,6 +210,7 @@ const Schedule = () => {
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                 >
+                  {" "}
                   {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
