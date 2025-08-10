@@ -1,6 +1,8 @@
 import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
+import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
 
 import FilterMenu from "@/components/schedule/FilterMenu";
+import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
@@ -9,10 +11,11 @@ import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
+import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -38,6 +41,7 @@ const Schedule = () => {
   } = useScheduleFilters();
 
   const { data: schedules = [] } = useScheduleData(selectedEventTypes);
+  const { data: schedules = [] } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
 
@@ -60,38 +64,6 @@ const Schedule = () => {
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
-
-  // Auto-scroll to current time on initial component mount only
-  useEffect(() => {
-    if (!hasInitiallyScrolled.current) {
-      const timer = setTimeout(() => {
-        if (mainScrollViewRef.current) {
-          // Calculate the position of the current time
-          const currentTimePosition =
-            (currentHour + currentMinute / 60) * hourHeight;
-
-          const screenHeight = Dimensions.get("window").height;
-
-          const offsetY = Math.max(0, currentTimePosition - screenHeight * 0.3);
-
-          mainScrollViewRef.current.scrollTo({
-            y: offsetY,
-            animated: false,
-          });
-
-          // Set scroll state to prevent nav bar from hiding immediately
-          scrollDirection.current = "up";
-          lastScrollY.current = offsetY;
-          scrollY.current = offsetY;
-          showNavBar();
-
-          hasInitiallyScrolled.current = true;
-        }
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -197,6 +169,7 @@ const Schedule = () => {
 
   return (
     <View
+    <View
       className={cn("flex-1", scheduleTheme.scheduleBackground)}
       style={{ paddingTop: insets.top }}
     >
@@ -239,6 +212,7 @@ const Schedule = () => {
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                 >
+                  {" "}
                   {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
