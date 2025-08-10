@@ -1,7 +1,7 @@
-import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
+import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
 
 import FilterMenu from "@/components/schedule/FilterMenu";
-import ScheduleHeader from "@/components/schedule/ScheduleHeader";
+import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
@@ -37,9 +37,7 @@ const Schedule = () => {
     clearFilters,
   } = useScheduleFilters();
 
-  const {
-    data: schedules = [],
-  } = useScheduleData(selectedEventTypes);
+  const { data: schedules = [] } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
 
@@ -62,8 +60,6 @@ const Schedule = () => {
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
-
-
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -168,7 +164,7 @@ const Schedule = () => {
   };
 
   return (
-    <View 
+    <View
       className={cn("flex-1", scheduleTheme.scheduleBackground)}
       style={{ paddingTop: insets.top }}
     >
@@ -190,26 +186,28 @@ const Schedule = () => {
           >
             <View className="relative">
               {daysToShow === 1 ? (
-                  <ScrollView
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onMomentumScrollEnd={(event) => {
-                      const screenWidth = Dimensions.get("window").width;
-                      const newIndex = Math.round(
-                        event.nativeEvent.contentOffset.x / screenWidth
-                      );
-                      if (newIndex >= 0 && newIndex < allDates.length) {
-                        saveDayIndexPreference(newIndex);
-                      }
-                    }}
-                    contentOffset={{
-                      x: currentDayIndex * Dimensions.get("window").width,
-                      y: 0,
-                    }}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                  >                  {allDates.map((date, dayIndex) => (
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(event) => {
+                    const screenWidth = Dimensions.get("window").width;
+                    const newIndex = Math.round(
+                      event.nativeEvent.contentOffset.x / screenWidth
+                    );
+                    if (newIndex >= 0 && newIndex < allDates.length) {
+                      saveDayIndexPreference(newIndex);
+                    }
+                  }}
+                  contentOffset={{
+                    x: currentDayIndex * Dimensions.get("window").width,
+                    y: 0,
+                  }}
+                  onScroll={handleScroll}
+                  scrollEventThrottle={16}
+                >
+                  {" "}
+                  {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}
