@@ -25,7 +25,6 @@ const SignInAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { signIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
@@ -44,7 +43,6 @@ const SignInAdmin = () => {
   // Check if both fields are filled
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
-  // Animate button when form validity changes
   useEffect(() => {
     if (isFormValid) {
       buttonScale.value = withTiming(1, {
@@ -187,8 +185,6 @@ const SignInAdmin = () => {
               autoCorrect={false}
               value={password}
               onChangeText={setPassword}
-              onFocus={() => setPasswordFocused(true)}
-              onBlur={() => setPasswordFocused(false)}
               style={{
                 minHeight: 50,
                 textAlignVertical: "center",

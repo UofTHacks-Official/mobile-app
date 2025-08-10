@@ -28,12 +28,12 @@ const SelectRole = () => {
     }
   };
 
-  const roles: Array<{
+  const roles: {
     name: RoleType;
     icon: any;
     color: string;
     available: boolean;
-  }> = [
+  }[] = [
     {
       name: "Admin",
       icon: ShieldUser,

@@ -50,11 +50,13 @@ export default function ConfirmHBucks() {
 
   const handleConfirm = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const hackerBucksObject = {
-      hacker_id: Number(recipient.id),
-      amount: Number(amount),
-    };
-
+    // const hackerBucksObject = {
+    //   hacker_id: Number(recipient.id),
+    //   amount: Number(amount),
+    // };
+    // ====
+    // NOT ACTUALLY SENDING ANYTHING YET
+    // ====
     try {
       router.replace("/hackerbucks/success");
       // orderType === "send"
