@@ -29,7 +29,6 @@ const SignInAdmin = () => {
   const { signIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
 
-  // Determine if this is for volunteer or admin
   const isVolunteer = role === "Volunteer";
   const roleTitle = isVolunteer ? "Volunteer Sign In" : "Admin Sign In";
   const roleDescription = isVolunteer
@@ -40,7 +39,6 @@ const SignInAdmin = () => {
   const buttonScale = useSharedValue(0.95);
   const buttonOpacity = useSharedValue(0.6);
 
-  // Check if both fields are filled
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
   useEffect(() => {
