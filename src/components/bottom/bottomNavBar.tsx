@@ -9,6 +9,7 @@ import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
   Calendar,
+  Camera,
   Home,
   ScanLine,
   ScanQrCode,
@@ -293,6 +294,18 @@ const CustomTabBar = ({
                   case "Scan":
                     return (
                       <ScanQrCode
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "Photo":
+                    return (
+                      <Camera
                         size={24}
                         strokeWidth={1.5}
                         color={

@@ -59,6 +59,12 @@ export default function AdminLayout() {
           title: "Scan",
         }}
       />
+      <Tabs.Screen
+        name="photobooth"
+        options={{
+          title: "Photo",
+        }}
+      />
     </Tabs>
   );
 }
