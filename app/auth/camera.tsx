@@ -1,4 +1,5 @@
 import { useTheme } from "@/context/themeContext";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { devError, devLog } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
@@ -13,6 +14,7 @@ export default function CameraPage() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const [, setPermission] = useState<boolean | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const requestCameraPermission = async () => {
     try {
@@ -49,24 +51,22 @@ export default function CameraPage() {
 
   const askForCamera = async () => {
     await requestCameraPermission();
-    router.replace("/auth/onboarding");
+    setShowOnboarding(true);
   };
 
   const handleMaybeLater = async () => {
-    router.replace("/auth/onboarding");
+    setShowOnboarding(true);
+  };
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    router.replace("/(admin)");
   };
   
   return (
     <>
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 px-8">
-          <Pressable
-            className="flex flex-row justify-end"
-            onPress={handleMaybeLater}
-          >
-            <Text className="underline text-gray-500">Skip</Text>
-          </Pressable>
-
           <View className="flex-1 justify-center items-center">
             <View className="mb-8">
               <CameraOwlSvg width={200} height={200} />
@@ -84,12 +84,28 @@ export default function CameraPage() {
           </View>
 
           <Pressable onPress={askForCamera}>
-            <View className="py-4 px-2 bg-uoft_primary_blue rounded-full mb-4 items-center">
+            <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
               <Text className="text-center">Allow camera access</Text>
+            </View>
+          </Pressable>
+
+          <Pressable onPress={handleMaybeLater}>
+            <View
+              className={cn(
+                "mb-4 py-4 px-2 rounded-md",
+                themeStyles.lightCardBackground
+              )}
+            >
+              <Text className="text-center text-black">Maybe Later</Text>
             </View>
           </Pressable>
         </View>
       </SafeAreaView>
+
+      <OnboardingModal
+        visible={showOnboarding}
+        onComplete={handleOnboardingComplete}
+      />
     </>
   );
 }

@@ -23,7 +23,7 @@ const Schedule = () => {
   const insets = useSafeAreaInsets();
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-  
+
   // Bottom nav bar scroll control
   const { handleScroll } = useScrollNavBar();
 
@@ -70,7 +70,6 @@ const Schedule = () => {
       },
     });
   };
-
 
   const renderDaySchedules = (date: Date, index: number) => {
     const filtered = schedules.flatMap((schedule) => {
@@ -206,7 +205,6 @@ const Schedule = () => {
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                 >
-                  {" "}
                   {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
