@@ -208,7 +208,10 @@ const SignInAdmin = () => {
         >
           <Animated.View
             style={[animatedButtonStyle, animatedBackgroundStyle]}
-            className="rounded-md py-4 mt-8 mx-8"
+            className={cn(
+              "py-4 mt-8 mx-8",
+              isFormValid ? "rounded-full" : "rounded-md"
+            )}
           >
             <Text className="text-center text-lg text-black">
               {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}

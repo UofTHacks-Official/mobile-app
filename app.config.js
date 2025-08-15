@@ -104,9 +104,7 @@ export default ({ config }) => {
           microphonePermission: "Allow UoftHacks to access your microphone",
           recordAudioAndroid: true
         }
-      ],
-      "react-native-vision-camera",
-      "expo-web-browser"
+      ]
     ],
     experiments: {
       typedRoutes: true

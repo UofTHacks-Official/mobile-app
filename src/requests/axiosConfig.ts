@@ -1,5 +1,5 @@
 import { authEventEmitter } from '@/utils/eventEmitter';
-import { devLog } from '@/utils/logger';
+import { devError, devLog } from '@/utils/logger';
 import { getAuthTokens, removeAuthTokens, storeAuthTokens } from '@/utils/tokens/secureStorage';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
@@ -89,7 +89,7 @@ axiosInstance.interceptors.request.use(
           config.headers.Authorization = `Bearer ${tokens.access_token}`;
         }
       } catch (error) {
-        console.error('Error retrieving access token:', error);
+        devError('Error retrieving access token:', error);
       }
     }
     return config;

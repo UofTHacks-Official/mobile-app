@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getSecureToken, setSecureToken } from '@/utils/tokens/secureStorage';
 import { ScheduleType } from '@/types/schedule';
+import { devError } from '@/utils/logger';
+import { getSecureToken, setSecureToken } from '@/utils/tokens/secureStorage';
+import { useEffect, useState } from 'react';
 
 const STORAGE_KEYS = {
   DAYS_TO_SHOW: 'schedule_days_to_show',
@@ -38,7 +39,7 @@ export const useScheduleFilters = () => {
           setCurrentDayIndex(parseInt(savedDayIndex));
         }
       } catch (error) {
-        console.error('Error loading user preferences:', error);
+        devError('Error loading user preferences:', error);
       }
     };
 
@@ -50,7 +51,7 @@ export const useScheduleFilters = () => {
       await setSecureToken(STORAGE_KEYS.DAYS_TO_SHOW, days.toString());
       setDaysToShow(days);
     } catch (error) {
-      console.error('Error saving days preference:', error);
+      devError('Error saving days preference:', error);
     }
   };
 
@@ -59,7 +60,7 @@ export const useScheduleFilters = () => {
       await setSecureToken(STORAGE_KEYS.SELECTED_EVENT_TYPES, JSON.stringify(eventTypes));
       setSelectedEventTypes(eventTypes);
     } catch (error) {
-      console.error('Error saving event types preference:', error);
+      devError('Error saving event types preference:', error);
     }
   };
 
@@ -68,7 +69,7 @@ export const useScheduleFilters = () => {
       await setSecureToken(STORAGE_KEYS.CURRENT_DAY_INDEX, dayIndex.toString());
       setCurrentDayIndex(dayIndex);
     } catch (error) {
-      console.error('Error saving day index preference:', error);
+      devError('Error saving day index preference:', error);
     }
   };
 
@@ -86,7 +87,7 @@ export const useScheduleFilters = () => {
       await saveEventTypesPreference(["networking", "food", "activity"]);
       await saveDayIndexPreference(0);
     } catch (error) {
-      console.error('Error clearing filters:', error);
+      devError('Error clearing filters:', error);
     }
   };
 

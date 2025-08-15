@@ -1,6 +1,6 @@
 import { fetchAllSchedules, fetchScheduleById } from '@/requests/schedule';
 import { Schedule, ScheduleType } from '@/types/schedule';
-import { devLog } from '@/utils/logger';
+import { devError, devLog } from '@/utils/logger';
 import { useQuery } from '@tanstack/react-query';
 
 
@@ -42,7 +42,7 @@ export const useScheduleData = (selectedEventTypes: ScheduleType[], enabled: boo
           selectedEventTypes.includes(schedule.type)
         );
       } catch (error) {
-        console.error("Schedule fetch error:", error);
+        devError("Schedule fetch error:", error);
         throw error;
       }
     },

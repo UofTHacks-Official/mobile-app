@@ -41,7 +41,7 @@ const CustomTabBar = ({
 
   // Animation for expansion
   const expandAnimation = useRef(new Animated.Value(0)).current;
-  
+
   // Animation for visibility
   const visibilityAnimation = useRef(new Animated.Value(1)).current;
 

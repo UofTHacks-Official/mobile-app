@@ -9,7 +9,7 @@ export const getThemeStyles = (isDark: boolean) => ({
   primaryText: isDark ? "text-white" : "text-black",
   primaryText1: isDark ? "text-black" : "text-white",
   cardText: isDark ? "text-white" : "text-black",
-  secondaryText: isDark ? "text-white" : "text-uoft_dark_mode_bg_light_black",
+  secondaryText: isDark ? "text-white" : "text-grey-600",
   secondaryText2: isDark ? "text-white" : "text-gray-400",
   
   

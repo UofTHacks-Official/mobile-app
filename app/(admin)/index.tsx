@@ -4,7 +4,7 @@ import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { BellPlus, Route, ScanQrCode } from "lucide-react-native";
+import { BellPlus, Route, ScanQrCode, AlertTriangle } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
 import { useCallback } from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
@@ -57,6 +57,14 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     icon: BellPlus,
     backgroundColor: "bg-uoft_grey_light",
     onPress: schedulePushNotification,
+  },
+  {
+    id: "404-test",
+    title: "404 Page Test",
+    description: "Navigate to non-existent route",
+    icon: AlertTriangle,
+    backgroundColor: "bg-red-500",
+    route: "/non-existent-route",
   },
 ];
 
