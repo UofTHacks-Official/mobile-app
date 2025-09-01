@@ -59,6 +59,7 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
 
       if (currentCamera === 'front') {
         // First photo (front camera) captured
+        console.log('Front photo captured:', photo.uri);
         setFrontPhoto(photo.uri);
         setCurrentCamera('back');
         Alert.alert(
@@ -68,11 +69,17 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
         );
       } else {
         // Second photo (back camera) captured - combine both
+        console.log('Back photo captured:', photo.uri);
+        console.log('Front photo exists:', frontPhoto);
         if (frontPhoto) {
+          console.log('Calling onPhotosCapture with:', frontPhoto, photo.uri);
           onPhotosCapture(frontPhoto, photo.uri);
           // Reset for next capture
           setFrontPhoto(null);
           setCurrentCamera('front');
+        } else {
+          console.log('ERROR: No front photo found!');
+          Alert.alert('Error', 'Front photo not found. Please retake both photos.');
         }
       }
     } catch (error) {
