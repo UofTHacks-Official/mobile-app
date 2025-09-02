@@ -14,6 +14,7 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
   const [currentCamera, setCurrentCamera] = useState<CameraType>('front');
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [zoom, setZoom] = useState(0);
   const cameraRef = useRef<CameraView>(null);
 
   // Check permissions
@@ -94,10 +95,11 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
     setCurrentCamera(currentCamera === 'front' ? 'back' : 'front');
   };
 
+
   return (
     <View className="items-center">
       {/* Larger Camera Square */}
-      <View className="w-96 h-96 rounded-2xl overflow-hidden bg-black mb-6">
+      <View className="rounded-2xl overflow-hidden bg-black mb-6" style={{ width: 360, height: 360 }}>
         <CameraView
           ref={cameraRef}
           style={{ flex: 1 }}

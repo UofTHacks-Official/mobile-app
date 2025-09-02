@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Text, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Images } from "lucide-react-native";
+import { useCallback } from "react";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
 import { PhotoStorageService } from "../../src/services/photoStorage";
@@ -17,6 +18,13 @@ export default function PhotoboothPage() {
     front: string;
     back: string;
   } | null>(null);
+
+  // Clear captured photos when page comes into focus (when navigating back from gallery)
+  useFocusEffect(
+    useCallback(() => {
+      setCapturedPhotos(null);
+    }, [])
+  );
 
   const handlePhotosCapture = async (frontPhoto: string, backPhoto: string) => {
     try {
