@@ -1,6 +1,6 @@
 // React Native polyfill for crypto (MUST be first)
 import 'react-native-get-random-values';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 const r2Client = new S3Client({
   region: 'auto',
@@ -18,6 +18,13 @@ export interface PhotoUploadResult {
   frontPhotoUrl: string;
   backPhotoUrl: string;
   photoId: string;
+}
+
+export interface PhotoPair {
+  photoId: string;
+  frontPhotoUrl: string;
+  backPhotoUrl: string;
+  timestamp: Date;
 }
 
 export class PhotoStorageService {
@@ -40,8 +47,8 @@ export class PhotoStorageService {
 
       await r2Client.send(command);
       
-      // Return public URL
-      const publicUrl = `https://pub-${process.env.EXPO_PUBLIC_CF_ACCOUNT_ID}.r2.dev/${fileName}`;
+      // Return public URL using the actual public development URL
+      const publicUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${fileName}`;
       return publicUrl;
       
     } catch (error: any) {
@@ -79,6 +86,69 @@ export class PhotoStorageService {
     } catch (error) {
       console.error('Photobooth upload failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * List and group all photobooth photos from R2
+   */
+  static async getPhotoGallery(): Promise<PhotoPair[]> {
+    try {
+      const command = new ListObjectsV2Command({
+        Bucket: BUCKET_NAME,
+        Prefix: 'photos/',
+      });
+
+      const response = await r2Client.send(command);
+      
+      if (!response.Contents) {
+        return [];
+      }
+
+      // Group photos by photoId
+      const photoMap = new Map<string, Partial<PhotoPair>>();
+
+      response.Contents.forEach(obj => {
+        if (!obj.Key || !obj.LastModified) return;
+
+        // Parse filename: photos/photobooth_1725220857_front.jpg
+        const match = obj.Key.match(/photos\/photobooth_(\d+)_(front|back)\.jpg$/);
+        if (!match) return;
+
+        const [, timestamp, type] = match;
+        const photoId = `photobooth_${timestamp}`;
+
+        if (!photoMap.has(photoId)) {
+          photoMap.set(photoId, {
+            photoId,
+            timestamp: new Date(parseInt(timestamp)),
+          });
+        }
+
+        const photo = photoMap.get(photoId)!;
+        const publicUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${obj.Key}`;
+
+        if (type === 'front') {
+          photo.frontPhotoUrl = publicUrl;
+        } else {
+          photo.backPhotoUrl = publicUrl;
+        }
+      });
+
+      // Filter complete pairs only (both front and back photos exist)
+      const completePairs: PhotoPair[] = [];
+      photoMap.forEach(photo => {
+        if (photo.frontPhotoUrl && photo.backPhotoUrl) {
+          completePairs.push(photo as PhotoPair);
+        }
+      });
+
+      // Sort by timestamp (newest first)
+      return completePairs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    } catch (error) {
+      console.error('Failed to fetch photo gallery:', error);
+      throw new Error('Failed to fetch photo gallery');
     }
   }
 }

@@ -14,20 +14,24 @@ export default function CompositePhoto({
   onRetake, 
   onSave 
 }: CompositePhotoProps) {
-  console.log('Composite Photo URIs:', { frontPhotoUri, backPhotoUri });
+
+  const handleSave = () => {
+    onSave();
+  };
   
   return (
     <View style={{ alignItems: 'center' }}>
       {/* Composite Photo Display */}
-      <View style={{ 
-        width: 384, 
-        height: 384, 
-        borderRadius: 16, 
-        overflow: 'hidden', 
-        backgroundColor: 'black',
-        marginBottom: 24,
-        position: 'relative'
-      }}>
+      <View 
+        style={{ 
+          width: 384, 
+          height: 384, 
+          borderRadius: 16, 
+          overflow: 'hidden', 
+          backgroundColor: 'black',
+          marginBottom: 24,
+          position: 'relative'
+        }}>
         {/* Back Camera Photo (Main/Background) */}
         <Image
           source={{ uri: backPhotoUri }}
@@ -77,7 +81,7 @@ export default function CompositePhoto({
         </TouchableOpacity>
         
         <TouchableOpacity
-          onPress={onSave}
+          onPress={handleSave}
           style={{
             backgroundColor: '#3b82f6',
             paddingHorizontal: 32,

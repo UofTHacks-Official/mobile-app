@@ -3,6 +3,7 @@ import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Text, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
 import { PhotoStorageService } from "../../src/services/photoStorage";
@@ -50,19 +51,17 @@ export default function PhotoboothPage() {
         capturedPhotos.back
       );
       
-      console.log('Photos uploaded:', result);
-      
       Alert.alert(
         "Photos Saved!",
-        `Your BeReal-style photos have been uploaded successfully!\nPhoto ID: ${result.photoId}`,
+        `Your BeReal-style photos have been uploaded successfully!`,
         [
           {
             text: "Take Another",
             onPress: () => setCapturedPhotos(null)
           },
           {
-            text: "Done",
-            style: "default"
+            text: "View Gallery",
+            onPress: () => router.push("/(admin)/gallery")
           }
         ]
       );
