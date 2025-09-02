@@ -4,14 +4,12 @@ import { View, Image, TouchableOpacity, Text } from 'react-native';
 interface CompositePhotoProps {
   frontPhotoUri: string;
   backPhotoUri: string;
-  onRetake: () => void;
   onSave: () => void;
 }
 
 export default function CompositePhoto({ 
   frontPhotoUri, 
   backPhotoUri, 
-  onRetake, 
   onSave 
 }: CompositePhotoProps) {
 
@@ -66,32 +64,19 @@ export default function CompositePhoto({
         </View>
       </View>
       
-      {/* Action Buttons */}
-      <View style={{ flexDirection: 'row', gap: 16 }}>
-        <TouchableOpacity
-          onPress={onRetake}
-          style={{
-            backgroundColor: '#6b7280',
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 24
-          }}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Retake</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={handleSave}
-          style={{
-            backgroundColor: '#3b82f6',
-            paddingHorizontal: 32,
-            paddingVertical: 12,
-            borderRadius: 24
-          }}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Save</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={handleSave}
+        style={{
+          backgroundColor: '#3b82f6',
+          paddingHorizontal: 32,
+          paddingVertical: 12,
+          borderRadius: 24,
+          marginTop: 16
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: '600' }}>Save</Text>
+      </TouchableOpacity>
     </View>
   );
 }

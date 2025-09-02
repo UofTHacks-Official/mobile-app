@@ -34,6 +34,7 @@ export default function AdminLayout() {
               (route) =>
                 route.name !== "profile" &&
                 route.name !== "hackerbucks" &&
+                route.name !== "gallery" &&
                 !route.name.startsWith("schedule-detail")
             ),
           },
@@ -63,6 +64,12 @@ export default function AdminLayout() {
         name="photobooth"
         options={{
           title: "Photo",
+        }}
+      />
+      <Tabs.Screen
+        name="gallery"
+        options={{
+          href: null, // Hide from tabs
         }}
       />
     </Tabs>

@@ -35,9 +35,6 @@ export default function PhotoboothPage() {
     }
   };
 
-  const handleRetake = () => {
-    setCapturedPhotos(null);
-  };
 
   const handleSave = async () => {
     if (!capturedPhotos) return;
@@ -81,7 +78,6 @@ export default function PhotoboothPage() {
           <CompositePhoto
             frontPhotoUri={capturedPhotos.front}
             backPhotoUri={capturedPhotos.back}
-            onRetake={handleRetake}
             onSave={handleSave}
           />
         ) : (
