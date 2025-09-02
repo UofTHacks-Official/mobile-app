@@ -4,6 +4,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { Text, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { Images } from "lucide-react-native";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
 import { PhotoStorageService } from "../../src/services/photoStorage";
@@ -73,6 +74,25 @@ export default function PhotoboothPage() {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+      {/* View Gallery Button */}
+      <View className="absolute top-16 right-4 z-10">
+        <TouchableOpacity
+          onPress={() => router.push("/(admin)/gallery")}
+          style={{
+            backgroundColor: '#75EDEF',
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6
+          }}
+        >
+          <Images size={18} color="#000" strokeWidth={2} />
+          <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Gallery</Text>
+        </TouchableOpacity>
+      </View>
+
       <View className="flex-1 justify-center items-center">
         {capturedPhotos ? (
           <CompositePhoto

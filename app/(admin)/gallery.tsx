@@ -38,8 +38,8 @@ export default function GalleryPage() {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" />
-          <Text className={cn("mt-4", themeStyles.text)}>Loading gallery...</Text>
+          <ActivityIndicator size="large" color={themeStyles.iconColor} />
+          <Text className={cn("mt-4", themeStyles.primaryText)}>Loading gallery...</Text>
         </View>
       </SafeAreaView>
     );
@@ -48,13 +48,13 @@ export default function GalleryPage() {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1">
-        <Text className={cn("text-2xl font-bold text-center py-4", themeStyles.text)}>
-          BeReal Gallery
+        <Text className={cn("text-2xl font-bold text-center py-4", themeStyles.primaryText)}>
+          Feed
         </Text>
         
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
-            <Text className={cn("text-gray-500 text-center")}>
+            <Text className={cn("text-center", themeStyles.secondaryText)}>
               No photos yet. Take your first BeReal!
             </Text>
           </View>
@@ -72,7 +72,7 @@ export default function GalleryPage() {
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
                 />
-                <Text className={cn("text-center mt-2 text-sm", themeStyles.text)}>
+                <Text className={cn("text-center mt-2 text-sm", themeStyles.secondaryText)}>
                   {photo.timestamp.toLocaleDateString()} {photo.timestamp.toLocaleTimeString()}
                 </Text>
               </View>
