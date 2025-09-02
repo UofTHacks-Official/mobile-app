@@ -117,7 +117,7 @@ const CustomTabBar = ({
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["60%", "85%"], // Narrower default, wider when expanded
+    outputRange: ["75%", "85%"], // Wider default to accommodate labels, wider when expanded
   });
 
   // Fade in the scan options

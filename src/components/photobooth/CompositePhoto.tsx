@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, Text } from 'react-native';
+import { Send } from 'lucide-react-native';
 
 interface CompositePhotoProps {
   frontPhotoUri: string;
@@ -64,18 +65,22 @@ export default function CompositePhoto({
         </View>
       </View>
       
-      {/* Save Button */}
+      {/* Send Button */}
       <TouchableOpacity
         onPress={handleSave}
         style={{
-          backgroundColor: '#3b82f6',
+          backgroundColor: '#75EDEF',
           paddingHorizontal: 32,
           paddingVertical: 12,
           borderRadius: 24,
-          marginTop: 16
+          marginTop: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8
         }}
       >
-        <Text style={{ color: 'white', fontWeight: '600' }}>Save</Text>
+        <Send size={20} color="#000" strokeWidth={2} />
+        <Text style={{ color: '#000', fontWeight: '600' }}>Send</Text>
       </TouchableOpacity>
     </View>
   );
