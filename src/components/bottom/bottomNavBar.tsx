@@ -32,7 +32,9 @@ const CustomTabBar = ({
   // Use Zustand store for nav bar state
   const isExpanded = useBottomNavBarStore((s) => s.isExpanded);
   const isVisible = useBottomNavBarStore((s) => s.isVisible);
+  const photoboothViewMode = useBottomNavBarStore((s) => s.photoboothViewMode);
   const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
+  const setPhotoboothViewMode = useBottomNavBarStore((s) => s.setPhotoboothViewMode);
   const closeNavBar = useBottomNavBarStore((s) => s.closeNavBar);
 
   // Animation values for each tab
@@ -81,7 +83,13 @@ const CustomTabBar = ({
         friction: 8,
       }).start();
     });
-  }, [state.index, animatedValues, state.routes, isOnHackerBucksRoute]);
+
+    // Reset photobooth view mode when not on photobooth tab
+    const currentRoute = state.routes[state.index];
+    if (currentRoute && currentRoute.name !== 'photobooth') {
+      setPhotoboothViewMode('camera');
+    }
+  }, [state.index, animatedValues, state.routes, isOnHackerBucksRoute, setPhotoboothViewMode]);
 
   const toggleExpansion = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -254,12 +262,17 @@ const CustomTabBar = ({
           >
             {state.routes.map((route, index) => {
               const { options } = descriptors[route.key];
-              const label =
+              let label =
                 typeof options.tabBarLabel === "string"
                   ? options.tabBarLabel
                   : options.title !== undefined
                   ? options.title
                   : route.name;
+
+              // Override label for Photo tab based on photobooth view mode
+              if (label === "Photo") {
+                label = photoboothViewMode === 'gallery' ? 'Gallery' : 'Photo';
+              }
 
               const isFocused =
                 state.index === index ||
