@@ -7,7 +7,7 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
-import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { useScrollNavBar } from "@/utils/navigation";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
@@ -24,11 +24,8 @@ const Schedule = () => {
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   
-  // Bottom nav bar controls
-  const { hideNavBar, showNavBar } = useBottomNavBarStore();
-  const scrollY = useRef(0);
-  const lastScrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('up');
+  // Bottom nav bar scroll control
+  const { handleScroll } = useScrollNavBar();
 
   const {
     daysToShow,
@@ -78,30 +75,6 @@ const Schedule = () => {
     });
   };
 
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDelta = currentScrollY - lastScrollY.current;
-    
-    // Only trigger if scroll delta is significant enough (prevents jitter)
-    if (Math.abs(scrollDelta) > 5) {
-      if (scrollDelta > 0 && currentScrollY > 50) {
-        // Scrolling down and past threshold
-        if (scrollDirection.current !== 'down') {
-          scrollDirection.current = 'down';
-          hideNavBar();
-        }
-      } else if (scrollDelta < 0) {
-        // Scrolling up
-        if (scrollDirection.current !== 'up') {
-          scrollDirection.current = 'up';
-          showNavBar();
-        }
-      }
-    }
-    
-    lastScrollY.current = currentScrollY;
-    scrollY.current = currentScrollY;
-  };
 
   const renderDaySchedules = (date: Date, index: number) => {
     const filtered = schedules.flatMap((schedule) => {

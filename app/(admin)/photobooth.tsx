@@ -11,6 +11,7 @@ import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
 import { PhotoStorageService, PhotoPair } from "../../src/services/photoStorage";
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from '@/reducers/bottomNavBar';
+import { useScrollNavBar } from '@/utils/navigation';
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -28,12 +29,8 @@ export default function PhotoboothPage() {
   const [refreshing, setRefreshing] = useState(false);
   
   // Bottom nav bar controls
-  const { hideNavBar, showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
-  
-  // Scroll tracking refs
-  const lastScrollY = useRef(0);
-  const scrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('up');
+  const { showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
+  const { handleScroll } = useScrollNavBar();
 
   // Clear captured photos when page comes into focus
   useFocusEffect(
@@ -83,30 +80,6 @@ export default function PhotoboothPage() {
     setRefreshing(false);
   };
 
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDelta = currentScrollY - lastScrollY.current;
-    
-    // Only trigger if scroll delta is significant enough (prevents jitter)
-    if (Math.abs(scrollDelta) > 5) {
-      if (scrollDelta > 0 && currentScrollY > 50) {
-        // Scrolling down and past threshold
-        if (scrollDirection.current !== 'down') {
-          scrollDirection.current = 'down';
-          hideNavBar();
-        }
-      } else if (scrollDelta < 0) {
-        // Scrolling up
-        if (scrollDirection.current !== 'up') {
-          scrollDirection.current = 'up';
-          showNavBar();
-        }
-      }
-    }
-    
-    lastScrollY.current = currentScrollY;
-    scrollY.current = currentScrollY;
-  };
 
   const handleSave = async () => {
     if (!capturedPhotos) return;
