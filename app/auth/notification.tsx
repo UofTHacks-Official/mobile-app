@@ -69,6 +69,13 @@ export default function NotificationPage() {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 px-8">
+
+          <Pressable
+            className="flex flex-row justify-end"
+            onPress={ ()=> router.replace("/auth/camera")}>
+            <Text className="underline text-gray-500">Skip</Text>
+          </Pressable>
+
         <View className="flex-1 justify-center items-center">
           <View className="mb-4">
             <BellPlus color={themeStyles.iconColor} size={32} />
@@ -76,7 +83,7 @@ export default function NotificationPage() {
           <Text
             className={cn(
               "text-xl font-bold flex-col text-center mb-4",
-              themeStyles.primaryText
+              themeStyles.primaryText,
             )}
           >
             Allow notifications
@@ -88,27 +95,12 @@ export default function NotificationPage() {
         </View>
 
         <Pressable onPress={handleEnableNotifications} disabled={isRegistering}>
-          <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
+          <View className="py-4 px-2 bg-uoft_primary_blue rounded-full mb-4 items-center">
             {isRegistering ? (
               <ActivityIndicator color="white" />
             ) : (
               <Text className="text-center">Enable push notifications</Text>
             )}
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={() => {
-            router.replace("/auth/camera");
-          }}
-        >
-          <View
-            className={cn(
-              "py-4 px-2 rounded-md mb-4 items-center",
-              themeStyles.lightCardBackground
-            )}
-          >
-            <Text className="text-center text-black">Maybe Later</Text>
           </View>
         </Pressable>
       </View>

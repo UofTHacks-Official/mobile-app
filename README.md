@@ -1,191 +1,511 @@
-# UofTHacks Mobile App
+# 🎉 UofTHacks Mobile App
 
-## Overview
+> The official mobile application for UofTHacks - Canada's largest student-run hackathon. Built with Expo and React Native for a seamless cross-platform experience.
 
-This is the official mobile application for UofTHacks, built with Expo and React Native. It provides a seamless experience for hackers, volunteers, and administrators, offering features such as event schedules, hackerbucks management, and user authentication.
+## 📱 Overview
 
-## Key Technologies
+This mobile application serves as the central hub for UofTHacks participants, administrators, and volunteers. It provides comprehensive event management, schedule viewing, hackathon currency (HackerBucks) transactions, and user authentication with role-based access control.
 
-*   **Expo**: A framework and platform for universal React applications.
-*   **React Native**: For building native mobile apps using JavaScript and React.
-*   **TypeScript**: For type-safe and robust code.
-*   **NativeWind**: A utility-first CSS framework for React Native, powered by Tailwind CSS.
-*   **Expo Router**: A file-based router for Expo and React Native, enabling intuitive navigation based on your file system.
-*   **Zustand**: A fast, small, and scalable bear-bones state-management solution.
-*   **Axios**: For making HTTP requests to the backend API.
+### 🎯 Key Features
 
-## Getting Started
+- **📅 Interactive Schedule**: Auto-scrolling timeline with current time indicators and event filtering
+- **💰 HackerBucks System**: Digital currency for hackathon rewards and transactions
+- **👤 Role-Based Authentication**: Separate interfaces for participants, volunteers, and administrators
+- **📱 QR Code Integration**: Camera-based authentication and transaction system
+- **🎊 Delightful UX**: Confetti animations and smooth interactions
+- **🌓 Dark/Light Mode**: Automatic theme switching with system preferences
+- **📍 Offline Support**: Cached data for essential features when offline
 
-Follow these steps to set up and run the project locally.
+## 🛠 Tech Stack
+
+### Core Technologies
+- **[Expo SDK 53](https://expo.dev/)** - Development platform with new architecture
+- **[React Native](https://reactnative.dev/)** - Cross-platform mobile development
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript with strict mode
+- **[Expo Router](https://expo.github.io/router/)** - File-based routing system
+
+### State Management & Data
+- **[TanStack Query](https://tanstack.com/query/)** - Powerful data fetching and caching
+- **[Zustand](https://github.com/pmndrs/zustand)** - Lightweight state management
+- **[Axios](https://axios-http.com/)** - HTTP client with automatic token refresh
+
+### UI/UX
+- **[NativeWind](https://www.nativewind.dev/)** - Tailwind CSS for React Native
+- **[React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)** - Advanced animations
+- **[Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/)** - Tactile feedback
+- **[React Native Confetti Cannon](https://github.com/VincentCATILLON/react-native-confetti-cannon)** - Celebration animations
+
+### Security & Storage
+- **[Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)** - Encrypted token storage
+- **[Expo Local Authentication](https://docs.expo.dev/versions/latest/sdk/local-authentication/)** - Biometric authentication
+- **JWT Token Refresh** - Automatic authentication renewal
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-*   **Node.js**: Ensure you have Node.js (LTS version recommended) installed. [Download Node.js](https://nodejs.org/)
-*   **Yarn (Recommended)** or npm: For package management.
-*   **Expo Go app**: Install on your mobile device ([iOS App Store](https://apps.apple.com/app/expo-go/id982107779) / [Android Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent))
-*   **Development Environment**: An iOS Simulator (requires Xcode on macOS) or Android Emulator (requires Android Studio) is recommended for development.
+- **Node.js** (LTS version 18+) - [Download](https://nodejs.org/)
+- **npm** or **yarn** - Package manager
+- **Expo CLI** - `npm install -g @expo/cli`
+- **Mobile Device** with [Expo Go](https://expo.dev/client) installed
+- **Development Environment**:
+  - iOS: Xcode (macOS only) for iOS Simulator
+  - Android: Android Studio for Android Emulator
 
 ### Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd mobile
-    ```
-2.  **Install dependencies:**
-    ```bash
-    yarn install
-    # or npm install
-    ```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mobile
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
 ### Running the App
 
-To start the development server:
-
 ```bash
+# Start the development server
 npx expo start
+
+# Platform-specific shortcuts
+npx expo start --ios      # iOS Simulator
+npx expo start --android  # Android Emulator
+npx expo start --web      # Web browser
 ```
 
-This command will open the Expo Dev Tools in your browser. From there, you can:
+**Quick Start Options:**
+- Press `i` for iOS Simulator
+- Press `a` for Android Emulator  
+- Press `w` for web browser
+- Scan QR code with Expo Go app on your device
 
-*   Press `i` to open the app in an iOS Simulator (macOS only).
-*   Press `a` to open the app in an Android Emulator.
-*   Scan the QR code with the Expo Go app on your physical device.
-
-## Project Structure
-
-The project follows a clear and organized structure, primarily leveraging Expo Router's file-based routing.
+## 📁 Project Structure
 
 ```
-./
-├── app/
-│   ├── _layout.tsx             # Root layout for the app (e.g., navigation, global providers)
-│   ├── _redirect.tsx           # Handles initial redirects (e.g., authentication checks)
-│   ├── globals.css             # Global Tailwind CSS styles
-│   ├── index.tsx               # Main entry point/home screen
-│   ├── _queries/               # Data fetching queries (e.g., React Query hooks)
-│   │   └── user.ts
-│   ├── _requests/              # API request configurations and services (e.g., Axios instances)
-│   │   ├── axios.ts
-│   │   ├── axiosConfig.ts      # Axios interceptors for token handling
-│   │   └── ...
-│   ├── _types/                 # TypeScript type definitions
-│   │   └── ...
-│   ├── _utils/                 # Utility functions and helpers
-│   │   ├── eventEmitter.ts
-│   │   ├── fonts.ts
-│   │   ├── hackerbucks/
-│   │   │   └── format.ts
-│   │   └── tokens/
-│   │       ├── secureStorage.ts # Secure storage for tokens
-│   │       └── ...
-│   ├── (admin)/                # Grouped routes for admin functionalities
-│   │   ├── _layout.tsx         # Layout specific to admin routes
-│   │   ├── index.tsx
-│   │   ├── profile.tsx
-│   │   ├── qr.tsx
-│   │   ├── schedule.tsx
-│   │   └── hackerbucks/        # Hackerbucks related admin screens
-│   │       ├── _layout.tsx
-│   │       ├── confirmHBucks.tsx
-│   │       ├── index.tsx
-│   │       ├── sendHbucks.tsx
-│   │       └── success.tsx
-│   ├── auth/                   # Authentication related screens
-│   │   ├── camera.tsx
-│   │   ├── confirmPhone.tsx
-│   │   ├── confirmSignIn.tsx
-│   │   ├── notification.tsx
-│   │   ├── selectRole.tsx
-│   │   ├── signInAdmin.tsx
-│   │   ├── signInVolunteer.tsx
-│   │   └── signUp.tsx
-│   ├── components/             # Reusable UI components
-│   │   ├── FontExample.tsx
-│   │   ├── scanner.tsx
-│   │   ├── bottom/
-│   │   │   └── bottomNavBar.tsx
-│   │   ├── config/
-│   │   │   └── toastconfig.tsx
-│   │   ├── hacker_bucks/
-│   │   │   └── keyboard.tsx
-│   │   ├── loading/
-│   │   │   └── loading.tsx
-│   │   └── schedule/
-│   │       ├── CurrentTimeIndicator.tsx
-│   │       ├── DayColumn.tsx
-│   │       ├── Event.tsx
-│   │       ├── EventModal.tsx
-│   │       └── TimeSlot.tsx
-│   ├── context/                # React Context providers
-│   │   └── authContext.tsx
-│   ├── reducers/               # Zustand stores/reducers
-│   │   └── hackerbucks.ts
-│   └── volunteer/              # Grouped routes for volunteer functionalities
-│       └── index.tsx
-├── assets/                     # Static assets like fonts and images
-│   ├── fonts/
-│   └── images/
-├── babel.config.js             # Babel configuration
-├── eas.json                    # Expo Application Services configuration
-├── eslint.config.js            # ESLint configuration
-├── metro.config.js             # Metro bundler configuration
-├── package.json                # Project dependencies and scripts
-├── tailwind.config.js          # Tailwind CSS configuration (including custom colors)
-├── tsconfig.json               # TypeScript configuration
-└── ...
+mobile/
+├── 📱 app/                          # Expo Router file-based routing
+│   ├── 🏠 index.tsx                 # App entry point with auth redirect
+│   ├── 🎨 globals.css               # Global Tailwind styles
+│   ├── 🔧 _layout.tsx               # Root layout with providers
+│   ├── 🚪 landing.tsx               # Welcome/landing screen
+│   │
+│   ├── 🔐 auth/                     # Authentication flow
+│   │   ├── 📷 camera.tsx            # Camera permissions
+│   │   ├── 🎯 selectRole.tsx        # User role selection
+│   │   ├── 📧 signInAdmin.tsx       # Admin login
+│   │   └── 📱 signUp.tsx            # User registration
+│   │
+│   ├── 👑 (admin)/                  # Admin-only routes (grouped)
+│   │   ├── 🏠 index.tsx             # Admin dashboard
+│   │   ├── 📅 schedule.tsx          # Event schedule management
+│   │   ├── 👤 profile.tsx           # Admin profile
+│   │   ├── 📱 qr.tsx                # QR code scanner
+│   │   └── 💰 hackerbucks/          # HackerBucks management
+│   │       ├── 🏠 index.tsx         # HackerBucks dashboard
+│   │       ├── 📤 sendHbucks.tsx    # Send currency
+│   │       ├── ✅ confirmHBucks.tsx # Transaction confirmation
+│   │       └── 🎉 success.tsx       # Success screen
+│   │
+│   └── 📊 schedule-detail/          # Dynamic routes
+│       └── [scheduleID].tsx         # Individual event details
+│
+├── 📦 src/                          # Source code organization
+│   ├── 🧩 components/               # Reusable UI components
+│   │   ├── ⚡ bottom/bottomNavBar.tsx # Navigation component
+│   │   ├── 📅 schedule/             # Schedule-related components
+│   │   │   ├── 📍 CurrentTimeIndicator.tsx
+│   │   │   ├── 📝 Event.tsx
+│   │   │   ├── 🔽 FilterMenu.tsx
+│   │   │   └── ⏰ TimeSlot.tsx
+│   │   ├── 🎊 onboarding/           # Welcome flow components
+│   │   │   ├── 🎯 OnboardingModal.tsx (with confetti!)
+│   │   │   └── 📋 OnboardingScreen.tsx
+│   │   └── 💰 hacker_bucks/         # Currency components
+│   │
+│   ├── 🗄️ context/                  # React Context providers
+│   │   ├── 🔐 authContext.tsx       # Authentication state
+│   │   └── 🌓 themeContext.tsx      # Theme management
+│   │
+│   ├── 🔄 queries/                  # TanStack Query hooks
+│   │   ├── 📅 schedule/             # Schedule data fetching
+│   │   ├── 👤 user.ts               # User data queries
+│   │   └── 💰 hackerBucks.ts        # Currency queries
+│   │
+│   ├── 📡 requests/                 # API layer
+│   │   ├── 🔧 axios.ts              # Axios instance
+│   │   ├── ⚙️ axiosConfig.ts        # Interceptors & token refresh
+│   │   └── 🎫 admin.ts              # Admin API endpoints
+│   │
+│   ├── 🏪 reducers/                 # Zustand stores
+│   │   ├── 💰 hackerbucks.ts        # Currency state management
+│   │   └── 🧭 bottomNavBar.ts       # Navigation state
+│   │
+│   ├── 📱 types/                    # TypeScript definitions
+│   │   └── 📅 schedule.ts           # Event/schedule types
+│   │
+│   └── 🛠️ utils/                    # Utility functions
+│       ├── 🎨 theme.ts              # Theme utilities
+│       ├── 📱 fonts.ts              # Font configuration
+│       ├── 🔐 tokens/               # Token management
+│       │   ├── 🗄️ secureStorage.ts  # Encrypted storage
+│       │   └── 🎫 token.ts          # JWT utilities
+│       └── 📹 camera/permissions.ts # Camera access utils
+│
+├── 🎨 assets/                       # Static assets
+│   ├── 🔤 fonts/                    # Custom font files
+│   │   ├── Onest-*.ttf             # Modern heading font
+│   │   └── OpenSans-*.ttf          # Readable body font
+│   └── 🖼️ images/                   # App images & icons
+│       ├── 🌅 bg/                   # Background images
+│       └── 🐨 animals/              # Cute mascot images
+│
+├── ⚙️ Configuration Files
+├── 📋 package.json                  # Dependencies & scripts
+├── 🎨 tailwind.config.js            # Custom color palette
+├── 📝 tsconfig.json                 # TypeScript config (strict mode)
+├── 🔧 babel.config.js               # Babel configuration
+├── 🏗️ eas.json                      # Expo build configuration
+├── 🎯 metro.config.js               # Metro bundler config
+└── 📖 README.md                     # You are here!
 ```
 
-### Expo Router Conventions
+### 🗂️ Expo Router Conventions
 
-*   **File-based Routing**: Each file in the `app/` directory (e.g., `app/index.tsx`) automatically becomes a route (e.g., `/`).
-*   **Layout Files (`_layout.tsx`)**: Files named `_layout.tsx` define shared UI for a group of routes within their directory. They do not create a URL segment.
-*   **Grouped Routes (`(folder-name)`)**: Directories enclosed in parentheses, like `(admin)/`, are used to group routes without adding a segment to the URL path. This is useful for applying common layouts or organizing related screens.
-*   **Private Files/Folders (`_folder-name`)**: Directories or files prefixed with an underscore (e.g., `_utils/`, `_types/`) are not treated as routes. They are used for organizing code that supports the routes but isn't directly part of the navigation hierarchy.
+- **File-based Routing**: `app/screen.tsx` → `/screen`
+- **Layout Files**: `_layout.tsx` defines shared UI for route groups
+- **Grouped Routes**: `(admin)/` groups routes without URL segments
+- **Dynamic Routes**: `[param].tsx` creates dynamic route parameters
+- **Private Files**: `_file.tsx` are not treated as routes (utilities)
 
-## Authentication Flow
+## 🔐 Authentication System
 
-The app utilizes a robust token-based authentication system with automatic token refresh to ensure a smooth user experience:
+### Token-Based Authentication Flow
 
-1.  **Login**: Upon successful login, both an `access token` and a `refresh token` are securely stored on the device.
-2.  **API Requests**: The `access token` is automatically attached to all outgoing API requests.
-3.  **Token Expiration Handling**: If an `access token` expires (indicated by a `401 Unauthorized` response from the API):
-    *   The failed request is temporarily queued.
-    *   The `refresh token` is used to obtain a new `access token` from the authentication server.
-    *   Once a new `access token` is acquired, the original queued request is retried with the new token.
-    *   Any other pending queued requests are then processed.
+1. **🔑 Login Process**
+   - User provides credentials
+   - Backend validates and returns JWT tokens
+   - Tokens stored securely using Expo SecureStore
 
-This mechanism ensures that users do not need to re-authenticate frequently due to token expiry.
+2. **🎫 Token Management**
+   - **Access Token**: Short-lived (1 hour) for API requests
+   - **Refresh Token**: Long-lived (24 hours) for token renewal
+   - **Automatic Refresh**: Seamless token renewal on expiry
 
-### Token Storage
+3. **🔄 Request Interceptor Flow**
+   ```typescript
+   API Request → 401 Unauthorized → Queue Request → 
+   Use Refresh Token → Get New Access Token → 
+   Retry Original Request → Success
+   ```
 
-Tokens are securely stored using Expo's `SecureStore`:
+### 🛡️ Security Features
 
-*   **Access Token**: Used for API authentication (typically short-lived, e.g., 1 hour).
-*   **Refresh Token**: Used to obtain new access tokens (longer-lived, e.g., 24 hours).
+- **🔒 Encrypted Storage**: All tokens stored with Expo SecureStore
+- **📱 Biometric Auth**: Touch ID/Face ID for sensitive operations
+- **🔄 Auto-refresh**: Transparent token renewal
+- **📤 Request Queuing**: Multiple requests handled during refresh
+- **🚪 Auto-logout**: Secure cleanup on token expiry
 
-## Styling
-
-This project uses **NativeWind** for styling, which brings the power of Tailwind CSS to React Native. Styles are defined using Tailwind's utility classes directly within your JSX.
+## 🎨 Design System
 
 ### Color Palette
 
-The project utilizes a custom color palette defined in `tailwind.config.js`. This ensures consistent branding throughout the application. Key colors include:
+Our custom UofT-inspired color system (defined in `tailwind.config.js`):
 
-*   **Primary**: `uoft_primary_blue` (#2A398C)
-*   **Secondary**: `uoft__orange` (#FF6F51)
-*   **Accents**: `uoft_accent_purple` (#E9B6F7), `uoft_accent_red` (#F85C5C), `uoft_accent_cream` (#F3E7E3)
-*   **Neutrals**: `uoft_black` (#181818), `uoft_white` (#F6F6F6), `uoft_stark_white` (#FFFFFF), `uoft_grey_light` (#C6C6C6), `uoft_grey_medium` (#A0A0A0), `uoft_grey_lighter` (#E0E0E0)
+```javascript
+// Primary Colors
+uoft_primary_blue: '#2A398C'    // Main brand color
+uoft_orange: '#FF6F51'          // Secondary accent
 
-For design references, you can view the Figma file: [UofTHacks Admin Portal Figma](https://www.figma.com/design/JAjBHJM4XPAmJBVFqFRMdb/admin-portal?node-id=153-2066&t=nNqdgXeCxlmdAdlw-1)
+// Accent Colors  
+uoft_accent_purple: '#E9B6F7'   // Soft purple
+uoft_accent_red: '#F85C5C'      // Alert red
+uoft_accent_cream: '#F3E7E3'    // Warm cream
 
-## Important Files and Directories
+// Neutral Colors
+uoft_black: '#181818'           // Rich black
+uoft_white: '#F6F6F6'           // Soft white
+uoft_stark_white: '#FFFFFF'     // Pure white
+uoft_grey_light: '#C6C6C6'      // Light grey
+uoft_grey_medium: '#A0A0A0'     // Medium grey
+uoft_grey_lighter: '#E0E0E0'    // Very light grey
+```
 
-*   `app/_requests/axiosConfig.ts`: Centralized configuration for Axios, including interceptors for token refresh and error handling.
-*   `app/_utils/tokens/secureStorage.ts`: Handles the secure storage and retrieval of authentication tokens.
-*   `app/reducers/hackerbucks.ts`: Zustand store for managing HackerBucks related state.
-*   `app/context/authContext.tsx`: React Context for managing user authentication state globally.
-*   `app/(admin)/`: Contains all screens and logic specific to the administrator interface.
-*   `app/auth/`: Contains all screens and logic related to user authentication (sign-in, sign-up, etc.).
-*   `app/components/`: Houses reusable UI components used across the application.
+### 🎭 Typography System
 
+**Primary Fonts:**
+- **Onest**: Modern, geometric font for headings and emphasis
+- **Open Sans**: Highly readable font for body text and UI elements
+
+**Usage Examples:**
+```tsx
+// Headings - Bold and impactful
+<Text className="font-onest-bold text-2xl">Main Title</Text>
+
+// Body text - Clear and readable  
+<Text className="font-opensans text-base">Body content</Text>
+
+// UI elements - Clean and functional
+<Text className="font-opensans-semibold text-sm">Button Text</Text>
+```
+
+For complete font documentation, see [`FONTS_README.md`](./FONTS_README.md).
+
+### 🎨 Design References
+
+- **Figma Design**: [UofTHacks Admin Portal](https://www.figma.com/design/JAjBHJM4XPAmJBVFqFRMdb/admin-portal?node-id=153-2066&t=nNqdgXeCxlmdAdlw-1)
+- **NativeWind Docs**: [Styling with Tailwind CSS](https://www.nativewind.dev/)
+
+## ✨ Key Features Deep Dive
+
+### 📅 Smart Schedule System
+
+- **🕒 Auto-scroll to Current Time**: Opens at current time on cold start
+- **🎯 Time-aware Interface**: Red indicator shows current time
+- **🔽 Advanced Filtering**: Filter by event type, day, or custom criteria
+- **📱 Responsive Design**: Optimized for all screen sizes
+- **⚡ Performance Optimized**: Lazy loading and virtualized lists
+
+### 💰 HackerBucks Currency System
+
+- **💸 Digital Transactions**: Send/receive hackathon currency
+- **📱 QR Code Integration**: Scan-to-pay functionality
+- **📊 Transaction History**: Complete audit trail
+- **🔒 Secure Transfers**: Encrypted transaction validation
+- **🎊 Success Celebrations**: Confetti animations on successful transactions
+
+### 🎊 Delightful User Experience
+
+- **🎉 Welcome Confetti**: Celebration animation on onboarding
+- **📳 Haptic Feedback**: Tactile responses for interactions
+- **🌊 Smooth Animations**: 60fps transitions and micro-interactions
+- **🎨 Theme Switching**: Seamless dark/light mode transitions
+- **📱 Native Feel**: Platform-specific UI patterns
+
+## 🧪 Development Workflow
+
+### 📝 Available Scripts
+
+```bash
+# Development
+npm start                    # Start Expo development server
+npm run android             # Run on Android emulator/device
+npm run ios                 # Run on iOS simulator/device
+npm run web                 # Run in web browser
+
+# Code Quality
+npm run lint                # Run ESLint
+npm run lint:fix            # Fix linting issues
+npm run tsc                 # TypeScript type checking
+
+# Building & Deployment
+npm run build:android       # Build Android APK/AAB
+npm run build:ios          # Build iOS IPA
+npm run submit:android      # Submit to Google Play
+npm run submit:ios         # Submit to App Store
+```
+
+### 🔧 Development Tools
+
+- **📏 ESLint**: Code linting with React Native rules
+- **🎯 TypeScript**: Strict type checking enabled
+- **🎨 Prettier**: Consistent code formatting
+- **📱 Expo Dev Tools**: Debugging and development utilities
+- **🔄 Fast Refresh**: Instant code updates during development
+
+### 🧪 Testing Strategy
+
+```bash
+# Unit Tests
+npm test                    # Run Jest tests
+npm run test:watch          # Watch mode for development
+npm run test:coverage       # Generate coverage report
+
+# E2E Testing
+npm run detox:build         # Build for E2E tests
+npm run detox:test          # Run end-to-end tests
+```
+
+## 📊 Performance & Optimization
+
+### ⚡ Performance Features
+
+- **🚀 New Architecture**: Expo SDK 53 with enhanced performance
+- **📦 Bundle Splitting**: Code splitting for faster loads
+- **🗄️ Intelligent Caching**: TanStack Query with offline persistence
+- **🖼️ Image Optimization**: Lazy loading and caching
+- **📱 Memory Management**: Proper cleanup and leak prevention
+
+### 📈 Monitoring & Analytics
+
+- **🐛 Crash Reporting**: Real-time error tracking
+- **📊 Performance Metrics**: App load time and interaction monitoring  
+- **👤 User Analytics**: Usage patterns and feature adoption
+- **🔍 Debug Tools**: Comprehensive logging and debugging
+
+## 🚀 Deployment
+
+### 🏗️ Build Configuration
+
+**Environment Profiles:**
+- **Development**: Local testing with hot reload
+- **Staging**: Pre-production testing environment
+- **Production**: Live app store versions
+
+**Build Commands:**
+```bash
+# Development builds
+eas build --platform ios --profile development
+eas build --platform android --profile development
+
+# Production builds  
+eas build --platform all --profile production
+
+# Store submission
+eas submit --platform all --profile production
+```
+
+### 📱 App Store Deployment
+
+**iOS App Store:**
+- Automated builds via EAS Build
+- TestFlight beta testing
+- App Store Connect integration
+
+**Google Play Store:**
+- AAB format for dynamic delivery
+- Internal testing tracks
+- Staged rollout deployment
+
+## 🤝 Contributing
+
+### 📋 Development Guidelines
+
+1. **🔀 Branching Strategy**
+   ```bash
+   main                     # Production-ready code
+   ├── develop             # Development integration
+   ├── feature/new-feature # Feature development
+   └── hotfix/urgent-fix   # Production hotfixes
+   ```
+
+2. **💻 Code Standards**
+   - Follow TypeScript strict mode
+   - Use ESLint and Prettier configurations
+   - Write meaningful commit messages
+   - Add tests for new features
+
+3. **🔍 Pull Request Process**
+   - Create feature branch from `develop`
+   - Write descriptive PR titles and descriptions
+   - Ensure all tests pass
+   - Request code review from team members
+
+### 📝 Commit Message Format
+
+```bash
+feat: add confetti animation to onboarding modal
+fix: resolve schedule auto-scroll timing issue  
+docs: update README with deployment instructions
+refactor: optimize schedule rendering performance
+test: add unit tests for auth context
+```
+
+## 🔧 Configuration Files
+
+### 📱 Key Configuration Files
+
+- **`app.config.js`**: Expo configuration, plugins, and build settings
+- **`eas.json`**: Build profiles and deployment configuration
+- **`babel.config.js`**: Babel transpilation settings
+- **`metro.config.js`**: Metro bundler configuration
+- **`tailwind.config.js`**: Custom Tailwind CSS configuration
+- **`tsconfig.json`**: TypeScript compiler options (strict mode)
+
+### 🔐 Environment Variables
+
+```bash
+# .env file structure
+EXPO_PUBLIC_API_URL=https://api.uofthacks.com
+EXPO_PUBLIC_SENTRY_DSN=your_sentry_dsn
+EXPO_PUBLIC_ANALYTICS_KEY=your_analytics_key
+```
+
+## 🐛 Troubleshooting
+
+### 🚨 Common Issues & Solutions
+
+**📱 App Won't Start**
+```bash
+# Clear Metro cache and node_modules
+npx expo start --clear
+rm -rf node_modules && npm install
+```
+
+**🎨 Fonts Not Loading**
+```bash
+# Verify fonts in assets/fonts/
+# Check app.config.js font configuration
+# Clear cache and restart
+```
+
+**🔐 Authentication Issues**
+```bash
+# Check token storage
+# Verify API endpoint configuration  
+# Clear SecureStore data for testing
+```
+
+**📅 Schedule Not Updating**
+```bash
+# Check TanStack Query cache
+# Verify API response format
+# Clear query cache
+```
+
+### 📞 Getting Help
+
+- **📚 Documentation**: Check inline code comments and README files
+- **🐛 Bug Reports**: Create issues with detailed reproduction steps
+- **💡 Feature Requests**: Open discussions for new feature ideas
+- **❓ Questions**: Reach out to the development team
+
+## 📚 Additional Resources
+
+### 📖 Documentation
+
+- **[Production Readiness Plan](./PRODUCTION_READINESS_PLAN.md)**: Comprehensive guide to production deployment
+- **[Font Configuration Guide](./FONTS_README.md)**: Complete typography system documentation
+- **[Expo Documentation](https://docs.expo.dev/)**: Official Expo framework docs
+- **[React Native Docs](https://reactnative.dev/docs/getting-started)**: React Native development guide
+
+### 🔗 Useful Links
+
+- **🎨 [NativeWind](https://www.nativewind.dev/)**: Tailwind CSS for React Native
+- **🔄 [TanStack Query](https://tanstack.com/query/)**: Data fetching and state management
+- **🐻 [Zustand](https://github.com/pmndrs/zustand)**: Lightweight state management
+- **📱 [Expo Router](https://expo.github.io/router/)**: File-based routing system
+
+---
+
+## 🎉 Built with ❤️ by the UofTHacks Team
+
+**🏫 University of Toronto** • **🇨🇦 Toronto, Canada** • **2025**
+
+> Empowering the next generation of innovators through technology and community.
+
+---
+
+*For technical support or questions about this mobile app, please reach out to the UofTHacks development team.*
