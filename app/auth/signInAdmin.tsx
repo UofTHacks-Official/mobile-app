@@ -94,6 +94,7 @@ const SignInAdmin = () => {
       const { access_token, refresh_token } = result;
 
       await signIn(access_token, refresh_token);
+      router.dismissAll();
       router.replace("/(admin)");
     } catch (error) {
       Toast.show({
