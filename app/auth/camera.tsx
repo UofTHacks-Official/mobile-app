@@ -1,11 +1,6 @@
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-<<<<<<< HEAD
 import { devError, devLog } from "@/utils/logger";
-=======
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { devError } from "@/utils/logger";
->>>>>>> 447c4b3 (feat: enhance schedule UX and add onboarding confetti effects)
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
 import { router } from "expo-router";
@@ -26,21 +21,24 @@ export default function CameraPage() {
     try {
       const { status } = await Camera.requestCameraPermissionsAsync();
       devLog("Camera permission status:", status);
+      devLog("Camera permission status:", status);
       setPermission(status === "granted");
       Toast.show({
         type: "success",
         text1: "Camera Permission Granted",
         text2: "You can now scan QR codes",
       });
+      Toast.show({
+        type: "success",
+        text1: "Camera Permission Granted",
+        text2: "You can now scan QR codes",
+      });
     } catch (error) {
-<<<<<<< HEAD
       Toast.show({
         type: "error",
         text1: "Error Requesting Camera Permission",
         text2: "Please try again",
       });
-=======
->>>>>>> 447c4b3 (feat: enhance schedule UX and add onboarding confetti effects)
       devError("Error requesting camera permission:", error);
     }
   };
@@ -55,25 +53,11 @@ export default function CameraPage() {
   const askForCamera = async () => {
     await requestCameraPermission();
     setShowOnboarding(true);
-<<<<<<< HEAD
     router.replace("/auth/onboarding");
   };
 
   const handleMaybeLater = async () => {
     router.replace("/auth/onboarding");
-=======
-  };
-
-  const handleMaybeLater = async () => {
-    setShowOnboarding(true);
-  };
-
-  const handleOnboardingComplete = async () => {
-    await setSecureToken(FIRST_SIGN_SIGN_IN, "false");
-    updateFirstSignInStatus(false);
-    setShowOnboarding(false);
-    router.replace("/(admin)");
->>>>>>> 447c4b3 (feat: enhance schedule UX and add onboarding confetti effects)
   };
 
   // const handleOnboardingComplete = () => {
@@ -86,7 +70,6 @@ export default function CameraPage() {
     <>
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 px-8">
-<<<<<<< HEAD
           <Pressable
             className="flex flex-row justify-end"
             onPress={handleMaybeLater}
@@ -94,8 +77,6 @@ export default function CameraPage() {
             <Text className="underline text-gray-500">Skip</Text>
           </Pressable>
 
-=======
->>>>>>> 447c4b3 (feat: enhance schedule UX and add onboarding confetti effects)
           <View className="flex-1 justify-center items-center">
             <View className="mb-4">
               <CameraIcon color={themeStyles.iconColor} size={32} />
@@ -113,7 +94,6 @@ export default function CameraPage() {
           </View>
 
           <Pressable onPress={askForCamera}>
-<<<<<<< HEAD
             <View className="py-4 px-2 bg-uoft_primary_blue rounded-full mb-4 items-center">
               <Text className="text-center">Allow camera access</Text>
             </View>
@@ -125,30 +105,6 @@ export default function CameraPage() {
         visible={showOnboarding}
         onComplete={handleOnboardingComplete}
       /> */}
-=======
-            <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
-              <Text className="text-center">Allow camera access</Text>
-            </View>
-          </Pressable>
-
-          <Pressable onPress={handleMaybeLater}>
-            <View
-              className={cn(
-                "mb-4 py-4 px-2 rounded-md",
-                themeStyles.lightCardBackground
-              )}
-            >
-              <Text className="text-center text-black">Maybe Later</Text>
-            </View>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-      
-      <OnboardingModal 
-        visible={showOnboarding} 
-        onComplete={handleOnboardingComplete} 
-      />
->>>>>>> 447c4b3 (feat: enhance schedule UX and add onboarding confetti effects)
     </>
   );
 }
