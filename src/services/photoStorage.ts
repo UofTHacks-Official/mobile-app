@@ -156,24 +156,36 @@ export class PhotoStorageService {
   /**
    * Get paginated photo gallery (most recent photos first)
    */
-  static async getPhotoGalleryPaginated(maxKeys: number = 5): Promise<PhotoPair[]> {
+  static async getPhotoGalleryPaginated(maxKeys: number = 5, continuationToken?: string): Promise<PaginatedPhotoResult> {
     try {
-      // Get all photos first, then sort and limit
+      // Use S3 pagination - fetch only what we need (each photo pair = 2 files)
       const command = new ListObjectsV2Command({
         Bucket: BUCKET_NAME,
         Prefix: 'photos/',
+        MaxKeys: maxKeys * 2, // Each photo pair = 2 files (front + back)
+        ContinuationToken: continuationToken,
       });
 
       const response = await r2Client.send(command);
       
       if (!response.Contents) {
-        return [];
+        return {
+          photos: [],
+          nextToken: undefined,
+          hasMore: false,
+        };
       }
 
-      // Group photos by photoId first
+      // Sort by S3 LastModified (most recent uploads first)
+      const sortedContents = response.Contents.sort((a, b) => {
+        if (!a.LastModified || !b.LastModified) return 0;
+        return b.LastModified.getTime() - a.LastModified.getTime();
+      });
+
+      // Group photos by photoId
       const photoMap = new Map<string, Partial<PhotoPair>>();
 
-      response.Contents.forEach(obj => {
+      sortedContents.forEach(obj => {
         if (!obj.Key || !obj.LastModified) return;
 
         const match = obj.Key.match(/photos\/photobooth_(\d+)_(front|back)\.jpg$/);
@@ -185,7 +197,7 @@ export class PhotoStorageService {
         if (!photoMap.has(photoId)) {
           photoMap.set(photoId, {
             photoId,
-            timestamp: obj.LastModified, // Use S3 upload time for most reliable sorting
+            timestamp: obj.LastModified,
           });
         }
 
@@ -199,18 +211,34 @@ export class PhotoStorageService {
         }
       });
 
-      // Filter complete pairs only
+      // Filter complete pairs only and preserve LastModified sort order
       const completePairs: PhotoPair[] = [];
-      photoMap.forEach(photo => {
-        if (photo.frontPhotoUrl && photo.backPhotoUrl && photo.timestamp) {
+      const processedIds = new Set<string>();
+      
+      // Process in LastModified order to get most recent complete pairs
+      sortedContents.forEach(obj => {
+        if (!obj.Key) return;
+        const match = obj.Key.match(/photos\/photobooth_(\d+)_(front|back)\.jpg$/);
+        if (!match) return;
+        
+        const photoId = `photobooth_${match[1]}`;
+        if (processedIds.has(photoId)) return;
+        
+        const photo = photoMap.get(photoId);
+        if (photo && photo.frontPhotoUrl && photo.backPhotoUrl) {
           completePairs.push(photo as PhotoPair);
+          processedIds.add(photoId);
+          
+          // Stop when we have enough complete pairs
+          if (completePairs.length >= maxKeys) return;
         }
       });
 
-      // Sort by timestamp (newest first) and limit
-      return completePairs
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-        .slice(0, maxKeys);
+      return {
+        photos: completePairs,
+        nextToken: response.NextContinuationToken,
+        hasMore: response.IsTruncated || false,
+      };
 
     } catch (error) {
       console.error('Failed to fetch paginated photo gallery:', error);

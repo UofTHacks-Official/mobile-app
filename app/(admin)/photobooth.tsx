@@ -8,7 +8,7 @@ import { Images, Camera } from "lucide-react-native";
 import { useCallback } from "react";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
-import { PhotoStorageService, PhotoPair } from "../../src/services/photoStorage";
+import { PhotoStorageService, PhotoPair, PaginatedPhotoResult } from "../../src/services/photoStorage";
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from '@/reducers/bottomNavBar';
 import { useScrollNavBar } from '@/utils/navigation';
@@ -66,8 +66,8 @@ export default function PhotoboothPage() {
     try {
       setLoading(true);
       // Use paginated method - shows 5 most recent photos
-      const photos = await PhotoStorageService.getPhotoGalleryPaginated(5);
-      setPhotoPairs(photos);
+      const result = await PhotoStorageService.getPhotoGalleryPaginated(5);
+      setPhotoPairs(result.photos);
     } catch (error) {
       console.error('Failed to load gallery:', error);
     } finally {
