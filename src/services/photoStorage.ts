@@ -65,6 +65,7 @@ export class PhotoStorageService {
     backPhotoUri: string
   ): Promise<PhotoUploadResult> {
     try {
+      // Use regular timestamp - we'll sort by S3 LastModified instead of filename
       const timestamp = Date.now();
       const photoId = `photobooth_${timestamp}`;
       
@@ -149,6 +150,71 @@ export class PhotoStorageService {
     } catch (error) {
       console.error('Failed to fetch photo gallery:', error);
       throw new Error('Failed to fetch photo gallery');
+    }
+  }
+
+  /**
+   * Get paginated photo gallery (most recent photos first)
+   */
+  static async getPhotoGalleryPaginated(maxKeys: number = 5): Promise<PhotoPair[]> {
+    try {
+      // Get all photos first, then sort and limit
+      const command = new ListObjectsV2Command({
+        Bucket: BUCKET_NAME,
+        Prefix: 'photos/',
+      });
+
+      const response = await r2Client.send(command);
+      
+      if (!response.Contents) {
+        return [];
+      }
+
+      // Group photos by photoId first
+      const photoMap = new Map<string, Partial<PhotoPair>>();
+
+      response.Contents.forEach(obj => {
+        if (!obj.Key || !obj.LastModified) return;
+
+        const match = obj.Key.match(/photos\/photobooth_(\d+)_(front|back)\.jpg$/);
+        if (!match) return;
+
+        const [, timestamp, type] = match;
+        const photoId = `photobooth_${timestamp}`;
+
+        if (!photoMap.has(photoId)) {
+          photoMap.set(photoId, {
+            photoId,
+            timestamp: obj.LastModified, // Use S3 upload time for most reliable sorting
+          });
+        }
+
+        const photo = photoMap.get(photoId)!;
+        const publicUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${obj.Key}`;
+
+        if (type === 'front') {
+          photo.frontPhotoUrl = publicUrl;
+        } else {
+          photo.backPhotoUrl = publicUrl;
+        }
+      });
+
+      // Filter complete pairs only
+      const completePairs: PhotoPair[] = [];
+      photoMap.forEach(photo => {
+        if (photo.frontPhotoUrl && photo.backPhotoUrl && photo.timestamp) {
+          completePairs.push(photo as PhotoPair);
+        }
+      });
+
+      // Sort by timestamp (newest first) and limit
+      return completePairs
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .slice(0, maxKeys);
+
+    } catch (error) {
+      console.error('Failed to fetch paginated photo gallery:', error);
+      throw new Error('Failed to fetch paginated photo gallery');
     }
   }
 }

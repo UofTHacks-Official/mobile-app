@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Text, View, TouchableOpacity, Alert, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { Images, Camera } from "lucide-react-native";
 import { useCallback } from "react";
 import DualCamera from "../../src/components/photobooth/DualCamera";
@@ -65,7 +65,8 @@ export default function PhotoboothPage() {
   const loadGallery = async () => {
     try {
       setLoading(true);
-      const photos = await PhotoStorageService.getPhotoGallery();
+      // Use paginated method - shows 5 most recent photos
+      const photos = await PhotoStorageService.getPhotoGalleryPaginated(5);
       setPhotoPairs(photos);
     } catch (error) {
       console.error('Failed to load gallery:', error);
