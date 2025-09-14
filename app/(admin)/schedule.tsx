@@ -9,6 +9,7 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
+import { useScrollNavBar } from "@/utils/navigation";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
 import { useScrollNavBar } from "@/utils/navigation";
@@ -27,6 +28,8 @@ const Schedule = () => {
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   
+  // Bottom nav bar scroll control
+  const { handleScroll } = useScrollNavBar();
   // Bottom nav bar scroll control
   const { handleScroll } = useScrollNavBar();
 
