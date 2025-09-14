@@ -7,12 +7,12 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
-import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,14 +23,9 @@ const Schedule = () => {
   const insets = useSafeAreaInsets();
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-
-  // Bottom nav bar controls
-  const { hideNavBar, showNavBar } = useBottomNavBarStore();
-  const scrollY = useRef(0);
-  const lastScrollY = useRef(0);
-  const scrollDirection = useRef<"up" | "down">("up");
-  const mainScrollViewRef = useRef<ScrollView>(null);
-  const hasInitiallyScrolled = useRef(false);
+  
+  // Bottom nav bar scroll control
+  const { handleScroll } = useScrollNavBar();
 
   const {
     daysToShow,
@@ -108,28 +103,6 @@ const Schedule = () => {
     });
   };
 
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDelta = currentScrollY - lastScrollY.current;
-
-    // Only trigger if scroll delta is significant enough (prevents jitter)
-    if (Math.abs(scrollDelta) > 5) {
-      if (scrollDelta > 0 && currentScrollY > 50) {
-        if (scrollDirection.current !== "down") {
-          scrollDirection.current = "down";
-          hideNavBar();
-        }
-      } else if (scrollDelta < 0) {
-        if (scrollDirection.current !== "up") {
-          scrollDirection.current = "up";
-          showNavBar();
-        }
-      }
-    }
-
-    lastScrollY.current = currentScrollY;
-    scrollY.current = currentScrollY;
-  };
 
   const renderDaySchedules = (date: Date, index: number) => {
     const filtered = schedules.flatMap((schedule) => {
