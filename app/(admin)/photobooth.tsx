@@ -1,16 +1,16 @@
+import { useState, useCallback } from "react";
 import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
+import { Text, View, TouchableOpacity, Alert, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
+import { Images, Camera } from "lucide-react-native";
+import DualCamera from "../../src/components/photobooth/DualCamera";
+import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
+import { PhotoStorageService, PhotoPair, PaginatedPhotoResult } from "../../src/services/photoStorage";
+import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from '@/reducers/bottomNavBar';
 import { useScrollNavBar } from '@/utils/navigation';
-import { cn, getThemeStyles } from "@/utils/theme";
-import { useFocusEffect } from "expo-router";
-import { Camera, Images } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
-import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
-import DualCamera from "../../src/components/photobooth/DualCamera";
-import { PhotoPair, PhotoStorageService } from "../../src/services/photoStorage";
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -29,7 +29,7 @@ export default function PhotoboothPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextToken, setNextToken] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(false);
-  
+
   // Bottom nav bar controls
   const { showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
   const { handleScroll: handleNavBarScroll } = useScrollNavBar();
@@ -121,9 +121,9 @@ export default function PhotoboothPage() {
     
     try {
       setIsProcessing(true);
-      
+
       // Upload photos to Cloudflare R2
-      await PhotoStorageService.uploadPhotoboothPhotos(
+      const result = await PhotoStorageService.uploadPhotoboothPhotos(
         capturedPhotos.front,
         capturedPhotos.back
       );

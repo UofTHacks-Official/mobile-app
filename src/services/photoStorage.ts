@@ -1,6 +1,6 @@
 // React Native polyfill for crypto (MUST be first)
-import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import 'react-native-get-random-values';
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 const r2Client = new S3Client({
   region: 'auto',
@@ -32,7 +32,6 @@ export interface PaginatedPhotoResult {
   nextToken?: string;
   hasMore: boolean;
 }
-
 export class PhotoStorageService {
 
   static async uploadPhoto(photoUri: string, fileName: string): Promise<string> {
