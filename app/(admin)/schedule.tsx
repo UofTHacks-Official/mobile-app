@@ -63,6 +63,38 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
 
+  // Auto-scroll to current time on initial component mount only
+  useEffect(() => {
+    if (!hasInitiallyScrolled.current) {
+      const timer = setTimeout(() => {
+        if (mainScrollViewRef.current) {
+          // Calculate the position of the current time
+          const currentTimePosition =
+            (currentHour + currentMinute / 60) * hourHeight;
+
+          const screenHeight = Dimensions.get("window").height;
+
+          const offsetY = Math.max(0, currentTimePosition - screenHeight * 0.3);
+
+          mainScrollViewRef.current.scrollTo({
+            y: offsetY,
+            animated: false,
+          });
+
+          // Set scroll state to prevent nav bar from hiding immediately
+          scrollDirection.current = "up";
+          lastScrollY.current = offsetY;
+          scrollY.current = offsetY;
+          showNavBar();
+
+          hasInitiallyScrolled.current = true;
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
@@ -209,7 +241,6 @@ const Schedule = () => {
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                 >
-                  {" "}
                   {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
