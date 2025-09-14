@@ -4,6 +4,9 @@
     "strict": true,
     "jsx": "react-jsx",
     "module": "es2022",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "paths": {
       "@/*": [
         "./src/*"
