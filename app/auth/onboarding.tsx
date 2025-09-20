@@ -103,7 +103,7 @@ export default function OnboardingPage() {
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [currentStep]);
+  }, [currentStep, progressAnim]);
 
   const handleNext = () => {
     if (currentStep < onboardingSteps.length - 1) {

@@ -13,7 +13,7 @@ import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
 export default function CameraPage() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const [permission, setPermission] = useState<boolean | null>(null);
+  const [_permission, setPermission] = useState<boolean | null>(null);
   const { updateFirstSignInStatus } = useAuth();
 
   const requestCameraPermission = async () => {
@@ -55,11 +55,11 @@ export default function CameraPage() {
     await requestCameraPermission();
   };
 
-  const handleMaybeLater = async () => {
+  const _handleMaybeLater = async () => {
     router.replace("/(admin)");
   };
 
-  const handleOnboardingComplete = async () => {
+  const _handleOnboardingComplete = async () => {
     router.replace("/(admin)");
   };
 

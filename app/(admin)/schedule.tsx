@@ -1,7 +1,7 @@
-import CurrentTimeIndicator from "@/components/schedule/CurrentTimeIndicator";
+import { CurrentTimeIndicator } from "@/components/schedule/CurrentTimeIndicator";
 
 import FilterMenu from "@/components/schedule/FilterMenu";
-import ScheduleHeader from "@/components/schedule/ScheduleHeader";
+import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import TimeSlot, { DayColumn } from "@/components/schedule/TimeSlot";
 import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";

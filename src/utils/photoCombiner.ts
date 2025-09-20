@@ -26,7 +26,7 @@ export class PhotoCombiner {
       );
 
       // Process the front photo (overlay) - make it smaller and round
-      const frontPhoto = await manipulateAsync(
+      const _frontPhoto = await manipulateAsync(
         frontPhotoUri,
         [{ resize: { width: 300 } }, { flip: FlipType.Horizontal }],
         { compress: 0.8, format: SaveFormat.JPEG }

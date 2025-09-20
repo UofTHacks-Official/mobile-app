@@ -76,7 +76,7 @@ const Header: React.FC<{ isDark: boolean }> = ({ isDark }) => {
       <Text
         className={cn("font-pp text-center text-lg", themeStyles.secondaryText)}
       >
-        Choose how you'll be using the app
+        Choose how you&apos;ll be using the app
       </Text>
     </View>
   );

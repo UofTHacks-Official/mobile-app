@@ -18,7 +18,6 @@ import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
 import {
   PhotoStorageService,
   PhotoPair,
-  PaginatedPhotoResult,
 } from "../../src/services/photoStorage";
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
@@ -136,7 +135,7 @@ export default function PhotoboothPage() {
       setIsProcessing(true);
 
       // Upload photos to Cloudflare R2
-      const result = await PhotoStorageService.uploadPhotoboothPhotos(
+      await PhotoStorageService.uploadPhotoboothPhotos(
         capturedPhotos.front,
         capturedPhotos.back
       );

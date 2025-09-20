@@ -1,8 +1,6 @@
-import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert, Image } from "react-native";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { useTheme } from "@/context/themeContext";
-import { cn, getThemeStyles } from "@/utils/theme";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { useRef, useState } from "react";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 interface DualCameraProps {
   onPhotosCapture: (frontPhoto: string, backPhoto: string) => void;
@@ -17,7 +15,6 @@ function DualCamera({
   const [currentCamera, setCurrentCamera] = useState<CameraType>("front");
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
-  const [zoom, setZoom] = useState(0);
   const cameraRef = useRef<CameraView>(null);
 
   // Check permissions
@@ -92,14 +89,14 @@ function DualCamera({
     }
   };
 
-  const resetCapture = () => {
-    setFrontPhoto(null);
-    setCurrentCamera("front");
-  };
+  // const resetCapture = () => {
+  //   setFrontPhoto(null);
+  //   setCurrentCamera("front");
+  // };
 
-  const switchCamera = () => {
-    setCurrentCamera(currentCamera === "front" ? "back" : "front");
-  };
+  // const switchCamera = () => {
+  //   setCurrentCamera(currentCamera === "front" ? "back" : "front");
+  // };
 
   return (
     <View className="items-center">

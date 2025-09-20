@@ -214,7 +214,7 @@ const Profile = () => {
                 theme.primaryText
               )}
             >
-              Are you sure you want to sign out? You'll need to log in again to
+              Are you sure you want to sign out? You&apos;ll need to log in again to
               access your account.
             </Text>
 

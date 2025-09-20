@@ -82,7 +82,7 @@ export default function GalleryPage() {
   // Also ensure nav bar is shown when component mounts
   useEffect(() => {
     showNavBar();
-  }, []);
+  }, [showNavBar]);
 
   if (loading) {
     return (
@@ -128,7 +128,7 @@ export default function GalleryPage() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-            {photoPairs.map((photo, index) => (
+            {photoPairs.map((photo, _index) => (
               <View key={photo.photoId} className="mb-8">
                 <CompositePhotoView
                   frontPhotoUrl={photo.frontPhotoUrl}
