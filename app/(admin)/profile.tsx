@@ -214,8 +214,8 @@ const Profile = () => {
                 theme.primaryText
               )}
             >
-              Are you sure you want to sign out? You&apos;ll need to log in again to
-              access your account.
+              Are you sure you want to sign out? You&apos;ll need to log in
+              again to access your account.
             </Text>
 
             <View className="flex-row gap-x-4 w-full">
