@@ -32,6 +32,7 @@ export interface PaginatedPhotoResult {
   nextToken?: string;
   hasMore: boolean;
 }
+
 export class PhotoStorageService {
 
   static async uploadPhoto(photoUri: string, fileName: string): Promise<string> {
