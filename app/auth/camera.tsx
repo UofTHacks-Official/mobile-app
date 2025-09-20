@@ -1,21 +1,18 @@
-import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { devError, devLog } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
 import { router } from "expo-router";
-import { CameraIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
 
 export default function CameraPage() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const [, setPermission] = useState<boolean | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const { updateFirstSignInStatus } = useAuth();
 
   const requestCameraPermission = async () => {
     try {
@@ -52,20 +49,13 @@ export default function CameraPage() {
 
   const askForCamera = async () => {
     await requestCameraPermission();
-    setShowOnboarding(true);
     router.replace("/auth/onboarding");
   };
 
   const handleMaybeLater = async () => {
     router.replace("/auth/onboarding");
   };
-
-  // const handleOnboardingComplete = () => {
-  //   setShowOnboarding(false);
-  //   router.replace("/auth/onboarding");
-  //   updateFirstSignInStatus(false);
-  // };
-
+  
   return (
     <>
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
@@ -78,8 +68,8 @@ export default function CameraPage() {
           </Pressable>
 
           <View className="flex-1 justify-center items-center">
-            <View className="mb-4">
-              <CameraIcon color={themeStyles.iconColor} size={32} />
+            <View className="mb-8">
+              <CameraOwlSvg width={200} height={200} />
             </View>
 
             <Text className={cn("text-xl flex-col", themeStyles.primaryText)}>
@@ -100,11 +90,6 @@ export default function CameraPage() {
           </Pressable>
         </View>
       </SafeAreaView>
-
-      {/* <OnboardingModal
-        visible={showOnboarding}
-        onComplete={handleOnboardingComplete}
-      /> */}
     </>
   );
 }

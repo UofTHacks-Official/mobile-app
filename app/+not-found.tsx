@@ -42,7 +42,7 @@ const NotFoundPage = () => {
               themeStyles.secondaryText
             )}
           >
-            We can't seem to find the page you're looking for😅.
+            We can&apos;t seem to find the page you&apos;re looking for😅.
           </Text>
 
           <View className="w-full space-y-4">

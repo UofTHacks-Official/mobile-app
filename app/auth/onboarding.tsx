@@ -1,11 +1,13 @@
-import { Animal, getRandomAnimalComponent } from "@/components/image/animals";
 import { useTheme } from "@/context/themeContext";
+import { useAuth } from "@/context/authContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { router } from "expo-router";
 import { ArrowLeft, Calendar, Coins, QrCode, Users } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
+import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
 
 interface OnboardingStep {
   id: number;
@@ -16,6 +18,14 @@ interface OnboardingStep {
 }
 
 const onboardingSteps: OnboardingStep[] = [
+  {
+    id: 0,
+    icon: null, // Welcome SVG will be displayed
+    title: "Welcome to UofT Hacks!",
+    description:
+      "Get ready for an amazing hackathon experience. Let's get you set up!",
+    feature: "Welcome",
+  },
   {
     id: 1,
     icon: null, // Will be set dynamically
@@ -52,6 +62,7 @@ const onboardingSteps: OnboardingStep[] = [
 
 export default function OnboardingPage() {
   const { isDark } = useTheme();
+  const { updateFirstSignInStatus } = useAuth();
   const themeStyles = getThemeStyles(isDark);
   const [currentStep, setCurrentStep] = useState(0);
   const progressAnim = useRef(
@@ -61,18 +72,22 @@ export default function OnboardingPage() {
   const stepsWithIcons: OnboardingStep[] = [
     {
       ...onboardingSteps[0],
-      icon: <Calendar color={themeStyles.iconColor} size={48} />,
+      icon: isDark ? <WelcomeDarkSvg width={400} height={400} /> : <WelcomeLightSvg width={400} height={400} />,
     },
     {
       ...onboardingSteps[1],
-      icon: <QrCode color={themeStyles.iconColor} size={48} />,
+      icon: <Calendar color={themeStyles.iconColor} size={48} />,
     },
     {
       ...onboardingSteps[2],
-      icon: <Coins color={themeStyles.iconColor} size={48} />,
+      icon: <QrCode color={themeStyles.iconColor} size={48} />,
     },
     {
       ...onboardingSteps[3],
+      icon: <Coins color={themeStyles.iconColor} size={48} />,
+    },
+    {
+      ...onboardingSteps[4],
       icon: <Users color={themeStyles.iconColor} size={48} />,
     },
   ];
@@ -90,12 +105,9 @@ export default function OnboardingPage() {
     if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      updateFirstSignInStatus(false);
       router.push("/(admin)");
     }
-  };
-
-  const handleSkip = () => {
-    router.push("/(admin)");
   };
 
   const currentStepData = stepsWithIcons[currentStep];
@@ -129,12 +141,21 @@ export default function OnboardingPage() {
             </View>
           </View>
         </View>
-        <View className="flex-1 justify-center items-center">
-          <Animal
-            name={getRandomAnimalComponent().name}
-            width={200}
-            height={200}
-          />
+        <View className="flex-1 justify-center items-center px-4">
+          {/* Icon/SVG */}
+          <View className="mb-8 items-center">
+            {currentStepData.icon}
+          </View>
+
+          {/* Title and Description */}
+          <View className="items-center">
+            <Text className={cn("text-2xl font-bold text-center mb-4", themeStyles.primaryText)}>
+              {currentStepData.title}
+            </Text>
+            <Text className={cn("text-base text-center opacity-80", themeStyles.primaryText)}>
+              {currentStepData.description}
+            </Text>
+          </View>
         </View>
         {/* Navigation Buttons */}
         <View className="pb-4">

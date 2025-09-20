@@ -1,6 +1,6 @@
 export const getThemeStyles = (isDark: boolean) => ({
   // Background colors
-  background: isDark ? "bg-uoft_dark_bg_black" : "bg-uoft_white",
+  background: isDark ? "bg-black" : "bg-white",
   cardBackground: isDark ? "bg-uoft_dark_mode_bg_light_black" : "bg-white",
   lightCardBackground: isDark ? "bg-uoft_grey_lighter" : "bg-white",
   errorBackground: isDark ? "bg-uoft_grey_light" : "bg-uoft_grey_light",

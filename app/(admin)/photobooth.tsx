@@ -1,17 +1,16 @@
-import { useState } from "react";
 import { useTheme } from "@/context/themeContext";
-import { cn, getThemeStyles } from "@/utils/theme";
-import { Text, View, TouchableOpacity, Alert, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
-import { Images, Camera } from "lucide-react-native";
-import { useCallback } from "react";
-import DualCamera from "../../src/components/photobooth/DualCamera";
-import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
-import { PhotoStorageService, PhotoPair, PaginatedPhotoResult } from "../../src/services/photoStorage";
-import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from '@/reducers/bottomNavBar';
 import { useScrollNavBar } from '@/utils/navigation';
+import { cn, getThemeStyles } from "@/utils/theme";
+import { useFocusEffect } from "expo-router";
+import { Camera, Images } from "lucide-react-native";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
+import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
+import DualCamera from "../../src/components/photobooth/DualCamera";
+import { PhotoPair, PhotoStorageService } from "../../src/services/photoStorage";
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -27,10 +26,13 @@ export default function PhotoboothPage() {
   const [photoPairs, setPhotoPairs] = useState<PhotoPair[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextToken, setNextToken] = useState<string | undefined>();
+  const [hasMore, setHasMore] = useState(false);
   
   // Bottom nav bar controls
   const { showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
-  const { handleScroll } = useScrollNavBar();
+  const { handleScroll: handleNavBarScroll } = useScrollNavBar();
 
   // Clear captured photos when page comes into focus
   useFocusEffect(
@@ -68,10 +70,42 @@ export default function PhotoboothPage() {
       // Use paginated method - shows 5 most recent photos
       const result = await PhotoStorageService.getPhotoGalleryPaginated(5);
       setPhotoPairs(result.photos);
+      setNextToken(result.nextToken);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error('Failed to load gallery:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMorePhotos = async () => {
+    if (!hasMore || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const result = await PhotoStorageService.getPhotoGalleryPaginated(5, nextToken);
+
+      setPhotoPairs(prev => [...prev, ...result.photos]);
+      setNextToken(result.nextToken);
+      setHasMore(result.hasMore);
+    } catch (error) {
+      console.error('Failed to load more photos:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const handleInfiniteScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const isNearBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
+
+    // Handle nav bar scroll behavior
+    handleNavBarScroll(event);
+
+    // Handle infinite scroll loading
+    if (isNearBottom && hasMore && !loadingMore) {
+      loadMorePhotos();
     }
   };
 
@@ -89,8 +123,8 @@ export default function PhotoboothPage() {
       setIsProcessing(true);
       
       // Upload photos to Cloudflare R2
-      const result = await PhotoStorageService.uploadPhotoboothPhotos(
-        capturedPhotos.front, 
+      await PhotoStorageService.uploadPhotoboothPhotos(
+        capturedPhotos.front,
         capturedPhotos.back
       );
       
@@ -163,10 +197,10 @@ export default function PhotoboothPage() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            onScroll={handleScroll}
+            onScroll={handleInfiniteScroll}
             scrollEventThrottle={16}
           >
-            {photoPairs.map((photo, index) => (
+            {photoPairs.map((photo) => (
               <View key={photo.photoId} className="mb-8">
                 <CompositePhotoView
                   frontPhotoUrl={photo.frontPhotoUrl}
@@ -177,6 +211,25 @@ export default function PhotoboothPage() {
                 </Text>
               </View>
             ))}
+
+            {/* Loading indicator for infinite scroll */}
+            {loadingMore && (
+              <View className="py-4 items-center">
+                <ActivityIndicator size="large" color={themeStyles.iconColor} />
+                <Text className={cn("mt-2 text-sm", themeStyles.secondaryText)}>
+                  Loading more photos...
+                </Text>
+              </View>
+            )}
+
+            {/* End of results indicator */}
+            {!hasMore && photoPairs.length > 0 && (
+              <View className="py-4 items-center">
+                <Text className={cn("text-sm", themeStyles.secondaryText)}>
+                  You&apos;ve seen all the photos! 🎉
+                </Text>
+              </View>
+            )}
           </ScrollView>
         )}
       </View>
