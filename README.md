@@ -557,5 +557,3 @@ rm -rf node_modules && npm install
 ---
 
 _For technical support or questions about this mobile app, please reach out to the UofTHacks development team._
-
-err i want to test for cicd triggers
