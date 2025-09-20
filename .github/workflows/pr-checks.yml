@@ -7,8 +7,8 @@ on:
     branches: [main, develop]
 
 jobs:
-  format-and-lint:
-    name: Format, Type Check & Lint
+  quality-checks:
+    name: Code Quality Checks
     runs-on: ubuntu-latest
 
     steps:

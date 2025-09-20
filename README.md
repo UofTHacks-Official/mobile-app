@@ -74,6 +74,7 @@ This mobile application serves as the central hub for UofTHacks participants, ad
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
@@ -239,6 +240,7 @@ mobile/
    - **Automatic Refresh**: Seamless token renewal on expiry
 
 3. **🔄 Request Interceptor Flow**
+
    ```typescript
    API Request → 401 Unauthorized → Queue Request →
    Use Refresh Token → Get New Access Token →
