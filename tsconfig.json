@@ -8,9 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -24,7 +22,5 @@
     "app/**/*.tsx",
     "src/context/authContext.tsx"
   ],
-  "exclude": [
-    "assets/app-example"
-  ]
+  "exclude": ["assets/app-example"]
 }

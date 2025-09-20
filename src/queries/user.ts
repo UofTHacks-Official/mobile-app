@@ -1,6 +1,6 @@
-import type { Admin } from '@/requests/admin';
-import { adminLogin, getAdminByToken, getAdminProfile } from '@/requests/admin';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import type { Admin } from "@/requests/admin";
+import { adminLogin, getAdminByToken, getAdminProfile } from "@/requests/admin";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 /**
  * TanStack Query hook for fetching admin data by token
@@ -10,19 +10,19 @@ import { useMutation, useQuery } from '@tanstack/react-query';
  */
 export const useAdminByToken = (adminId: string, enabled: boolean = true) => {
   return useQuery({
-    queryKey: ['admin', adminId],
+    queryKey: ["admin", adminId],
     queryFn: async () => {
       const result = await getAdminByToken(adminId);
-      
-      if (result.error ) {
-        throw new Error('Failed to fetch admin data');
+
+      if (result.error) {
+        throw new Error("Failed to fetch admin data");
       }
-      
-      if(result.response){
+
+      if (result.response) {
         return result.response.data as Admin;
       }
-      
-      throw new Error('No response or error received from getAdminByToken');
+
+      throw new Error("No response or error received from getAdminByToken");
     },
     enabled: enabled && !!adminId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -30,12 +30,12 @@ export const useAdminByToken = (adminId: string, enabled: boolean = true) => {
     retry: (failureCount, error) => {
       // Retry up to 3 times, but not on 404 errors
       if (failureCount >= 3) return false;
-      
+
       // Don't retry on 404 (admin not found)
-      if (error instanceof Error && error.message.includes('404')) {
+      if (error instanceof Error && error.message.includes("404")) {
         return false;
       }
-      
+
       return true;
     },
   });
@@ -47,20 +47,23 @@ export const useAdminByToken = (adminId: string, enabled: boolean = true) => {
  * @param enabled - Whether the query should be enabled (default: true)
  * @returns Query result with admin profile data
  */
-export const useAdminProfile = (bearerToken: string | null, enabled: boolean = true) => {
+export const useAdminProfile = (
+  bearerToken: string | null,
+  enabled: boolean = true
+) => {
   return useQuery({
-    queryKey: ['admin-profile'],
+    queryKey: ["admin-profile"],
     queryFn: async () => {
       if (!bearerToken) {
-        throw new Error('No bearer token provided');
+        throw new Error("No bearer token provided");
       }
-      
+
       const result = await getAdminProfile(bearerToken);
-      
+
       if (result.error) {
-        throw new Error('Failed to fetch admin profile');
+        throw new Error("Failed to fetch admin profile");
       }
-      
+
       if (result.response) {
         return result.response.data as Admin;
       }
@@ -71,12 +74,12 @@ export const useAdminProfile = (bearerToken: string | null, enabled: boolean = t
     retry: (failureCount, error) => {
       // Retry up to 3 times, but not on 404 errors
       if (failureCount >= 3) return false;
-      
+
       // Don't retry on 404 (admin not found)
-      if (error instanceof Error && error.message.includes('404')) {
+      if (error instanceof Error && error.message.includes("404")) {
         return false;
       }
-      
+
       return true;
     },
   });
@@ -88,18 +91,24 @@ export const useAdminProfile = (bearerToken: string | null, enabled: boolean = t
  */
 export const useAdminLogin = () => {
   return useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => {
       const result = await adminLogin(email, password);
-      
+
       if (result.error) {
-        throw new Error('Login failed. Please check your credentials.');
+        throw new Error("Login failed. Please check your credentials.");
       }
-      
+
       if (result.response) {
         return result.response.data;
       }
-      
-      throw new Error('No response received from login attempt');
+
+      throw new Error("No response received from login attempt");
     },
   });
 };

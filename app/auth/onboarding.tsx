@@ -72,7 +72,11 @@ export default function OnboardingPage() {
   const stepsWithIcons: OnboardingStep[] = [
     {
       ...onboardingSteps[0],
-      icon: isDark ? <WelcomeDarkSvg width={400} height={400} /> : <WelcomeLightSvg width={400} height={400} />,
+      icon: isDark ? (
+        <WelcomeDarkSvg width={400} height={400} />
+      ) : (
+        <WelcomeLightSvg width={400} height={400} />
+      ),
     },
     {
       ...onboardingSteps[1],
@@ -143,16 +147,24 @@ export default function OnboardingPage() {
         </View>
         <View className="flex-1 justify-center items-center px-4">
           {/* Icon/SVG */}
-          <View className="mb-8 items-center">
-            {currentStepData.icon}
-          </View>
+          <View className="mb-8 items-center">{currentStepData.icon}</View>
 
           {/* Title and Description */}
           <View className="items-center">
-            <Text className={cn("text-2xl font-bold text-center mb-4", themeStyles.primaryText)}>
+            <Text
+              className={cn(
+                "text-2xl font-bold text-center mb-4",
+                themeStyles.primaryText
+              )}
+            >
               {currentStepData.title}
             </Text>
-            <Text className={cn("text-base text-center opacity-80", themeStyles.primaryText)}>
+            <Text
+              className={cn(
+                "text-base text-center opacity-80",
+                themeStyles.primaryText
+              )}
+            >
               {currentStepData.description}
             </Text>
           </View>

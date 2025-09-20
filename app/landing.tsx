@@ -4,7 +4,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import LottieView from "lottie-react-native";
 import { useEffect, useState } from "react";
-import { ImageBackground, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 const LandingPage = () => {
   const { isDark } = useTheme();
@@ -25,16 +25,23 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <View className="flex-1 relative">
+    <View
+      className={cn(
+        "flex-1 relative",
+        isDark ? "bg-[#212121]" : "bg-[#ffffff]"
+      )}
+    >
       {isDark ? (
-        <ImageBackground
-          source={require("../assets/images/bg/uoft_night.png")}
-          className="flex-1"
-          resizeMode="cover"
-          imageStyle={{ resizeMode: "cover" }}
+        <LottieView
+          source={require("../assets/lottie/dark_landing.json")}
+          autoPlay
+          loop={false}
+          style={{ flex: 1 }}
         />
       ) : (
-        <View className="flex-1" style={{ backgroundColor: '#ffffff' }}>
+        <View
+          className={cn("flex-1", isDark ? "bg-[#212121]" : "bg-[#ffffff]")}
+        >
           <LottieView
             source={require("../assets/lottie/light_landing.json")}
             autoPlay
@@ -48,14 +55,17 @@ const LandingPage = () => {
         <View
           className="absolute inset-0"
           style={{
-            backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+            backgroundColor: isDark ? "#212121" : "#ffffff",
           }}
         />
       )}
 
       <View className="absolute bottom-0 left-0 right-0 px-8 pb-6">
         <Pressable
-          className="items-center bg-space-grey w-full py-4 rounded-full mb-4"
+          className={cn(
+            "items-center bg-space-grey w-full py-4 rounded-md mb-4",
+            themeStyles.primaryButtonColorBg
+          )}
           onPress={handleGetStarted}
         >
           <Text className={cn(themeStyles.primaryText1, "font-semibold")}>
@@ -70,7 +80,7 @@ const LandingPage = () => {
             "opacity-80"
           )}
         >
-          © 2025 UofT Hacks. Built with ❤️ in Toronto, Ontario.
+          © 2025 UofT Hacks. Built with ❤️ in Toronto
         </Text>
       </View>
     </View>

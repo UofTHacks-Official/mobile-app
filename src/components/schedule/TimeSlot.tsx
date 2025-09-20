@@ -48,10 +48,10 @@ const TimeSlot = ({
     hour === 0
       ? "12 AM"
       : hour === 12
-      ? "12 PM"
-      : hour > 12
-      ? `${hour - 12} PM`
-      : `${hour} AM`;
+        ? "12 PM"
+        : hour > 12
+          ? `${hour - 12} PM`
+          : `${hour} AM`;
 
   function getEventRange(schedule: Schedule) {
     const start = new Date(schedule.startTime);

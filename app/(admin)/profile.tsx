@@ -4,13 +4,22 @@ import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { openSettings } from "@/utils/camera/permissions";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { Bell, CalendarCheck2Icon, LogOut, User } from "lucide-react-native";
-import { Pressable, SafeAreaView, Text, View } from "react-native";
+import {
+  AlertTriangle,
+  Bell,
+  CalendarCheck2Icon,
+  LogOut,
+  User,
+  X,
+} from "lucide-react-native";
+import { useState } from "react";
+import { Modal, Pressable, SafeAreaView, Text, View } from "react-native";
 
 const Profile = () => {
   const { signOut, adminData, adminLoading } = useAuth();
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
+  const [signOutModal, setSignOutModal] = useState(false);
 
   const admin = adminData || {
     admin_username: "",
@@ -20,7 +29,7 @@ const Profile = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", theme.background)}>
-      <View className="flex-1 px-6">
+      <View className={cn("flex-1 px-6")}>
         <View className="mt-6">
           <Text
             className={cn("text-3xl font-onest-bold mb-2", theme.primaryText)}
@@ -33,7 +42,7 @@ const Profile = () => {
         </View>
 
         <View className="mt-12 gap-y-6">
-          <View className={cn(theme.cardStyle, theme.cardBackground)}>
+          <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
             <View className="flex-row items-center gap-2 mb-4">
               <User size={20} color={theme.iconColor} />
               <Text
@@ -51,7 +60,12 @@ const Profile = () => {
               <CustomSplashScreen />
             ) : adminData ? (
               <View className="space-y-3">
-                <View className="flex-row justify-between">
+                <View
+                  className={cn(
+                    "flex-row justify-between",
+                    theme.lightCardBackground
+                  )}
+                >
                   <Text className={cn(theme.textSecondary, theme.cardText)}>
                     Username:
                   </Text>
@@ -84,7 +98,7 @@ const Profile = () => {
 
           {/* Notifications Section */}
           <Pressable
-            className={cn(theme.cardStyle, theme.cardBackground)}
+            className={cn(theme.cardStyle, theme.lightCardBackground)}
             onPress={openSettings}
             android_ripple={null}
             style={({ pressed }) => ({
@@ -110,7 +124,7 @@ const Profile = () => {
             </View>
           </Pressable>
 
-          <View className={cn(theme.cardStyle, theme.cardBackground)}>
+          <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
             <View className="flex-row items-center gap-2">
               <CalendarCheck2Icon size={20} color={theme.iconColor} />
               <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
@@ -142,22 +156,110 @@ const Profile = () => {
 
           <Pressable
             className={cn(
-              "p-2 px-6 rounded-md flex-row items-center justify-center",
-              theme.cardBackground
+              "p-2 px-6 rounded-md flex-row items-start justify-start border border-[#ef4444]",
+              theme.lightCardBackground
             )}
-            onPress={signOut}
+            onPress={() => {
+              setSignOutModal(true);
+            }}
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <View className="flex flex-row items-center gap-x-2">
+            <View className="flex flex-row items-center  gap-x-2">
               <LogOut color="#ef4444" size={18} />
               <Text className="text-red-500 font-opensans">Sign Out</Text>
             </View>
           </Pressable>
         </View>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={signOutModal}
+        onRequestClose={() => setSignOutModal(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View
+            className={cn(
+              "m-4 rounded-2xl p-8 items-center shadow-2xl min-w-[320px]",
+              theme.lightCardBackground
+            )}
+          >
+            <Pressable
+              className="absolute top-4 right-4 p-1"
+              onPress={() => setSignOutModal(false)}
+            >
+              <X size={20} color={theme.iconColor} />
+            </Pressable>
+
+            <View className="mb-6 p-4 rounded-full">
+              <AlertTriangle size={32} color="#ef4444" />
+            </View>
+
+            <Text
+              className={cn(
+                "text-xl font-onest-bold mb-2 text-center",
+                theme.primaryText
+              )}
+            >
+              Sign Out
+            </Text>
+
+            <Text
+              className={cn(
+                "text-center mb-8 leading-6 font-opensans",
+                theme.primaryText
+              )}
+            >
+              Are you sure you want to sign out? You'll need to log in again to
+              access your account.
+            </Text>
+
+            <View className="flex-row gap-x-4 w-full">
+              <Pressable
+                className="flex-1 p-4 rounded-md bg-gray-300"
+                onPress={() => setSignOutModal(false)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Text
+                  className={cn(
+                    "text-center",
+                    theme.textPrimaryBold,
+                    theme.primaryText
+                  )}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
+
+              <Pressable
+                className="flex-1 p-4 rounded-md bg-red-500"
+                onPress={() => {
+                  signOut();
+                  setSignOutModal(false);
+                }}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Text
+                  className={cn(
+                    "text-center text-white",
+                    theme.textPrimaryBold
+                  )}
+                >
+                  Sign Out
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

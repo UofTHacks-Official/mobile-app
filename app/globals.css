@@ -4,7 +4,6 @@
 @layer base {
   html {
     font-family: "PPObjectSans-Regular", sans-serif;
-    background-color: theme('colors.uoft_white');
+    background-color: theme("colors.uoft_white");
   }
 }
-

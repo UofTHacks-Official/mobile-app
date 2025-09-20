@@ -218,12 +218,12 @@ const FilterMenu = ({
                         onPress={() => onToggleEventType(option.type)}
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
-                          isSelected
-                            ? isDark
-                              ? "bg-[#262626]"
-                              : "bg-gray-100"
-                            : "transparent"
-                        }`}
+                            isSelected
+                              ? isDark
+                                ? "bg-[#262626]"
+                                : "bg-gray-100"
+                              : "transparent"
+                          }`}
                       >
                         <View className="flex-row items-center justify-between">
                           <View className="flex-row items-center">

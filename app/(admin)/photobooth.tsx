@@ -1,16 +1,28 @@
 import { useState, useCallback } from "react";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { Text, View, TouchableOpacity, Alert, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { Images, Camera } from "lucide-react-native";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
-import { PhotoStorageService, PhotoPair, PaginatedPhotoResult } from "../../src/services/photoStorage";
+import {
+  PhotoStorageService,
+  PhotoPair,
+  PaginatedPhotoResult,
+} from "../../src/services/photoStorage";
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
-import { useBottomNavBarStore } from '@/reducers/bottomNavBar';
-import { useScrollNavBar } from '@/utils/navigation';
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { useScrollNavBar } from "@/utils/navigation";
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -20,9 +32,9 @@ export default function PhotoboothPage() {
     front: string;
     back: string;
   } | null>(null);
-  
+
   // Gallery state
-  const [viewMode, setViewMode] = useState<'camera' | 'gallery'>('camera');
+  const [viewMode, setViewMode] = useState<"camera" | "gallery">("camera");
   const [photoPairs, setPhotoPairs] = useState<PhotoPair[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,7 +51,7 @@ export default function PhotoboothPage() {
     useCallback(() => {
       setCapturedPhotos(null);
       setPhotoboothViewMode(viewMode); // Sync store with current view mode
-      if (viewMode === 'gallery') {
+      if (viewMode === "gallery") {
         loadGallery();
       }
     }, [viewMode, setPhotoboothViewMode])
@@ -48,21 +60,19 @@ export default function PhotoboothPage() {
   const handlePhotosCapture = async (frontPhoto: string, backPhoto: string) => {
     try {
       setIsProcessing(true);
-      
+
       // Store the photos to show composite view
       setCapturedPhotos({
         front: frontPhoto,
-        back: backPhoto
+        back: backPhoto,
       });
-      
     } catch (error) {
-      console.error('Photo processing error:', error);
+      console.error("Photo processing error:", error);
       Alert.alert("Error", "Failed to process photos. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
-
 
   const loadGallery = async () => {
     try {
@@ -73,7 +83,7 @@ export default function PhotoboothPage() {
       setNextToken(result.nextToken);
       setHasMore(result.hasMore);
     } catch (error) {
-      console.error('Failed to load gallery:', error);
+      console.error("Failed to load gallery:", error);
     } finally {
       setLoading(false);
     }
@@ -84,13 +94,16 @@ export default function PhotoboothPage() {
 
     try {
       setLoadingMore(true);
-      const result = await PhotoStorageService.getPhotoGalleryPaginated(5, nextToken);
+      const result = await PhotoStorageService.getPhotoGalleryPaginated(
+        5,
+        nextToken
+      );
 
-      setPhotoPairs(prev => [...prev, ...result.photos]);
+      setPhotoPairs((prev) => [...prev, ...result.photos]);
       setNextToken(result.nextToken);
       setHasMore(result.hasMore);
     } catch (error) {
-      console.error('Failed to load more photos:', error);
+      console.error("Failed to load more photos:", error);
     } finally {
       setLoadingMore(false);
     }
@@ -98,7 +111,8 @@ export default function PhotoboothPage() {
 
   const handleInfiniteScroll = (event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const isNearBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
+    const isNearBottom =
+      contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
 
     // Handle nav bar scroll behavior
     handleNavBarScroll(event);
@@ -115,10 +129,9 @@ export default function PhotoboothPage() {
     setRefreshing(false);
   };
 
-
   const handleSave = async () => {
     if (!capturedPhotos) return;
-    
+
     try {
       setIsProcessing(true);
 
@@ -127,28 +140,27 @@ export default function PhotoboothPage() {
         capturedPhotos.front,
         capturedPhotos.back
       );
-      
+
       Alert.alert(
         "Photos Saved!",
         `Your BeReal-style photos have been uploaded successfully!`,
         [
           {
             text: "Take Another",
-            onPress: () => setCapturedPhotos(null)
+            onPress: () => setCapturedPhotos(null),
           },
           {
             text: "View Gallery",
             onPress: () => {
               setCapturedPhotos(null);
-              setViewMode('gallery');
+              setViewMode("gallery");
               loadGallery();
-            }
-          }
+            },
+          },
         ]
       );
-      
     } catch (error) {
-      console.error('Photo upload error:', error);
+      console.error("Photo upload error:", error);
       Alert.alert("Error", "Failed to upload photos. Please try again.");
     } finally {
       setIsProcessing(false);
@@ -156,13 +168,13 @@ export default function PhotoboothPage() {
   };
 
   const toggleViewMode = () => {
-    if (viewMode === 'camera') {
-      setViewMode('gallery');
-      setPhotoboothViewMode('gallery');
+    if (viewMode === "camera") {
+      setViewMode("gallery");
+      setPhotoboothViewMode("gallery");
       loadGallery();
     } else {
-      setViewMode('camera');
-      setPhotoboothViewMode('camera');
+      setViewMode("camera");
+      setPhotoboothViewMode("camera");
       showNavBar(); // Ensure nav bar is visible when returning to camera
     }
   };
@@ -173,17 +185,24 @@ export default function PhotoboothPage() {
       return (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color={themeStyles.iconColor} />
-          <Text className={cn("mt-4", themeStyles.primaryText)}>Loading gallery...</Text>
+          <Text className={cn("mt-4", themeStyles.primaryText)}>
+            Loading gallery...
+          </Text>
         </View>
       );
     }
 
     return (
       <View className="flex-1">
-        <Text className={cn("text-2xl font-bold text-center py-4", themeStyles.primaryText)}>
+        <Text
+          className={cn(
+            "text-2xl font-bold text-center py-4",
+            themeStyles.primaryText
+          )}
+        >
           Feed
         </Text>
-        
+
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className={cn("text-center", themeStyles.secondaryText)}>
@@ -193,7 +212,10 @@ export default function PhotoboothPage() {
         ) : (
           <ScrollView
             className="flex-1"
-            contentContainerStyle={{ paddingVertical: 16, alignItems: 'center' }}
+            contentContainerStyle={{
+              paddingVertical: 16,
+              alignItems: "center",
+            }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
@@ -206,8 +228,14 @@ export default function PhotoboothPage() {
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
                 />
-                <Text className={cn("text-center mt-2 text-sm", themeStyles.secondaryText)}>
-                  {photo.timestamp.toLocaleDateString()} {photo.timestamp.toLocaleTimeString()}
+                <Text
+                  className={cn(
+                    "text-center mt-2 text-sm",
+                    themeStyles.secondaryText
+                  )}
+                >
+                  {photo.timestamp.toLocaleDateString()}{" "}
+                  {photo.timestamp.toLocaleTimeString()}
                 </Text>
               </View>
             ))}
@@ -244,31 +272,39 @@ export default function PhotoboothPage() {
           <TouchableOpacity
             onPress={toggleViewMode}
             style={{
-              backgroundColor: '#75EDEF',
+              backgroundColor: "#75EDEF",
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 20,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            {viewMode === 'camera' ? (
+            {viewMode === "camera" ? (
               <>
                 <Images size={18} color="#000" strokeWidth={2} />
-                <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Gallery</Text>
+                <Text
+                  style={{ color: "#000", fontWeight: "600", fontSize: 14 }}
+                >
+                  Gallery
+                </Text>
               </>
             ) : (
               <>
                 <Camera size={18} color="#000" strokeWidth={2} />
-                <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Camera</Text>
+                <Text
+                  style={{ color: "#000", fontWeight: "600", fontSize: 14 }}
+                >
+                  Camera
+                </Text>
               </>
             )}
           </TouchableOpacity>
         </View>
       )}
 
-      {viewMode === 'gallery' ? (
+      {viewMode === "gallery" ? (
         renderGallery()
       ) : (
         <View className="flex-1 justify-center items-center">
@@ -279,7 +315,7 @@ export default function PhotoboothPage() {
               onSave={handleSave}
             />
           ) : (
-            <DualCamera 
+            <DualCamera
               onPhotosCapture={handlePhotosCapture}
               isProcessing={isProcessing}
             />

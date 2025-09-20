@@ -19,23 +19,27 @@ This mobile application serves as the central hub for UofTHacks participants, ad
 ## 🛠 Tech Stack
 
 ### Core Technologies
+
 - **[Expo SDK 53](https://expo.dev/)** - Development platform with new architecture
 - **[React Native](https://reactnative.dev/)** - Cross-platform mobile development
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript with strict mode
 - **[Expo Router](https://expo.github.io/router/)** - File-based routing system
 
 ### State Management & Data
+
 - **[TanStack Query](https://tanstack.com/query/)** - Powerful data fetching and caching
 - **[Zustand](https://github.com/pmndrs/zustand)** - Lightweight state management
 - **[Axios](https://axios-http.com/)** - HTTP client with automatic token refresh
 
 ### UI/UX
+
 - **[NativeWind](https://www.nativewind.dev/)** - Tailwind CSS for React Native
 - **[React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)** - Advanced animations
 - **[Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/)** - Tactile feedback
 - **[React Native Confetti Cannon](https://github.com/VincentCATILLON/react-native-confetti-cannon)** - Celebration animations
 
 ### Security & Storage
+
 - **[Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)** - Encrypted token storage
 - **[Expo Local Authentication](https://docs.expo.dev/versions/latest/sdk/local-authentication/)** - Biometric authentication
 - **JWT Token Refresh** - Automatic authentication renewal
@@ -55,12 +59,14 @@ This mobile application serves as the central hub for UofTHacks participants, ad
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd mobile
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -86,8 +92,9 @@ npx expo start --web      # Web browser
 ```
 
 **Quick Start Options:**
+
 - Press `i` for iOS Simulator
-- Press `a` for Android Emulator  
+- Press `a` for Android Emulator
 - Press `w` for web browser
 - Scan QR code with Expo Go app on your device
 
@@ -205,8 +212,8 @@ mobile/
 
 3. **🔄 Request Interceptor Flow**
    ```typescript
-   API Request → 401 Unauthorized → Queue Request → 
-   Use Refresh Token → Get New Access Token → 
+   API Request → 401 Unauthorized → Queue Request →
+   Use Refresh Token → Get New Access Token →
    Retry Original Request → Success
    ```
 
@@ -226,35 +233,37 @@ Our custom UofT-inspired color system (defined in `tailwind.config.js`):
 
 ```javascript
 // Primary Colors
-uoft_primary_blue: '#2A398C'    // Main brand color
-uoft_orange: '#FF6F51'          // Secondary accent
+uoft_primary_blue: "#2A398C"; // Main brand color
+uoft_orange: "#FF6F51"; // Secondary accent
 
-// Accent Colors  
-uoft_accent_purple: '#E9B6F7'   // Soft purple
-uoft_accent_red: '#F85C5C'      // Alert red
-uoft_accent_cream: '#F3E7E3'    // Warm cream
+// Accent Colors
+uoft_accent_purple: "#E9B6F7"; // Soft purple
+uoft_accent_red: "#F85C5C"; // Alert red
+uoft_accent_cream: "#F3E7E3"; // Warm cream
 
 // Neutral Colors
-uoft_black: '#181818'           // Rich black
-uoft_white: '#F6F6F6'           // Soft white
-uoft_stark_white: '#FFFFFF'     // Pure white
-uoft_grey_light: '#C6C6C6'      // Light grey
-uoft_grey_medium: '#A0A0A0'     // Medium grey
-uoft_grey_lighter: '#E0E0E0'    // Very light grey
+uoft_black: "#181818"; // Rich black
+uoft_white: "#F6F6F6"; // Soft white
+uoft_stark_white: "#FFFFFF"; // Pure white
+uoft_grey_light: "#C6C6C6"; // Light grey
+uoft_grey_medium: "#A0A0A0"; // Medium grey
+uoft_grey_lighter: "#E0E0E0"; // Very light grey
 ```
 
 ### 🎭 Typography System
 
 **Primary Fonts:**
+
 - **Onest**: Modern, geometric font for headings and emphasis
 - **Open Sans**: Highly readable font for body text and UI elements
 
 **Usage Examples:**
+
 ```tsx
 // Headings - Bold and impactful
 <Text className="font-onest-bold text-2xl">Main Title</Text>
 
-// Body text - Clear and readable  
+// Body text - Clear and readable
 <Text className="font-opensans text-base">Body content</Text>
 
 // UI elements - Clean and functional
@@ -351,7 +360,7 @@ npm run detox:test          # Run end-to-end tests
 ### 📈 Monitoring & Analytics
 
 - **🐛 Crash Reporting**: Real-time error tracking
-- **📊 Performance Metrics**: App load time and interaction monitoring  
+- **📊 Performance Metrics**: App load time and interaction monitoring
 - **👤 User Analytics**: Usage patterns and feature adoption
 - **🔍 Debug Tools**: Comprehensive logging and debugging
 
@@ -360,17 +369,19 @@ npm run detox:test          # Run end-to-end tests
 ### 🏗️ Build Configuration
 
 **Environment Profiles:**
+
 - **Development**: Local testing with hot reload
 - **Staging**: Pre-production testing environment
 - **Production**: Live app store versions
 
 **Build Commands:**
+
 ```bash
 # Development builds
 eas build --platform ios --profile development
 eas build --platform android --profile development
 
-# Production builds  
+# Production builds
 eas build --platform all --profile production
 
 # Store submission
@@ -380,11 +391,13 @@ eas submit --platform all --profile production
 ### 📱 App Store Deployment
 
 **iOS App Store:**
+
 - Automated builds via EAS Build
 - TestFlight beta testing
 - App Store Connect integration
 
 **Google Play Store:**
+
 - AAB format for dynamic delivery
 - Internal testing tracks
 - Staged rollout deployment
@@ -394,6 +407,7 @@ eas submit --platform all --profile production
 ### 📋 Development Guidelines
 
 1. **🔀 Branching Strategy**
+
    ```bash
    main                     # Production-ready code
    ├── develop             # Development integration
@@ -417,7 +431,7 @@ eas submit --platform all --profile production
 
 ```bash
 feat: add confetti animation to onboarding modal
-fix: resolve schedule auto-scroll timing issue  
+fix: resolve schedule auto-scroll timing issue
 docs: update README with deployment instructions
 refactor: optimize schedule rendering performance
 test: add unit tests for auth context
@@ -448,6 +462,7 @@ EXPO_PUBLIC_ANALYTICS_KEY=your_analytics_key
 ### 🚨 Common Issues & Solutions
 
 **📱 App Won't Start**
+
 ```bash
 # Clear Metro cache and node_modules
 npx expo start --clear
@@ -455,6 +470,7 @@ rm -rf node_modules && npm install
 ```
 
 **🎨 Fonts Not Loading**
+
 ```bash
 # Verify fonts in assets/fonts/
 # Check app.config.js font configuration
@@ -462,13 +478,15 @@ rm -rf node_modules && npm install
 ```
 
 **🔐 Authentication Issues**
+
 ```bash
 # Check token storage
-# Verify API endpoint configuration  
+# Verify API endpoint configuration
 # Clear SecureStore data for testing
 ```
 
 **📅 Schedule Not Updating**
+
 ```bash
 # Check TanStack Query cache
 # Verify API response format
@@ -508,4 +526,4 @@ rm -rf node_modules && npm install
 
 ---
 
-*For technical support or questions about this mobile app, please reach out to the UofTHacks development team.*
+_For technical support or questions about this mobile app, please reach out to the UofTHacks development team._

@@ -20,10 +20,16 @@ export function shortenString(
   // Calculate the actual lengths to use
   const ellipsis = "...";
   const availableLength = maxLength - ellipsis.length;
-  
+
   // Ensure start and end lengths don't exceed available space
-  const actualStartLength = Math.min(startLength, Math.floor(availableLength / 2));
-  const actualEndLength = Math.min(endLength, availableLength - actualStartLength);
+  const actualStartLength = Math.min(
+    startLength,
+    Math.floor(availableLength / 2)
+  );
+  const actualEndLength = Math.min(
+    endLength,
+    availableLength - actualStartLength
+  );
 
   // Extract start and end portions
   const start = str.substring(0, actualStartLength);

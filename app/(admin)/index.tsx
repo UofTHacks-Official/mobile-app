@@ -4,7 +4,12 @@ import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { BellPlus, Route, ScanQrCode, AlertTriangle } from "lucide-react-native";
+import {
+  BellPlus,
+  Route,
+  ScanQrCode,
+  AlertTriangle,
+} from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
 import { useCallback } from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";

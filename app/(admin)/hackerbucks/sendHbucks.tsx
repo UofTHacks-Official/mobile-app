@@ -203,8 +203,8 @@ export default function SwapScreen() {
               isAmountValid
                 ? "bg-uoft_primary_blue"
                 : isDark
-                ? "bg-gray-600"
-                : "bg-gray-300"
+                  ? "bg-gray-600"
+                  : "bg-gray-300"
             )}
           >
             <Text
@@ -213,8 +213,8 @@ export default function SwapScreen() {
                 isAmountValid
                   ? "text-black"
                   : isDark
-                  ? "text-white"
-                  : "text-gray-500"
+                    ? "text-white"
+                    : "text-gray-500"
               )}
             >
               Send

@@ -1,11 +1,11 @@
 export const formatAmount = (amount: string): string => {
   // Remove any non-digit or non-decimal characters
-  const cleanedAmount = amount.replace(/[^0-9.]/g, '');
+  const cleanedAmount = amount.replace(/[^0-9.]/g, "");
 
   // Ensure only one decimal point
-  const parts = cleanedAmount.split('.');
+  const parts = cleanedAmount.split(".");
   if (parts.length > 2) {
-    return `${parts[0]}.${parts.slice(1).join('')}`;
+    return `${parts[0]}.${parts.slice(1).join("")}`;
   }
 
   // Limit to two decimal places

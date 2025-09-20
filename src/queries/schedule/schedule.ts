@@ -1,8 +1,7 @@
-import { fetchAllSchedules, fetchScheduleById } from '@/requests/schedule';
-import { Schedule, ScheduleType } from '@/types/schedule';
-import { devError, devLog } from '@/utils/logger';
-import { useQuery } from '@tanstack/react-query';
-
+import { fetchAllSchedules, fetchScheduleById } from "@/requests/schedule";
+import { Schedule, ScheduleType } from "@/types/schedule";
+import { devError, devLog } from "@/utils/logger";
+import { useQuery } from "@tanstack/react-query";
 
 function mapApiToSchedule(apiEvent: any): Schedule {
   const typeMap: Record<number, ScheduleType> = {
@@ -30,15 +29,18 @@ function mapApiToSchedule(apiEvent: any): Schedule {
  * @param enabled - Whether the query should be enabled (default: true)
  * @returns Query result with filtered schedule data
  */
-export const useScheduleData = (selectedEventTypes: ScheduleType[], enabled: boolean = true) => {
+export const useScheduleData = (
+  selectedEventTypes: ScheduleType[],
+  enabled: boolean = true
+) => {
   return useQuery({
     queryKey: ["schedules", selectedEventTypes],
     queryFn: async () => {
       try {
         const data = await fetchAllSchedules();
         const mappedSchedules = data.map(mapApiToSchedule);
-        
-        return mappedSchedules.filter(schedule => 
+
+        return mappedSchedules.filter((schedule) =>
           selectedEventTypes.includes(schedule.type)
         );
       } catch (error) {
@@ -51,11 +53,11 @@ export const useScheduleData = (selectedEventTypes: ScheduleType[], enabled: boo
     gcTime: 5 * 60 * 1000,
     retry: (failureCount, error) => {
       if (failureCount >= 3) return false;
-      
-      if (error instanceof Error && error.message.includes('404')) {
+
+      if (error instanceof Error && error.message.includes("404")) {
         return false;
       }
-      
+
       return true;
     },
   });
@@ -84,11 +86,11 @@ export const useScheduleById = (scheduleId: number) => {
     gcTime: 5 * 60 * 1000,
     retry: (failureCount, error) => {
       if (failureCount >= 3) return false;
-      
-      if (error instanceof Error && error.message.includes('404')) {
+
+      if (error instanceof Error && error.message.includes("404")) {
         return false;
       }
-      
+
       return true;
     },
   });

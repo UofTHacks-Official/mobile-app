@@ -13,10 +13,10 @@ import { Animal } from '@/src/components/image';
 <Animal name="lion" />
 
 // With custom styling
-<Animal 
-  name="owl" 
-  width={100} 
-  height={100} 
+<Animal
+  name="owl"
+  width={100}
+  height={100}
   style={{ borderRadius: 10 }}
   resizeMode="cover"
 />
@@ -41,30 +41,30 @@ const lionImage = getAnimalImage('lion');
 ### 3. Random Animal Selection
 
 ```tsx
-import { getRandomAnimalImage } from '@/src/components/image';
+import { getRandomAnimalImage } from "@/src/components/image";
 
 const { name, source } = getRandomAnimalImage();
 console.log(`Selected animal: ${name}`);
 
-<Image source={source} style={{ width: 50, height: 50 }} />
+<Image source={source} style={{ width: 50, height: 50 }} />;
 ```
 
 ### 4. Get All Available Animals
 
 ```tsx
-import { animalNames, AnimalName } from '@/src/components/image';
+import { animalNames, AnimalName } from "@/src/components/image";
 
 // List all available animals
 console.log(animalNames); // ['mystery', 'bird', 'confusedOwl', 'deer', 'goat', 'lion', 'owl']
 
 // Type-safe animal selection
-const selectedAnimal: AnimalName = 'lion'; // TypeScript will autocomplete and validate
+const selectedAnimal: AnimalName = "lion"; // TypeScript will autocomplete and validate
 ```
 
 ## Available Animals
 
 - `mystery` - ???.svg
-- `bird` - bird.svg  
+- `bird` - bird.svg
 - `confusedOwl` - confused_owl.png
 - `deer` - deer.svg
 - `goat` - goat.svg
@@ -74,6 +74,7 @@ const selectedAnimal: AnimalName = 'lion'; // TypeScript will autocomplete and v
 ## TypeScript Support
 
 The module includes full TypeScript support with:
+
 - `AnimalName` type for all available animal names
 - Type-safe image selection
 - Autocomplete in your IDE
@@ -83,12 +84,12 @@ The module includes full TypeScript support with:
 
 ```tsx
 // Named imports (recommended)
-import { Animal, getAnimalImage, animalNames } from '@/src/components/image';
+import { Animal, getAnimalImage, animalNames } from "@/src/components/image";
 
 // Default import
-import Animals from '@/src/components/image';
+import Animals from "@/src/components/image";
 const { Animal, getAnimalImage } = Animals;
 
 // Individual imports
-import { Animal } from '@/src/components/image/animals';
+import { Animal } from "@/src/components/image/animals";
 ```

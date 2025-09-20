@@ -1,12 +1,12 @@
-import { axiosInstance } from './axiosConfig';
+import { axiosInstance } from "./axiosConfig";
 
 export const loginEndpoints = {
   ADMIN_LOGIN: "/api/v13/admins/login",
   ADMIN_LOGOUT: "/api/v13/admins/logout",
   ADMIN_TOKEN_REFRESH: "/api/v13/admins/refresh",
-  LIST_ADMINS:"/api/v13/admins", 
-  ADMIN_PROFILE:"/api/v13/admins/profile",
-  CREATE_ADMIN:"/api/v13/admins",
+  LIST_ADMINS: "/api/v13/admins",
+  ADMIN_PROFILE: "/api/v13/admins/profile",
+  CREATE_ADMIN: "/api/v13/admins",
   GET_ADMIN_BY_TOKEN: "/api/v13/admins/{admin_id}",
 };
 
@@ -27,13 +27,10 @@ export interface Admin {
  */
 export const adminLogin = async (email: string, password: string) => {
   try {
-    const response = await axiosInstance.post(
-      loginEndpoints.ADMIN_LOGIN,
-      {
-        admin_username: email, 
-        admin_password: password,
-      }
-    );
+    const response = await axiosInstance.post(loginEndpoints.ADMIN_LOGIN, {
+      admin_username: email,
+      admin_password: password,
+    });
     return { response };
   } catch (error) {
     return { error };
@@ -43,78 +40,79 @@ export const adminLogin = async (email: string, password: string) => {
 /**
  * Logs out an admin user.
  */
-export const adminLogout = async (access_token: string, refresh_token: string) => {
-    try {
-      const response = await axiosInstance.post(
-        loginEndpoints.ADMIN_LOGOUT,
-        {
-            access_token,
-            refresh_token,
-        }
-      );
-      return { response };
-    } catch (error) {
-      return { error };
-    }
-  };
+export const adminLogout = async (
+  access_token: string,
+  refresh_token: string
+) => {
+  try {
+    const response = await axiosInstance.post(loginEndpoints.ADMIN_LOGOUT, {
+      access_token,
+      refresh_token,
+    });
+    return { response };
+  } catch (error) {
+    return { error };
+  }
+};
 
 /**
  * Refreshes the admin's authentication token.
  */
 export const refreshAdminToken = async (refresh_token: string) => {
-    try {
-      const response = await axiosInstance.post(
-        loginEndpoints.ADMIN_TOKEN_REFRESH, refresh_token);
-      return { response };
-    } catch (error) {
-      return { error };
-    }
-  };
+  try {
+    const response = await axiosInstance.post(
+      loginEndpoints.ADMIN_TOKEN_REFRESH,
+      refresh_token
+    );
+    return { response };
+  } catch (error) {
+    return { error };
+  }
+};
 
 /**
  * Lists all admin users (Note: This function currently uses the token refresh endpoint, which may be a bug).
  */
 export const listAdmin = async (refresh_token: string) => {
-    try {
-      const response = await axiosInstance.post(
-        loginEndpoints.ADMIN_TOKEN_REFRESH, refresh_token);
-      return { response };
-    } catch (error) {
-      return { error };
-    }
-  };
+  try {
+    const response = await axiosInstance.post(
+      loginEndpoints.ADMIN_TOKEN_REFRESH,
+      refresh_token
+    );
+    return { response };
+  } catch (error) {
+    return { error };
+  }
+};
 
 /**
  * Retrieves admin information by ID.
  */
 export const getAdminByToken = async (admin_id: string) => {
-    try {
-      const response = await axiosInstance.get<Admin>(
-        loginEndpoints.GET_ADMIN_BY_TOKEN.replace("{admin_id}", admin_id)
-      );
-      return { response };
-    } catch (error) {
-      return { error };
-    }
-}
+  try {
+    const response = await axiosInstance.get<Admin>(
+      loginEndpoints.GET_ADMIN_BY_TOKEN.replace("{admin_id}", admin_id)
+    );
+    return { response };
+  } catch (error) {
+    return { error };
+  }
+};
 
 /**
  * Retrieves the profile of the currently authenticated admin.
  */
 export const getAdminProfile = async (bearerToken: string) => {
-    try {
-      const response = await axiosInstance.get(
-        loginEndpoints.ADMIN_PROFILE,
-        {
-          headers: {
-            Authorization: `Bearer ${bearerToken}`
-          }
-        }
-      );
-      return { response };
-    } catch (error) {
-      return { error };
-    }
+  try {
+    const response = await axiosInstance.get(loginEndpoints.ADMIN_PROFILE, {
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
+    });
+    return { response };
+  } catch (error) {
+    return { error };
+  }
 };
 // Default export for Expo Router
 export default loginEndpoints;

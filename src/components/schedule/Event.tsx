@@ -41,8 +41,6 @@ const Event = ({
   id: _id,
   onPress,
 }: EventProps) => {
-
-
   const handlePress = () => {
     if (onPress) {
       onPress();

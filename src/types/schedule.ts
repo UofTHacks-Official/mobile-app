@@ -5,9 +5,9 @@ export interface Schedule {
   id: number;
   title: string;
   description: string;
-  startTime: string; 
-  endTime: string;   
-  date: Date;       
+  startTime: string;
+  endTime: string;
+  date: Date;
   type: ScheduleType;
   sponsorId: string | null;
   isShift: boolean;

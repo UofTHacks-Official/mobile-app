@@ -5,8 +5,9 @@ This guide explains how to use the comprehensive font system configured in your 
 ## Available Fonts
 
 ### Onest Font Family
+
 - **Thin** (100)
-- **ExtraLight** (200) 
+- **ExtraLight** (200)
 - **Light** (300)
 - **Regular** (400)
 - **Medium** (500)
@@ -16,6 +17,7 @@ This guide explains how to use the comprehensive font system configured in your 
 - **Black** (900)
 
 ### Open Sans Font Family
+
 - **Light** (300)
 - **Regular** (400)
 - **Medium** (500)
@@ -24,6 +26,7 @@ This guide explains how to use the comprehensive font system configured in your 
 - **ExtraBold** (800)
 
 ### Open Sans Condensed Font Family
+
 - **Light** (300)
 - **Regular** (400)
 - **Medium** (500)
@@ -32,6 +35,7 @@ This guide explains how to use the comprehensive font system configured in your 
 - **ExtraBold** (800)
 
 ### Open Sans SemiCondensed Font Family
+
 - **Light** (300)
 - **Regular** (400)
 - **Medium** (500)
@@ -40,6 +44,7 @@ This guide explains how to use the comprehensive font system configured in your 
 - **ExtraBold** (800)
 
 ### Variable Fonts
+
 - **OpenSans Variable** - Supports weights 100-800
 - **OpenSans Italic Variable** - Supports weights 100-800 with italic style
 
@@ -142,10 +147,10 @@ import { FONTS } from '../utils/fonts';
 <Text style={{ fontFamily: FONTS.OPENSANS_VARIABLE, fontWeight: '700' }}>Bold (700)</Text>
 
 // Italic variable font
-<Text style={{ 
-  fontFamily: FONTS.OPENSANS_ITALIC_VARIABLE, 
-  fontWeight: '400', 
-  fontStyle: 'italic' 
+<Text style={{
+  fontFamily: FONTS.OPENSANS_ITALIC_VARIABLE,
+  fontWeight: '400',
+  fontStyle: 'italic'
 }}>
   Italic Regular (400)
 </Text>
@@ -200,11 +205,11 @@ import { FONTS } from '../utils/fonts';
 ### Responsive Typography
 
 ```tsx
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from "react-native";
 
 function ResponsiveText() {
   const { width } = useWindowDimensions();
-  
+
   const getFontSize = () => {
     if (width < 375) return 14; // Small screens
     if (width < 768) return 16; // Medium screens
@@ -212,12 +217,7 @@ function ResponsiveText() {
   };
 
   return (
-    <Text 
-      style={[
-        FONT_STYLES.opensans.regular,
-        { fontSize: getFontSize() }
-      ]}
-    >
+    <Text style={[FONT_STYLES.opensans.regular, { fontSize: getFontSize() }]}>
       Responsive text that adapts to screen size
     </Text>
   );
@@ -229,7 +229,7 @@ function ResponsiveText() {
 The fonts are automatically loaded in your `_layout.tsx` file using the `useCustomFonts` hook:
 
 ```tsx
-import { useCustomFonts } from './utils/fonts';
+import { useCustomFonts } from "./utils/fonts";
 
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useCustomFonts();
@@ -249,21 +249,24 @@ export default function RootLayout() {
 ## Troubleshooting
 
 ### Font Not Loading
+
 1. Check that the font file exists in `assets/fonts/`
 2. Verify the font is listed in `app.json` under the expo-font plugin
 3. Ensure the font name in the require statement matches the actual filename
 4. Clear Metro cache: `npx expo start --clear`
 
 ### Font Not Displaying
+
 1. Verify the font family name matches exactly (case-sensitive)
 2. Check that fonts are loaded before rendering text
 3. Use the FontExample component to test all fonts
 
 ### Performance
+
 - Use static fonts for consistent performance
 - Variable fonts are great for dynamic weight changes but may have slight performance overhead
 - Consider using `font-display: swap` for web builds
 
 ## Example Component
 
-See `app/components/FontExample.tsx` for a comprehensive demonstration of all font usage methods. 
+See `app/components/FontExample.tsx` for a comprehensive demonstration of all font usage methods.

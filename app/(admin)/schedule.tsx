@@ -36,9 +36,7 @@ const Schedule = () => {
     clearFilters,
   } = useScheduleFilters();
 
-  const {
-    data: schedules = [],
-  } = useScheduleData(selectedEventTypes);
+  const { data: schedules = [] } = useScheduleData(selectedEventTypes);
 
   const hourHeight = 100;
 

@@ -17,11 +17,16 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
 }) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
-  
+
   return (
     <>
       {/* Main Header */}
-      <View className={cn("px-4 py-3 flex-row items-center justify-between", scheduleTheme.headerBackground)}>
+      <View
+        className={cn(
+          "px-4 py-3 flex-row items-center justify-between",
+          scheduleTheme.headerBackground
+        )}
+      >
         <View className="flex-row items-center">
           <Pressable onPress={onFilterPress} className="ml-2 mr-4">
             <ListFilter size={24} color={scheduleTheme.iconColor} />
@@ -33,13 +38,19 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
       </View>
 
       {/* Date Tabs */}
-      <View 
+      <View
         className={cn("flex-row h-16", scheduleTheme.headerBackground)}
-        style={{ borderBottomWidth: 1, borderBottomColor: scheduleTheme.lineColor }}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: scheduleTheme.lineColor,
+        }}
       >
-        <View 
+        <View
           className={cn("w-12 h-16", scheduleTheme.headerBackground)}
-          style={{ borderBottomWidth: 1, borderBottomColor: scheduleTheme.lineColor }}
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: scheduleTheme.lineColor,
+          }}
         />
         {dates.map((date, index) => {
           const isCurrentDate =
@@ -57,7 +68,9 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               key={index}
               className="flex-1 items-center justify-center px-6"
             >
-              <Text className={cn("text-sm mb-1", scheduleTheme.secondaryText)}>{dayName}</Text>
+              <Text className={cn("text-sm mb-1", scheduleTheme.secondaryText)}>
+                {dayName}
+              </Text>
               <View
                 className={cn(
                   "w-8 h-8 rounded items-center justify-center",

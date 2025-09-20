@@ -1,4 +1,4 @@
-import { manipulateAsync, SaveFormat, FlipType } from 'expo-image-manipulator';
+import { manipulateAsync, SaveFormat, FlipType } from "expo-image-manipulator";
 
 export interface CombinedPhotoResult {
   uri: string;
@@ -12,7 +12,7 @@ export class PhotoCombiner {
    * Front photo as small overlay on top-left of back photo
    */
   static async combinePhotos(
-    frontPhotoUri: string, 
+    frontPhotoUri: string,
     backPhotoUri: string
   ): Promise<CombinedPhotoResult> {
     try {
@@ -20,7 +20,7 @@ export class PhotoCombiner {
       const backPhoto = await manipulateAsync(
         backPhotoUri,
         [
-          { resize: { width: 1080 } } // Standard size
+          { resize: { width: 1080 } }, // Standard size
         ],
         { compress: 0.8, format: SaveFormat.JPEG }
       );
@@ -28,25 +28,20 @@ export class PhotoCombiner {
       // Process the front photo (overlay) - make it smaller and round
       const frontPhoto = await manipulateAsync(
         frontPhotoUri,
-        [
-          { resize: { width: 300 } },
-          { flip: FlipType.Horizontal }
-        ],
+        [{ resize: { width: 300 } }, { flip: FlipType.Horizontal }],
         { compress: 0.8, format: SaveFormat.JPEG }
       );
 
       // For now, return the back photo as main
       // TODO: Implement actual photo overlaying/compositing
 
-      
       return {
         uri: backPhoto.uri,
         width: backPhoto.width,
         height: backPhoto.height,
       };
-
     } catch (error) {
-      console.error('Photo combination failed:', error);
+      console.error("Photo combination failed:", error);
       throw new Error(`Failed to combine photos: ${error}`);
     }
   }
@@ -57,24 +52,22 @@ export class PhotoCombiner {
   static async savePhotosIndividually(
     frontPhotoUri: string,
     backPhotoUri: string
-  ): Promise<{ frontPhoto: CombinedPhotoResult; backPhoto: CombinedPhotoResult }> {
+  ): Promise<{
+    frontPhoto: CombinedPhotoResult;
+    backPhoto: CombinedPhotoResult;
+  }> {
     try {
       // Process front photo
       const frontPhoto = await manipulateAsync(
         frontPhotoUri,
-        [
-          { resize: { width: 800 } },
-          { flip: FlipType.Horizontal }
-        ],
+        [{ resize: { width: 800 } }, { flip: FlipType.Horizontal }],
         { compress: 0.8, format: SaveFormat.JPEG }
       );
 
-      // Process back photo  
+      // Process back photo
       const backPhoto = await manipulateAsync(
         backPhotoUri,
-        [
-          { resize: { width: 1080 } }
-        ],
+        [{ resize: { width: 1080 } }],
         { compress: 0.8, format: SaveFormat.JPEG }
       );
 
@@ -91,7 +84,7 @@ export class PhotoCombiner {
         },
       };
     } catch (error) {
-      console.error('Photo processing failed:', error);
+      console.error("Photo processing failed:", error);
       throw new Error(`Failed to process photos: ${error}`);
     }
   }

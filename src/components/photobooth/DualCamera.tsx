@@ -1,17 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useTheme } from '@/context/themeContext';
-import { cn, getThemeStyles } from '@/utils/theme';
+import React, { useState, useRef } from "react";
+import { View, Text, TouchableOpacity, Alert, Image } from "react-native";
+import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
 
 interface DualCameraProps {
   onPhotosCapture: (frontPhoto: string, backPhoto: string) => void;
   isProcessing?: boolean;
 }
 
-function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) {
+function DualCamera({
+  onPhotosCapture,
+  isProcessing = false,
+}: DualCameraProps) {
   const [permission, requestPermission] = useCameraPermissions();
-  const [currentCamera, setCurrentCamera] = useState<CameraType>('front');
+  const [currentCamera, setCurrentCamera] = useState<CameraType>("front");
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [zoom, setZoom] = useState(0);
@@ -47,25 +50,25 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
 
     try {
       setIsCapturing(true);
-      
+
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: false,
       });
 
       if (!photo) {
-        Alert.alert('Error', 'Failed to capture photo');
+        Alert.alert("Error", "Failed to capture photo");
         return;
       }
 
-      if (currentCamera === 'front') {
+      if (currentCamera === "front") {
         // First photo (front camera) captured
         setFrontPhoto(photo.uri);
-        setCurrentCamera('back');
+        setCurrentCamera("back");
         Alert.alert(
-          'Selfie Captured!', 
-          'Flipping to back camera for the second photo',
-          [{ text: 'OK' }]
+          "Selfie Captured!",
+          "Flipping to back camera for the second photo",
+          [{ text: "OK" }]
         );
       } else {
         // Second photo (back camera) captured - combine both
@@ -73,14 +76,17 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
           onPhotosCapture(frontPhoto, photo.uri);
           // Reset for next capture
           setFrontPhoto(null);
-          setCurrentCamera('front');
+          setCurrentCamera("front");
         } else {
-          Alert.alert('Error', 'Front photo not found. Please retake both photos.');
+          Alert.alert(
+            "Error",
+            "Front photo not found. Please retake both photos."
+          );
         }
       }
     } catch (error) {
-      console.error('Camera capture error:', error);
-      Alert.alert('Error', 'Failed to take photo');
+      console.error("Camera capture error:", error);
+      Alert.alert("Error", "Failed to take photo");
     } finally {
       setIsCapturing(false);
     }
@@ -88,32 +94,35 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
 
   const resetCapture = () => {
     setFrontPhoto(null);
-    setCurrentCamera('front');
+    setCurrentCamera("front");
   };
 
   const switchCamera = () => {
-    setCurrentCamera(currentCamera === 'front' ? 'back' : 'front');
+    setCurrentCamera(currentCamera === "front" ? "back" : "front");
   };
-
 
   return (
     <View className="items-center">
       {/* Larger Camera Square */}
-      <View className="rounded-2xl overflow-hidden bg-black mb-6" style={{ width: 360, height: 360 }}>
+      <View
+        className="rounded-2xl overflow-hidden bg-black mb-6"
+        style={{ width: 360, height: 360 }}
+      >
         <CameraView
           ref={cameraRef}
           style={{ flex: 1 }}
           facing={currentCamera}
         />
       </View>
-      
+
       {/* Take Photo Button Below Camera */}
       <TouchableOpacity
         onPress={capturePhoto}
         disabled={isCapturing || isProcessing}
-        className={(isCapturing || isProcessing) 
-          ? "w-20 h-20 rounded-full border-4 border-gray-400 items-center justify-center bg-gray-500"
-          : "w-20 h-20 rounded-full border-4 border-gray-400 items-center justify-center bg-transparent"
+        className={
+          isCapturing || isProcessing
+            ? "w-20 h-20 rounded-full border-4 border-gray-400 items-center justify-center bg-gray-500"
+            : "w-20 h-20 rounded-full border-4 border-gray-400 items-center justify-center bg-transparent"
         }
       >
         <View className="w-16 h-16 rounded-full bg-gray-600" />
@@ -122,6 +131,6 @@ function DualCamera({ onPhotosCapture, isProcessing = false }: DualCameraProps) 
   );
 }
 
-DualCamera.displayName = 'DualCamera';
+DualCamera.displayName = "DualCamera";
 
 export default DualCamera;

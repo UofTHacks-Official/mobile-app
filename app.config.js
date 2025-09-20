@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 export default ({ config }) => {
   return {
@@ -14,7 +14,7 @@ export default ({ config }) => {
     splash: {
       image: "./assets/images/moose_splash.png",
       resizeMode: "contain",
-      backgroundColor: "#F6F6F6"
+      backgroundColor: "#F6F6F6",
     },
     ios: {
       icon: "./assets/images/icon.png",
@@ -23,28 +23,28 @@ export default ({ config }) => {
       buildNumber: "2",
       infoPlist: {
         NSCameraUsageDescription: "This app uses the camera to scan QR codes.",
-        ITSAppUsesNonExemptEncryption: false
-      }
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       ...config.android,
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon.png",
         backgroundColor: "#ffffff",
-        monochromeImage: "./assets/images/icon.png"
+        monochromeImage: "./assets/images/icon.png",
       },
       edgeToEdgeEnabled: true,
       permissions: [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
       ],
       package: "com.uofthacks.uofthacks",
       config: {
         ...config.android?.config,
         googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_API_KEY 
-        }
-      }
+          apiKey: process.env.GOOGLE_MAPS_API_KEY,
+        },
+      },
     },
     plugins: [
       "expo-router",
@@ -57,9 +57,9 @@ export default ({ config }) => {
           backgroundColor: "#F6F6F6",
           dark: {
             image: "./assets/images/moose_splash.png",
-            backgroundColor: "#1A1A1A"
-          }
-        }
+            backgroundColor: "#1A1A1A",
+          },
+        },
       ],
       [
         "expo-font",
@@ -93,32 +93,32 @@ export default ({ config }) => {
             "assets/fonts/OpenSans_SemiCondensed-Bold.ttf",
             "assets/fonts/OpenSans_SemiCondensed-ExtraBold.ttf",
             "assets/fonts/OpenSans-VariableFont_wdth,wght.ttf",
-            "assets/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"
-          ]
-        }
+            "assets/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf",
+          ],
+        },
       ],
       [
         "expo-camera",
         {
           cameraPermission: "Allow UoftHacks to access your camera",
           microphonePermission: "Allow UoftHacks to access your microphone",
-          recordAudioAndroid: true
-        }
-      ]
+          recordAudioAndroid: true,
+        },
+      ],
     ],
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
-      web: {
-        favicon: "./assets/images/icon.png"
-      },
+    web: {
+      favicon: "./assets/images/icon.png",
+    },
     extra: {
       ...config.extra,
       router: {},
       eas: {
-        projectId: process.env.EXPO_PUBLIC_PROJECT_ID
-      }
+        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+      },
     },
-    owner: process.env.EXPO_PUBLIC_OWNER
+    owner: process.env.EXPO_PUBLIC_OWNER,
   };
 };

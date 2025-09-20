@@ -26,7 +26,7 @@ const SignInAdmin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signIn } = useAuth();
+  const { signIn, isFirstSignIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
 
   const isVolunteer = role === "Volunteer";
@@ -71,10 +71,11 @@ const SignInAdmin = () => {
   });
 
   const animatedBackgroundStyle = useAnimatedStyle(() => {
+    const activeButtonColor = isDark ? "#75EDEF" : "#132B38";
     const backgroundColor = interpolateColor(
       buttonOpacity.value,
       [0.6, 1],
-      ["#9CA3AF", "#75EDEF"]
+      ["#9CA3AF", activeButtonColor]
     );
 
     return {
@@ -95,7 +96,12 @@ const SignInAdmin = () => {
 
       await signIn(access_token, refresh_token);
       router.dismissAll();
-      router.replace("/(admin)");
+
+      if (isFirstSignIn) {
+        router.replace("/auth/congrats");
+      } else {
+        router.replace("/(admin)");
+      }
     } catch (error) {
       Toast.show({
         type: "error",
@@ -164,7 +170,7 @@ const SignInAdmin = () => {
               paddingTop: 4,
               paddingBottom: 4,
               lineHeight: 20,
-              color: "#000",
+              color: isDark ? "#fff" : "#000",
             }}
           />
 
@@ -190,14 +196,14 @@ const SignInAdmin = () => {
                 paddingTop: 4,
                 paddingBottom: 4,
                 lineHeight: 20,
-                color: "#000",
+                color: isDark ? "#fff" : "#000",
               }}
             />
             <Pressable onPress={togglePasswordVisibility} className="ml-2">
               {showPassword ? (
-                <EyeOff size={20} color={"black"} />
+                <Eye size={20} color={isDark ? "#fff" : "#000"} />
               ) : (
-                <Eye size={20} color={"black"} />
+                <EyeOff size={20} color={isDark ? "#fff" : "#000"} />
               )}
             </Pressable>
           </View>
@@ -209,12 +215,14 @@ const SignInAdmin = () => {
         >
           <Animated.View
             style={[animatedButtonStyle, animatedBackgroundStyle]}
-            className={cn(
-              "py-4 mt-8 mx-8",
-              isFormValid ? "rounded-full" : "rounded-md"
-            )}
+            className={cn("py-4 mt-8 mx-8 rounded-md")}
           >
-            <Text className="text-center text-lg text-black">
+            <Text
+              className={cn(
+                "text-center text-lg font-semibold",
+                themeStyles.primaryText1
+              )}
+            >
               {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}
             </Text>
           </Animated.View>

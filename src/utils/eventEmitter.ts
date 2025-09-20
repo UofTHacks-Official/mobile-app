@@ -15,14 +15,14 @@ class EventEmitter {
     if (!this.events[event]) {
       return;
     }
-    this.events[event] = this.events[event].filter(cb => cb !== callback);
+    this.events[event] = this.events[event].filter((cb) => cb !== callback);
   }
 
   emit(event: string, ...args: any[]): void {
     if (!this.events[event]) {
       return;
     }
-    this.events[event].forEach(callback => callback(...args));
+    this.events[event].forEach((callback) => callback(...args));
   }
 }
 

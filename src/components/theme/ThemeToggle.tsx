@@ -21,7 +21,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = "" }) => {
     <View
       className={cn(
         themeStyles.cardStyle,
-        themeStyles.cardBackground,
+        themeStyles.lightCardBackground,
         className
       )}
     >
@@ -56,16 +56,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = "" }) => {
                 opacity: pressed ? 0.8 : 1,
               })}
             >
-              <Icon
-                size={16}
-                color={isSelected ? "#000" : themeStyles.iconColor}
-              />
+              <Icon size={16} color={isDark ? "black" : "white"} />
               <Text
                 className={cn(
                   "font-opensans-medium text-sm",
-                  isSelected
-                    ? themeStyles.toggleButtonSelectedText
-                    : themeStyles.toggleButtonText
+                  isDark ? "text-black" : "text-white"
                 )}
               >
                 {label}

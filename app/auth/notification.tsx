@@ -69,12 +69,19 @@ export default function NotificationPage() {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1 px-8">
-
-          <Pressable
-            className="flex flex-row justify-end"
-            onPress={ ()=> router.replace("/auth/camera")}>
-            <Text className="underline text-gray-500">Skip</Text>
-          </Pressable>
+        <Pressable
+          className="flex flex-row justify-end"
+          onPress={() => router.replace("/auth/camera")}
+        >
+          <Text
+            className={cn(
+              "underline text-gray-500",
+              themeStyles.skipButtonColor
+            )}
+          >
+            Skip
+          </Text>
+        </Pressable>
 
         <View className="flex-1 justify-center items-center">
           <View className="mb-4">
@@ -82,8 +89,8 @@ export default function NotificationPage() {
           </View>
           <Text
             className={cn(
-              "text-xl font-bold flex-col text-center mb-4",
-              themeStyles.primaryText,
+              "text-xl font-semibold flex-col text-center mb-4",
+              themeStyles.primaryText
             )}
           >
             Allow notifications
@@ -95,11 +102,23 @@ export default function NotificationPage() {
         </View>
 
         <Pressable onPress={handleEnableNotifications} disabled={isRegistering}>
-          <View className="py-4 px-2 bg-uoft_primary_blue rounded-full mb-4 items-center">
+          <View
+            className={cn(
+              themeStyles.primaryButtonColorBg,
+              "py-4 px-2 rounded-md mb-4 items-center"
+            )}
+          >
             {isRegistering ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-center">Enable push notifications</Text>
+              <Text
+                className={cn(
+                  "text-center font-semibold",
+                  themeStyles.primaryText1
+                )}
+              >
+                Enable push notifications
+              </Text>
             )}
           </View>
         </Pressable>

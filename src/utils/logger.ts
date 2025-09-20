@@ -3,24 +3,28 @@
 
 export const devLog = (...args: any[]) => {
   if (__DEV__) {
-    console.log('[DEV]', ...args);
+    console.log("[DEV]", ...args);
   }
 };
 
 export const devWarn = (...args: any[]) => {
   if (__DEV__) {
-    console.warn('[DEV WARN]', ...args);
+    console.warn("[DEV WARN]", ...args);
   }
 };
 
 export const devError = (...args: any[]) => {
   if (__DEV__) {
-    console.error('[DEV ERROR]', ...args);
+    console.error("[DEV ERROR]", ...args);
   }
 };
 
 // Enhanced logging with context
-export const devLogWithContext = (context: string, message: string, data?: any) => {
+export const devLogWithContext = (
+  context: string,
+  message: string,
+  data?: any
+) => {
   if (__DEV__) {
     console.log(`[DEV ${context}]`, message, data);
   }
@@ -29,10 +33,9 @@ export const devLogWithContext = (context: string, message: string, data?: any) 
 // Production-safe error logging (for crash reporting)
 export const prodError = (message: string, error?: Error, context?: any) => {
   if (__DEV__) {
-    console.error('[PROD ERROR]', message, error, context);
+    console.error("[PROD ERROR]", message, error, context);
   } else {
     // In production, send to crash reporting service
     // crashlytics().recordError(error || new Error(message));
   }
 };
-  

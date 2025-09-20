@@ -1,5 +1,5 @@
+import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { devError, devLog } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
@@ -13,13 +13,12 @@ import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
 export default function CameraPage() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const [, setPermission] = useState<boolean | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [permission, setPermission] = useState<boolean | null>(null);
+  const { updateFirstSignInStatus } = useAuth();
 
   const requestCameraPermission = async () => {
     try {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      devLog("Camera permission status:", status);
       devLog("Camera permission status:", status);
       setPermission(status === "granted");
       Toast.show({
@@ -39,6 +38,9 @@ export default function CameraPage() {
         text2: "Please try again",
       });
       devError("Error requesting camera permission:", error);
+    } finally {
+      updateFirstSignInStatus(false);
+      router.replace("/(admin)");
     }
   };
 
@@ -51,28 +53,45 @@ export default function CameraPage() {
 
   const askForCamera = async () => {
     await requestCameraPermission();
-    setShowOnboarding(true);
   };
 
   const handleMaybeLater = async () => {
-    setShowOnboarding(true);
+    router.replace("/(admin)");
   };
 
   const handleOnboardingComplete = async () => {
-    setShowOnboarding(false);
     router.replace("/(admin)");
   };
-  
+
   return (
     <>
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 px-8">
+          <Pressable
+            className="flex flex-row justify-end"
+            onPress={() => router.replace("/auth/camera")}
+          >
+            <Text
+              className={cn(
+                "underline text-gray-500",
+                themeStyles.skipButtonColor
+              )}
+            >
+              Skip
+            </Text>
+          </Pressable>
+
           <View className="flex-1 justify-center items-center">
             <View className="mb-8">
               <CameraOwlSvg width={200} height={200} />
             </View>
 
-            <Text className={cn("text-xl flex-col", themeStyles.primaryText)}>
+            <Text
+              className={cn(
+                "text-xl font-semibold flex-col",
+                themeStyles.primaryText
+              )}
+            >
               Allow camera access
             </Text>
             <Text
@@ -84,28 +103,24 @@ export default function CameraPage() {
           </View>
 
           <Pressable onPress={askForCamera}>
-            <View className="py-4 px-2 bg-uoft_primary_blue rounded-md mb-4 items-center">
-              <Text className="text-center">Allow camera access</Text>
-            </View>
-          </Pressable>
-
-          <Pressable onPress={handleMaybeLater}>
             <View
               className={cn(
-                "mb-4 py-4 px-2 rounded-md",
-                themeStyles.lightCardBackground
+                "py-4 px-2 rounded-md mb-4 items-center",
+                themeStyles.primaryButtonColorBg
               )}
             >
-              <Text className="text-center text-black">Maybe Later</Text>
+              <Text
+                className={cn(
+                  "text-center font-semibold",
+                  themeStyles.primaryText1
+                )}
+              >
+                Allow camera access
+              </Text>
             </View>
           </Pressable>
         </View>
       </SafeAreaView>
-
-      <OnboardingModal
-        visible={showOnboarding}
-        onComplete={handleOnboardingComplete}
-      />
     </>
   );
 }

@@ -1,20 +1,20 @@
 module.exports = function (api) {
-    api.cache(true);
-    return {
-      presets: [
-        ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-        "nativewind/babel",
-      ],
-      plugins: [
-        [
-          'module-resolver',
-          {
-            alias: {
-              '@': './src',
-            },
+  api.cache(true);
+  return {
+    presets: [
+      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
+      "nativewind/babel",
+    ],
+    plugins: [
+      [
+        "module-resolver",
+        {
+          alias: {
+            "@": "./src",
           },
-        ],
-        ['@babel/plugin-transform-class-static-block'],
+        },
       ],
+      ["@babel/plugin-transform-class-static-block"],
+    ],
   };
 };
