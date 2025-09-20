@@ -1,12 +1,12 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { 
-  adminLogin, 
-  adminLogout, 
-  refreshAdminToken, 
-  listAdmin, 
-  getAdminByToken, 
-  getAdminProfile
+import {
+  adminLogin,
+  adminLogout,
+  getAdminByToken,
+  getAdminProfile,
+  listAdmin,
+  refreshAdminToken
 } from '@/requests/admin';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 // Admin login mutation
 export const useAdminLogin = () => {
@@ -34,7 +34,6 @@ export const useRefreshAdminToken = () => {
   });
 };
 
-// List admin mutation (Note: This seems to be using the wrong endpoint in the original code)
 export const useListAdmin = () => {
   return useMutation({
     mutationFn: (refresh_token: string) => listAdmin(refresh_token),

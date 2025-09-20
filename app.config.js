@@ -17,6 +17,7 @@ export default ({ config }) => {
       backgroundColor: "#F6F6F6"
     },
     ios: {
+      icon: "./assets/images/icon.png",
       supportsTablet: true,
       bundleIdentifier: "com.uofthacks.uoft-hacks",
       buildNumber: "2",
@@ -29,7 +30,8 @@ export default ({ config }) => {
       ...config.android,
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        monochromeImage: "./assets/images/icon.png"
       },
       edgeToEdgeEnabled: true,
       permissions: [
@@ -102,13 +104,14 @@ export default ({ config }) => {
           microphonePermission: "Allow UoftHacks to access your microphone",
           recordAudioAndroid: true
         }
-      ],
-      "react-native-vision-camera",
-      "expo-web-browser"
+      ]
     ],
     experiments: {
       typedRoutes: true
     },
+      web: {
+        favicon: "./assets/images/icon.png"
+      },
     extra: {
       ...config.extra,
       router: {},

@@ -36,7 +36,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
       token = (await Notifications.getExpoPushTokenAsync({ projectId: process.env.EXPO_PUBLIC_PUSH_ID })).data;
       devLog('Expo Push Token obtained:', token);
     } catch (error) {
-      console.error('Error getting Expo Push Token:', error);
+      devLog('Error getting Expo Push Token:', error);
       alert('Error getting push token. See console for details.');
       return;
     }

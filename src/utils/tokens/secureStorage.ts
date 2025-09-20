@@ -1,11 +1,9 @@
 import * as SecureStore from "expo-secure-store";
-
-// Using secure storage to ensure the access tokens are secure
+import { devError, devLog } from "../logger";
 
 export const ACCESS_TOKEN_KEY = 'ACCESS_TOKEN'; 
 export const REFRESH_TOKEN = 'REFRESH_TOKEN'; 
 export const FIRST_SIGN_SIGN_IN = "FIRST_SIGN_IN" 
-
 
 // Store the auth tokens in the secure storage 
 
@@ -14,7 +12,7 @@ export const storeAuthTokens = async (access_token: string, refresh_token: strin
     await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, access_token);
     await SecureStore.setItemAsync(REFRESH_TOKEN, refresh_token);
   } catch (error) {
-    console.error('Error storing auth tokens:', error);
+    devError('Error storing auth tokens:', error);
     return null;
   }
 };
@@ -23,9 +21,10 @@ export const getAuthTokens = async (): Promise<{ access_token: string | null; re
   try {
     const access_token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
     const refresh_token = await SecureStore.getItemAsync(REFRESH_TOKEN);
+    devLog("Successfully Fetched - Auth Tokens:", access_token, "Refresh Tokens: ", refresh_token)
     return { access_token, refresh_token };
   } catch (error) {
-    console.error('Error retrieving auth tokens:', error);
+    devError('Error retrieving auth tokens:', error);
     return null;
   }
 };
@@ -34,8 +33,9 @@ export const removeAuthTokens = async (): Promise<void | null> => {
   try {
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN);
+    devLog("Successfully Removed Auth Tokens")
   } catch (error) {
-    console.error('Error removing auth tokens:', error);
+    devError('Error removing auth tokens:', error);
     return null;
   }
 };
@@ -65,7 +65,7 @@ export const removeSecureToken = async (ACCESS_KEY: string): Promise< void | nul
   }
 };
 
-// Default export for Expo Router
+
 export default {
   storeAuthTokens,
   getAuthTokens,

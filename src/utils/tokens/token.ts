@@ -1,8 +1,11 @@
+import { devError, devLog } from "../logger";
+
 /**
  * Extracts the request data (admin_username and admin_password) from the config.data string.
  * @param {object} response The full response object.
  * @returns {object|null} An object containing admin_username and admin_password, or null if parsing fails.
  */
+
 
 export function getRequestData(response: any) {
     try {
@@ -14,7 +17,7 @@ export function getRequestData(response: any) {
             admin_password: parsedData.admin_password
         };
     } catch (e) {
-        console.error("Error parsing request data:", e);
+        devError("Error parsing request data:", e);
         return null;
     }
 }
@@ -32,13 +35,9 @@ export function getAuthTokens(response: any) {
         }
         return null;
     } catch (e) {
-        console.error("Error accessing auth tokens:", e);
+        devLog("Error accessing auth tokens:", e);
         return null;
     }
 }
 
 // Default export for Expo Router
-export default {
-  getRequestData,
-  getAuthTokens
-};

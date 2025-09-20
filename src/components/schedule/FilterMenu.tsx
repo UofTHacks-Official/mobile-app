@@ -34,7 +34,6 @@ const FilterMenu = ({
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;
   const [internalVisible, setInternalVisible] = useState(isVisible);
-  const closeTimeout = useRef<NodeJS.Timeout | null>(null);
   const { isDark } = useTheme();
   const themeStyles = getScheduleThemeStyles(isDark);
 
@@ -70,10 +69,6 @@ const FilterMenu = ({
         onClose();
       });
     }
-    return () => {
-      const timeout = closeTimeout.current;
-      if (timeout) clearTimeout(timeout);
-    };
   }, [isVisible, slideAnim, bgOpacity, onClose]);
 
   if (!internalVisible) return null;
@@ -151,7 +146,6 @@ const FilterMenu = ({
             },
           ]}
         >
-
           <View className="flex-1 px-4 py-6 mt-12">
             <View className="flex-1">
               <View className="flex-col flex-wrap mb-8">
@@ -167,12 +161,17 @@ const FilterMenu = ({
                       onPress={() => setDaysToShow(option.value)}
                       className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
                         isSelected
-                          ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                          ? isDark
+                            ? "bg-[#262626]"
+                            : "bg-gray-100"
                           : "transparent"
                       }`}
                     >
                       <View className="flex-row items-center">
-                        <IconComponent size={20} color={themeStyles.iconColor} />
+                        <IconComponent
+                          size={20}
+                          color={themeStyles.iconColor}
+                        />
                         <Text
                           className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
                         >
@@ -220,7 +219,9 @@ const FilterMenu = ({
                         className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
                           isSelected
-                            ? (isDark ? "bg-[#262626]" : "bg-gray-100")
+                            ? isDark
+                              ? "bg-[#262626]"
+                              : "bg-gray-100"
                             : "transparent"
                         }`}
                       >
@@ -256,7 +257,6 @@ const FilterMenu = ({
                     Clear all filters
                   </Text>
                 </Pressable>
-
               </View>
             </View>
           </View>

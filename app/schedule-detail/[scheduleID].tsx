@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { useScheduleById } from "@/queries/schedule/schedule";
+import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { formatTimeTo12Hour } from "@/utils/time";
 import { router, useLocalSearchParams } from "expo-router";
@@ -27,7 +28,7 @@ export default function ScheduleDetail() {
 
   // Handle error case
   if (error) {
-    console.error("Failed to fetch schedule data:", error);
+    devError("Failed to fetch schedule data:", error);
     router.back();
     return null;
   }
@@ -46,10 +47,20 @@ export default function ScheduleDetail() {
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Event Title */}
         <View className="mt-8 mb-8">
-          <Text className={cn("text-3xl font-onest-bold mb-2", themeStyles.primaryText)}>
+          <Text
+            className={cn(
+              "text-3xl font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
             {selectedSchedule?.title}
           </Text>
-          <View className={cn("h-px w-full", isDark ? "bg-gray-600" : "bg-gray-200")} />
+          <View
+            className={cn(
+              "h-px w-full",
+              isDark ? "bg-gray-600" : "bg-gray-200"
+            )}
+          />
         </View>
 
         {/* Time Section */}
@@ -60,11 +71,23 @@ export default function ScheduleDetail() {
             </View>
             <View className="flex-1">
               <View className="flex-row items-center mb-2">
-                <Text className={cn("text-xl font-onest-semibold mr-4", themeStyles.primaryText)}>
+                <Text
+                  className={cn(
+                    "text-xl font-onest-semibold mr-4",
+                    themeStyles.primaryText
+                  )}
+                >
                   {formatTimeTo12Hour(selectedSchedule.startTime)}
                 </Text>
-                <Text className={cn("text-xl mr-4", themeStyles.secondaryText)}>→</Text>
-                <Text className={cn("text-xl font-onest-semibold", themeStyles.primaryText)}>
+                <Text className={cn("text-xl mr-4", themeStyles.secondaryText)}>
+                  →
+                </Text>
+                <Text
+                  className={cn(
+                    "text-xl font-onest-semibold",
+                    themeStyles.primaryText
+                  )}
+                >
                   {formatTimeTo12Hour(selectedSchedule.endTime)}
                 </Text>
               </View>
@@ -87,7 +110,12 @@ export default function ScheduleDetail() {
                 color={getEventIconColor(selectedSchedule?.type)}
               />
             </View>
-            <Text className={cn("text-xl font-onest-medium capitalize", themeStyles.primaryText)}>
+            <Text
+              className={cn(
+                "text-xl font-onest-medium capitalize",
+                themeStyles.primaryText
+              )}
+            >
               {selectedSchedule?.type}
             </Text>
           </View>
@@ -100,7 +128,12 @@ export default function ScheduleDetail() {
               <View className="w-8 mr-4 mt-1">
                 <Info size={24} color={themeStyles.iconColor} />
               </View>
-              <Text className={cn("text-base flex-1 leading-6 font-onest-regular", themeStyles.primaryText)}>
+              <Text
+                className={cn(
+                  "text-base flex-1 leading-6 font-onest-regular",
+                  themeStyles.primaryText
+                )}
+              >
                 {selectedSchedule.description}
               </Text>
             </View>
@@ -114,7 +147,12 @@ export default function ScheduleDetail() {
               <View className="w-8 mr-4 mt-1">
                 <UserCog size={24} color={themeStyles.iconColor} />
               </View>
-              <Text className={cn("text-base font-onest-regular", themeStyles.primaryText)}>
+              <Text
+                className={cn(
+                  "text-base font-onest-regular",
+                  themeStyles.primaryText
+                )}
+              >
                 Sponsored by {selectedSchedule.sponsorId}
               </Text>
             </View>

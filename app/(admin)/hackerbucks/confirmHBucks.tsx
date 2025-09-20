@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { devError } from "@/utils/logger";
 import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -50,11 +51,13 @@ export default function ConfirmHBucks() {
 
   const handleConfirm = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const hackerBucksObject = {
-      hacker_id: Number(recipient.id),
-      amount: Number(amount),
-    };
-
+    // const hackerBucksObject = {
+    //   hacker_id: Number(recipient.id),
+    //   amount: Number(amount),
+    // };
+    // ====
+    // NOT ACTUALLY SENDING ANYTHING YET
+    // ====
     try {
       router.replace("/hackerbucks/success");
       // orderType === "send"
@@ -62,7 +65,7 @@ export default function ConfirmHBucks() {
       //   : await deductHackerBucks(hackerBucksObject);
       // router.replace("/hackerbucks/success");
     } catch (error) {
-      console.error("Transaction error:", error);
+      devError("Transaction error:", error);
     }
   };
 

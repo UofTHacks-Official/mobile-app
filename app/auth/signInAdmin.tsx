@@ -25,12 +25,10 @@ const SignInAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { signIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
 
-  // Determine if this is for volunteer or admin
   const isVolunteer = role === "Volunteer";
   const roleTitle = isVolunteer ? "Volunteer Sign In" : "Admin Sign In";
   const roleDescription = isVolunteer
@@ -41,10 +39,8 @@ const SignInAdmin = () => {
   const buttonScale = useSharedValue(0.95);
   const buttonOpacity = useSharedValue(0.6);
 
-  // Check if both fields are filled
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
-  // Animate button when form validity changes
   useEffect(() => {
     if (isFormValid) {
       buttonScale.value = withTiming(1, {
@@ -98,6 +94,7 @@ const SignInAdmin = () => {
       const { access_token, refresh_token } = result;
 
       await signIn(access_token, refresh_token);
+      router.dismissAll();
       router.replace("/(admin)");
     } catch (error) {
       Toast.show({
@@ -187,8 +184,6 @@ const SignInAdmin = () => {
               autoCorrect={false}
               value={password}
               onChangeText={setPassword}
-              onFocus={() => setPasswordFocused(true)}
-              onBlur={() => setPasswordFocused(false)}
               style={{
                 minHeight: 50,
                 textAlignVertical: "center",
@@ -214,7 +209,10 @@ const SignInAdmin = () => {
         >
           <Animated.View
             style={[animatedButtonStyle, animatedBackgroundStyle]}
-            className="rounded-md py-4 mt-8 mx-8"
+            className={cn(
+              "py-4 mt-8 mx-8",
+              isFormValid ? "rounded-full" : "rounded-md"
+            )}
           >
             <Text className="text-center text-lg text-black">
               {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}

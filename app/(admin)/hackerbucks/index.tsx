@@ -14,7 +14,7 @@ const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
 export default function App() {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission] = useCameraPermissions();
   const navigation = useNavigation();
 
   const { startTransaction, clearTransaction } = useHackerBucksStore();

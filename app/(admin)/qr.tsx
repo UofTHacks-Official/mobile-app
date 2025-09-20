@@ -21,7 +21,7 @@ const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
 export default function App() {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission] = useCameraPermissions();
   const navigation = useNavigation();
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);

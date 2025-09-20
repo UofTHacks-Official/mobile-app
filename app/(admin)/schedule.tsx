@@ -7,12 +7,12 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
-import { useScrollNavBar } from "@/utils/navigation";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,7 +23,6 @@ const Schedule = () => {
   const insets = useSafeAreaInsets();
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-  
   // Bottom nav bar scroll control
   const { handleScroll } = useScrollNavBar();
 
@@ -63,8 +62,6 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   const currentDate = new Date(2025, 5, 21);
 
-
-
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
@@ -74,7 +71,6 @@ const Schedule = () => {
       },
     });
   };
-
 
   const renderDaySchedules = (date: Date, index: number) => {
     const filtered = schedules.flatMap((schedule) => {
@@ -168,7 +164,7 @@ const Schedule = () => {
   };
 
   return (
-    <View 
+    <View
       className={cn("flex-1", scheduleTheme.scheduleBackground)}
       style={{ paddingTop: insets.top }}
     >
@@ -190,26 +186,27 @@ const Schedule = () => {
           >
             <View className="relative">
               {daysToShow === 1 ? (
-                  <ScrollView
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onMomentumScrollEnd={(event) => {
-                      const screenWidth = Dimensions.get("window").width;
-                      const newIndex = Math.round(
-                        event.nativeEvent.contentOffset.x / screenWidth
-                      );
-                      if (newIndex >= 0 && newIndex < allDates.length) {
-                        saveDayIndexPreference(newIndex);
-                      }
-                    }}
-                    contentOffset={{
-                      x: currentDayIndex * Dimensions.get("window").width,
-                      y: 0,
-                    }}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                  >                  {allDates.map((date, dayIndex) => (
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(event) => {
+                    const screenWidth = Dimensions.get("window").width;
+                    const newIndex = Math.round(
+                      event.nativeEvent.contentOffset.x / screenWidth
+                    );
+                    if (newIndex >= 0 && newIndex < allDates.length) {
+                      saveDayIndexPreference(newIndex);
+                    }
+                  }}
+                  contentOffset={{
+                    x: currentDayIndex * Dimensions.get("window").width,
+                    y: 0,
+                  }}
+                  onScroll={handleScroll}
+                  scrollEventThrottle={16}
+                >
+                  {allDates.map((date, dayIndex) => (
                     <View
                       key={dayIndex}
                       style={{ width: Dimensions.get("window").width }}

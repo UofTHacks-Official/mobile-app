@@ -7,6 +7,43 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Greys and Whites
+        'space-grey': '#181818',
+        'grey-900': '#2D2D2D',
+        'grey-800': '#3D3D3D',
+        'grey-700': '#525252',
+        'grey-600': '#737373',
+        'grey-500': '#8B8B8B',
+        'grey-400': '#A3A3A3',
+        'grey-300': '#C4C4C4',
+        'grey-200': '#E5E5E5',
+        'primary-white': '#FFFFFF',
+
+        // Warm Colors
+        'orange-600': '#EA7C3C',
+        'orange-500': '#F2924E',
+        'orange-300': '#F5D19B',
+        'yellow-300': '#F5E89B',
+
+        // Pinks
+        'pink-600': '#B44D7A',
+        'pink-500': '#D36FA0',
+        'pink-300': '#F2B6D4',
+
+        // Blues and Teals
+        'blue-800': '#1E3A5F',
+        'blue-700': '#2E5984',
+        'blue-600': '#4A7BA7',
+        'blue-500': '#6FB4F0',
+        'teal-500': '#7DD3D8',
+        'teal-300': '#B8E6EA',
+
+        // Feedback Colors
+        'red-600': '#8B3A3A',
+        'red-500': '#E57373',
+        'red-300': '#FFCDD2',
+
+        // Legacy UofT Colors (keeping for backward compatibility)
         uoft_primary_blue: "#75EDEF",
         uoft_yellow: "#FFDD80",
         uoft__orange: "#FF9F6E",
@@ -14,18 +51,16 @@ module.exports = {
         uoft_accent_purple: "#E9B6F7",
         uoft_accent_red: "#F85C5C",
         uoft_accent_cream: "#F3E7E3",
-        uoft_grey : "##D3D3D3",
+        uoft_grey: "#D3D3D3",
 
         uoft_black: "#181818",
         uoft_white: "#F6F6F6",
-
 
         uoft_dark_bg_black: "#1A1A1A",
         uoft_dark_mode_bg_light_black:"#262626",
         uoft_dark_mode_text:"#808080",
         uoft_dark_bg: "#212121",
 
-        
         uoft_stark_white: "#FFFFFF",
         uoft_grey_light: "#C6C6C6",
         uoft_grey_medium: "#A0A0A0",
