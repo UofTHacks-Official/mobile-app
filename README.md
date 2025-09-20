@@ -98,6 +98,34 @@ npx expo start --web      # Web browser
 - Press `w` for web browser
 - Scan QR code with Expo Go app on your device
 
+### Code Quality & CI/CD
+
+This project has automated formatting and linting set up to ensure code quality:
+
+**Available Scripts:**
+
+```bash
+# Code formatting
+npm run format        # Auto-format all files
+npm run format:check  # Check if files need formatting
+
+# Type checking & linting
+npm run type-check    # TypeScript type checking
+npm run lint          # Run ESLint
+npm run lint:fix      # Auto-fix ESLint issues
+npm run check         # Run type-check + lint together
+```
+
+**Pre-commit Hooks:**
+
+- Automatically formats and lints staged files before commit
+- Uses Husky + lint-staged for reliable pre-commit checks
+
+**GitHub Actions:**
+
+- **PR Checks**: Automatically runs formatting, type checking, and linting on all pull requests
+- **Auto-format**: Optionally auto-formats code and commits back to PR (if enabled)
+
 ## 📁 Project Structure
 
 ```
