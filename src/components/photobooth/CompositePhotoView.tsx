@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Image, TouchableOpacity } from "react-native";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
@@ -10,6 +10,12 @@ export default function CompositePhotoView({
   frontPhotoUrl,
   backPhotoUrl,
 }: CompositePhotoViewProps) {
+  const [isSwapped, setIsSwapped] = useState(false);
+
+  const handleToggle = () => {
+    setIsSwapped((prev) => !prev);
+  };
+
   return (
     <View style={{ alignItems: "center" }}>
       {/* Composite Photo Display */}
@@ -32,12 +38,28 @@ export default function CompositePhotoView({
             position: "absolute",
             top: 0,
             left: 0,
+            opacity: isSwapped ? 0 : 1,
           }}
           resizeMode="cover"
         />
 
-        {/* Front Camera Photo (Small Overlay - Top Left) */}
-        <View
+        {/* Front Camera Photo (Main/Background when swapped) */}
+        <Image
+          source={{ uri: frontPhotoUrl }}
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            opacity: isSwapped ? 1 : 0,
+          }}
+          resizeMode="cover"
+        />
+
+        {/* Small Overlay Photo (Top Left) - Clickable */}
+        <TouchableOpacity
+          onPress={handleToggle}
           style={{
             position: "absolute",
             top: 16,
@@ -47,16 +69,30 @@ export default function CompositePhotoView({
             borderColor: "white",
             overflow: "hidden",
           }}
+          activeOpacity={1}
         >
           <Image
             source={{ uri: frontPhotoUrl }}
             style={{
               width: 96,
               height: 128,
+              opacity: isSwapped ? 0 : 1,
             }}
             resizeMode="cover"
           />
-        </View>
+          <Image
+            source={{ uri: backPhotoUrl }}
+            style={{
+              width: 96,
+              height: 128,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              opacity: isSwapped ? 1 : 0,
+            }}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
