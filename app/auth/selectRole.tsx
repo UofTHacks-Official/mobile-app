@@ -110,9 +110,11 @@ const SelectRole = () => {
       case "Volunteer":
         router.push("/auth/signInAdmin?role=Volunteer");
         break;
-      case "Judge":
       case "Hacker":
-        // These roles are not available yet
+        router.push("/auth/googleAuth");
+        break;
+      case "Judge":
+        // This role is not available yet
         break;
     }
   };
@@ -143,7 +145,7 @@ const SelectRole = () => {
       name: "Hacker",
       icon: OwlIcon,
       color: "bg-uoft_accent_red",
-      available: false,
+      available: true,
       description: "Participate in the hackathon",
     },
   ];

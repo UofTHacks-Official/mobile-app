@@ -1,5 +1,6 @@
 import type { Admin } from "@/requests/admin";
 import { adminLogin, getAdminByToken, getAdminProfile } from "@/requests/admin";
+import { googleAuthHacker } from "@/requests/hacker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 /**
@@ -109,6 +110,34 @@ export const useAdminLogin = () => {
       }
 
       throw new Error("No response received from login attempt");
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for Google Auth hacker login
+ * @returns Mutation result for Google Auth login
+ */
+export const useGoogleAuthHacker = () => {
+  return useMutation({
+    mutationFn: async ({
+      code,
+      code_verifier,
+    }: {
+      code: string;
+      code_verifier: string;
+    }) => {
+      const result = await googleAuthHacker(code, code_verifier);
+
+      if (result.error) {
+        throw new Error("Google authentication failed. Please try again.");
+      }
+
+      if (result.response) {
+        return result.response.data;
+      }
+
+      throw new Error("No response received from Google authentication");
     },
   });
 };

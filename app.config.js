@@ -8,7 +8,7 @@ export default ({ config }) => {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "native",
+    scheme: "com.uofthacks.uofthacks",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
@@ -114,7 +114,9 @@ export default ({ config }) => {
     },
     extra: {
       ...config.extra,
-      router: {},
+      router: {
+        origin: false,
+      },
       eas: {
         projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
       },

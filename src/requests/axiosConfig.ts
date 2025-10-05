@@ -16,6 +16,7 @@ const ENDPOINTS_WITHOUT_AUTH = [
   // Auth endpoints
   "/api/v13/admins/login",
   "/api/v13/admins/refresh",
+  "/api/v13/hackers/google-auth/token",
 
   // Schedule endpoints (public access)
   "/api/v13/hackers/schedules",
