@@ -5,7 +5,8 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { formatTimeTo12Hour } from "@/utils/time";
 import { router, useLocalSearchParams } from "expo-router";
 import { Clock, Globe, Info, Tag, UserCog } from "lucide-react-native";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const eventIconColors = {
   networking: "#1D4ED8", // blue-700

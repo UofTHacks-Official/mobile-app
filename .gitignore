@@ -42,4 +42,5 @@ ios/.xcode.env.local
 app-example
 
 GEMINI.md
+CLAUDE.md
 /.cursor/
