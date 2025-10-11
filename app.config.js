@@ -120,6 +120,6 @@ export default ({ config }) => {
         projectId: "19c11133-81b6-44cb-908b-61cf473cbbc9",
       },
     },
-    owner: process.env.EXPO_PUBLIC_OWNER,
+    owner: "uofthacks",
   };
 };
