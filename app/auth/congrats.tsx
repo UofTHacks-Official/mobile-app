@@ -2,7 +2,8 @@ import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { Dimensions, Pressable, SafeAreaView, Text, View } from "react-native";
+import { Dimensions, Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import OnboardDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import OnboardLightSvg from "../../assets/images/onboarding/onboard_light.svg";
 
