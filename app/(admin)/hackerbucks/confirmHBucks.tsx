@@ -13,8 +13,7 @@ import {
   User,
 } from "lucide-react-native";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 
 export default function ConfirmHBucks() {
   const router = useRouter();

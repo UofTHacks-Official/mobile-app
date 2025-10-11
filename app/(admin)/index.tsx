@@ -12,8 +12,7 @@ import {
 } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
 import { useCallback } from "react";
-import { Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, SafeAreaView, Text, View } from "react-native";
 
 // Types
 interface DashboardItem {

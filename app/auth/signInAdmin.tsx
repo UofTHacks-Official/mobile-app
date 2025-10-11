@@ -2,15 +2,13 @@ import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { useAdminLogin } from "@/queries/user";
-import { useUserTypeStore } from "@/reducers/userType";
 
-import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
   interpolateColor,
@@ -18,16 +16,12 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 const SignInAdmin = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const { userType } = useUserTypeStore();
   const { role } = useLocalSearchParams<{ role?: string }>();
-
-  const displayRole = role || userType || "user";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,8 +29,11 @@ const SignInAdmin = () => {
   const { signIn, isFirstSignIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
 
-  const roleTitle = "Sign In";
-  const roleDescription = `Sign in to access your ${displayRole} dashboard`;
+  const isVolunteer = role === "Volunteer";
+  const roleTitle = isVolunteer ? "Volunteer Sign In" : "Admin Sign In";
+  const roleDescription = isVolunteer
+    ? "Sign in to access your Volunteer dashboard"
+    : "Sign in to access your Admin dashboard";
 
   // Animation values
   const buttonScale = useSharedValue(0.95);
@@ -106,7 +103,6 @@ const SignInAdmin = () => {
         router.replace("/(admin)");
       }
     } catch (error) {
-      devError("Error Loggin in", error);
       Toast.show({
         type: "error",
         text1: "Login Failed",

@@ -1,12 +1,9 @@
 import { useTheme } from "@/context/themeContext";
-import { useUserTypeStore } from "@/reducers/userType";
-import { devLog } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, SafeAreaView, Text, View } from "react-native";
 import { SvgProps } from "react-native-svg";
 import DeerIcon from "../../assets/images/icons/deer.svg";
 import GoatIcon from "../../assets/images/icons/Goat.svg";
@@ -62,6 +59,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
   );
 };
 
+// Header Component
 const Header: React.FC<{ isDark: boolean }> = ({ isDark }) => {
   const themeStyles = getThemeStyles(isDark);
 
@@ -102,28 +100,21 @@ const Footer: React.FC<{ isDark: boolean }> = ({ isDark }) => {
 const SelectRole = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const { setUserType } = useUserTypeStore();
 
   const handleRoleSelection = (role: RoleType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
     switch (role) {
       case "Admin":
-        setUserType("admin");
-        router.navigate(`/auth/signInAdmin?role=admin`);
+        router.push("/auth/signInAdmin?role=Admin");
         break;
       case "Volunteer":
-        setUserType("volunteer");
-        router.navigate(`/auth/signInAdmin?role=volunteer`);
+        router.push("/auth/signInAdmin?role=Volunteer");
         break;
       case "Judge":
-        setUserType("judge");
-        break;
       case "Hacker":
-        setUserType("hacker");
+        // These roles are not available yet
         break;
     }
-    devLog("Selected role: ", role);
   };
 
   const roles: Role[] = [

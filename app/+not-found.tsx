@@ -3,8 +3,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Home } from "lucide-react-native";
-import { Image, Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Image, Pressable, SafeAreaView, Text, View } from "react-native";
 
 const NotFoundPage = () => {
   const { isDark } = useTheme();

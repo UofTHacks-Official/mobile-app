@@ -122,7 +122,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             result.error,
             result.response
           );
-          await signOut();
           return;
         }
         if (result.response) {
@@ -132,14 +131,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       } catch (error) {
         devError("Error fetching admin profile:", error);
-        await signOut();
       } finally {
         if (fetchIdRef.current === fetchId) {
           setAdminLoading(false);
         }
       }
     },
-    [signOut]
+    []
   );
 
   // Listen for token changes and update admin data

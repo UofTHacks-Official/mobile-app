@@ -39,6 +39,12 @@ export default ({ config }) => {
         "android.permission.RECORD_AUDIO",
       ],
       package: "com.uofthacks.uofthacks",
+      config: {
+        ...config.android?.config,
+        googleMaps: {
+          apiKey: process.env.GOOGLE_MAPS_API_KEY,
+        },
+      },
     },
     plugins: [
       "expo-router",
@@ -110,7 +116,7 @@ export default ({ config }) => {
       ...config.extra,
       router: {},
       eas: {
-        projectId: "19c11133-81b6-44cb-908b-61cf473cbbc9",
+        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
       },
     },
     owner: process.env.EXPO_PUBLIC_OWNER,

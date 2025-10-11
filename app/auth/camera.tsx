@@ -69,7 +69,7 @@ export default function CameraPage() {
         <View className="flex-1 px-8">
           <Pressable
             className="flex flex-row justify-end"
-            onPress={() => router.replace("/(admin)")}
+            onPress={() => router.replace("/auth/camera")}
           >
             <Text
               className={cn(
