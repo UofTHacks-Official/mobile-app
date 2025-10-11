@@ -41,6 +41,13 @@ export default ({ config }) => {
       package: "com.uofthacks.uofthacks",
     },
     plugins: [
+      [
+        "expo-notification-service-extension-plugin",
+        {
+          mode: "production",
+          iosNSEFilePath: "./assets/NotificationService.m",
+        },
+      ],
       "expo-router",
       [
         "expo-splash-screen",
