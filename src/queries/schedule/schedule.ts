@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 
 function mapApiToSchedule(apiEvent: any): Schedule {
   const typeMap: Record<number, ScheduleType> = {
+    0: "activity",
     1: "networking",
-    2: "food",
-    3: "activity",
+    2: "activity",
+    3: "food",
+    4: "activity",
   };
   return {
     id: apiEvent.schedule_id.toString(),

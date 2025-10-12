@@ -1,6 +1,7 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");

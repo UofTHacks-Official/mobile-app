@@ -41,9 +41,9 @@ const Schedule = () => {
   const hourHeight = 100;
 
   const allDates = [
-    new Date(2025, 5, 20),
-    new Date(2025, 5, 21),
-    new Date(2025, 5, 22),
+    new Date(2025, 8, 26),
+    new Date(2025, 8, 27),
+    new Date(2025, 8, 28),
   ];
 
   const getDatesToShow = () => {
@@ -58,7 +58,7 @@ const Schedule = () => {
 
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
-  const currentDate = new Date(2025, 5, 21);
+  const currentDate = new Date(2025, 8, 27);
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -141,7 +141,7 @@ const Schedule = () => {
       }
     });
 
-    const now = new Date(2025, 5, 21);
+    const now = new Date(2025, 8, 27); // September 27, 2025
     const isToday =
       date.getFullYear() === now.getFullYear() &&
       date.getMonth() === now.getMonth() &&

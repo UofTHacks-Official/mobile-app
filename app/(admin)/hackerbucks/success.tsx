@@ -14,7 +14,8 @@ import {
 } from "lucide-react-native";
 import { CircleDashed } from "phosphor-react-native";
 import React, { useEffect } from "react";
-import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Success() {
   const { isDark } = useTheme();

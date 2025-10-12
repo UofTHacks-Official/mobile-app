@@ -11,6 +11,12 @@ import { useEffect, useRef } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "./globals.css";
+import { devLog } from "@/utils/logger";
+
+type ScheduleNotificationData = {
+  route?: string;
+  scheduleId?: string;
+};
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -42,18 +48,18 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    // This listener is fired whenever a user taps on or interacts with a
-    // notification (works when app is foregrounded, backgrounded, or killed)
+    // This listener is fired whenever a user taps on or interacts with push notification
     notificationResponseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const { data } = response.notification.request.content;
-        // Type assertion to define the expected data structure
-        const notificationData = data as {
-          data?: { route?: string; scheduleId?: string };
-        };
+        const notificationData = data as ScheduleNotificationData;
 
-        if (notificationData.data?.route === "schedule") {
-          const scheduleId = notificationData.data?.scheduleId;
+        devLog(
+          `[Notification Tap]: route=${notificationData.route}, scheduleId=${notificationData.scheduleId}`
+        );
+
+        if (notificationData.route === "schedule") {
+          const scheduleId = notificationData.scheduleId;
           if (scheduleId) {
             router.push(`/schedule-detail/${scheduleId}`);
           } else {
@@ -62,20 +68,34 @@ export default function RootLayout() {
         }
       });
 
-    // Only set up foreground listener if you want to show custom UI when app is open
-    // This should only fire when the app is actually in the foreground=
     notificationReceivedListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        // Only show toast if the app is actually in foreground
+        const { data } = notification.request.content;
+        const notificationData = data as ScheduleNotificationData;
+
+        devLog(
+          `[Notification Received]: ${notification.request.content.title}`
+        );
+
         Toast.show({
           type: "info",
           text1: notification.request.content.title || "New Notification",
           text2: notification.request.content.body || "",
+          onPress: () => {
+            if (notificationData.route === "schedule") {
+              const scheduleId = notificationData.scheduleId;
+              if (scheduleId) {
+                router.push(`/schedule-detail/${scheduleId}`);
+              } else {
+                router.push(`/(admin)/schedule`);
+              }
+            }
+            Toast.hide();
+          },
         });
       });
 
     return () => {
-      // Clean up the listener when the component unmounts
       if (notificationResponseListener.current) {
         notificationResponseListener.current.remove();
       }
