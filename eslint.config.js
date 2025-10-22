@@ -13,6 +13,10 @@ module.exports = defineConfig([
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: tsparser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
     },
     plugins: {
       "@typescript-eslint": tseslint,

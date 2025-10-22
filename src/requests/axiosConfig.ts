@@ -8,21 +8,17 @@ import {
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import axiosRetry from "axios-retry";
 
-// Get base URL from environment variables
 const baseURL = process.env.EXPO_PUBLIC_UOFT_STAGING;
 
-// List of endpoints that don't require token injection
 const ENDPOINTS_WITHOUT_AUTH = [
   // Auth endpoints
   "/api/v13/admins/login",
   "/api/v13/admins/refresh",
   "/api/v13/hackers/google-auth/token",
 
-  // Schedule endpoints (public access)
   "/api/v13/hackers/schedules",
 ] as const;
 
-// Create axios instance with full auth capabilities
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL,
   timeout: 7500,
@@ -30,13 +26,12 @@ export const axiosInstance: AxiosInstance = axios.create({
 
 axiosRetry(axiosInstance, {
   retries: 3,
-  retryDelay: (retryCount) => retryCount * 1000, // exponential backoff
+  retryDelay: (retryCount) => retryCount * 1000,
 });
 
-// Flag to track if token refresh is in progress
 let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 
-// Queue of requests that are waiting for token refresh
 let refreshSubscribers: ((token: string) => void)[] = [];
 
 /**
@@ -65,30 +60,31 @@ const shouldSkipAuth = (url: string): boolean => {
   return ENDPOINTS_WITHOUT_AUTH.some((endpoint) => url?.includes(endpoint));
 };
 
-/**
- * Handle refresh token error - typically by logging the user out
- */
 const handleRefreshError = async (): Promise<void> => {
-  // Clear tokens
   await removeAuthTokens();
 
-  // Emit an event to notify the auth context to log the user out
   devLog("Token refresh failed. Emitting onExpiredRefreshToken event.");
   authEventEmitter.emit("onExpiredRefreshToken");
 
-  // Reset the refreshing flag
   isRefreshing = false;
 
-  // Notify any pending requests that refresh failed
   refreshSubscribers.forEach((callback) => callback(""));
   refreshSubscribers = [];
 };
 
-// Request interceptor to add auth token to all requests
 axiosInstance.interceptors.request.use(
   async (config) => {
     if (!shouldSkipAuth(config.url!)) {
       try {
+        // If a refresh is in progress, wait for it to complete
+        if (isRefreshing && refreshPromise) {
+          const newToken = await refreshPromise;
+          if (newToken) {
+            config.headers.Authorization = `Bearer ${newToken}`;
+            return config;
+          }
+        }
+
         const tokens = await getAuthTokens();
         if (tokens?.access_token) {
           config.headers.Authorization = `Bearer ${tokens.access_token}`;
@@ -104,7 +100,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -155,46 +150,55 @@ axiosInstance.interceptors.response.use(
 
       isRefreshing = true;
 
-      try {
-        // Get the refresh token
-        const tokens = await getAuthTokens();
+      // Create a promise for the refresh operation
+      refreshPromise = (async () => {
+        try {
+          // Get the refresh token
+          const tokens = await getAuthTokens();
 
-        if (!tokens?.refresh_token) {
-          throw new Error("No refresh token available");
-        }
-
-        const refreshResponse = await axiosInstance.post(
-          "/api/v13/admins/refresh",
-          {
-            refresh_token: tokens.refresh_token,
+          if (!tokens?.refresh_token) {
+            throw new Error("No refresh token available");
           }
-        );
 
-        if (!refreshResponse?.data?.access_token) {
-          throw new Error("Failed to refresh token");
+          const refreshResponse = await axiosInstance.post(
+            "/api/v13/admins/refresh",
+            {
+              refresh_token: tokens.refresh_token,
+            }
+          );
+
+          if (!refreshResponse?.data?.access_token) {
+            throw new Error("Failed to refresh token");
+          }
+
+          const { access_token, refresh_token } = refreshResponse.data;
+
+          await storeAuthTokens(access_token, refresh_token);
+
+          return access_token;
+        } catch (error) {
+          await handleRefreshError();
+          throw error;
         }
+      })();
 
-        // Extract the new tokens
-        const { access_token, refresh_token } = refreshResponse.data;
+      try {
+        const access_token = await refreshPromise;
 
-        // Store the new tokens
-        await storeAuthTokens(access_token, refresh_token);
-
-        // Update authorization header for the original request
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
 
         isRefreshing = false;
+        refreshPromise = null;
         onRefreshed(access_token);
 
         return axiosInstance(originalRequest);
       } catch (_) {
-        await handleRefreshError();
+        isRefreshing = false;
+        refreshPromise = null;
         return Promise.reject(error);
       }
     }
-
-    // For all other errors, just reject
     return Promise.reject(error);
   }
 );

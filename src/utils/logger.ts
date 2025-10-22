@@ -35,7 +35,5 @@ export const prodError = (message: string, error?: Error, context?: any) => {
   if (__DEV__) {
     console.error("[PROD ERROR]", message, error, context);
   } else {
-    // In production, send to crash reporting service
-    // crashlytics().recordError(error || new Error(message));
   }
 };
