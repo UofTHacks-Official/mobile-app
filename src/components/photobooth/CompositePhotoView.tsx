@@ -22,7 +22,7 @@ export default function CompositePhotoView({
       <View
         style={{
           width: 384,
-          height: 384,
+          height: 600,
           borderRadius: 16,
           overflow: "hidden",
           backgroundColor: "black",
