@@ -88,9 +88,9 @@ export default function CompositePhotoView({
             >
               <Text
                 style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: "white",
+                  fontSize: 10,
+                  fontWeight: "400",
+                  color: "#FFF",
                   textShadowColor: "rgba(0, 0, 0, 0.5)",
                   textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 3,
@@ -122,9 +122,9 @@ export default function CompositePhotoView({
               >
                 <Text
                   style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: "white",
+                    fontSize: 10,
+                    fontWeight: "400",
+                    color: "#FFF",
                     textShadowColor: "rgba(0, 0, 0, 0.5)",
                     textShadowOffset: { width: 0, height: 1 },
                     textShadowRadius: 3,
