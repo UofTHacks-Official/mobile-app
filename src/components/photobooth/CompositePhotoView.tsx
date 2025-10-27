@@ -34,8 +34,8 @@ export default function CompositePhotoView({
       {/* Composite Photo Display */}
       <View
         style={{
-          width: 354,
-          height: 600,
+          width: "96%",
+          aspectRatio: 3 / 5,
           borderRadius: 16,
           overflow: "hidden",
           backgroundColor: "black",
