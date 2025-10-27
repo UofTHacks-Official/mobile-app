@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
 
 interface CompositePhotoViewProps {
@@ -71,20 +70,26 @@ export default function CompositePhotoView({
           resizeMode="cover"
         />
 
-        {/* Timestamp - Glass Effect (Top Right) */}
-        {formattedTime &&
-          (isLiquidGlassAvailable() ? (
-            <GlassView
-              glassEffectStyle="clear"
+        {/* Timestamp - Blur Effect (Top Right) */}
+        {formattedTime && (
+          <View
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              borderRadius: 20,
+              overflow: "hidden",
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.3)",
+            }}
+          >
+            <BlurView
+              intensity={100}
+              tint="light"
               style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                borderRadius: 20,
                 paddingHorizontal: 14,
                 paddingVertical: 7,
-                justifyContent: "center",
-                alignItems: "center",
               }}
             >
               <Text
@@ -99,43 +104,9 @@ export default function CompositePhotoView({
               >
                 {formattedTime}
               </Text>
-            </GlassView>
-          ) : (
-            <View
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                borderRadius: 20,
-                overflow: "hidden",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.3)",
-              }}
-            >
-              <BlurView
-                intensity={100}
-                tint="light"
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 7,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    fontWeight: "400",
-                    color: "#FFF",
-                    textShadowColor: "rgba(0, 0, 0, 0.5)",
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 3,
-                  }}
-                >
-                  {formattedTime}
-                </Text>
-              </BlurView>
-            </View>
-          ))}
+            </BlurView>
+          </View>
+        )}
 
         {/* Small Overlay Photo (Top Left) - Clickable */}
         <TouchableOpacity
