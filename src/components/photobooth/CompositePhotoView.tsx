@@ -145,7 +145,7 @@ export default function CompositePhotoView({
             top: 16,
             left: 16,
             borderRadius: 8,
-            borderWidth: 2,
+            borderWidth: 1.5,
             borderColor: "white",
             overflow: "hidden",
           }}
@@ -155,7 +155,7 @@ export default function CompositePhotoView({
             source={{ uri: frontPhotoUrl }}
             style={{
               width: 96,
-              height: 128,
+              aspectRatio: 3 / 5,
               opacity: isSwapped ? 0 : 1,
             }}
             resizeMode="cover"
@@ -164,7 +164,7 @@ export default function CompositePhotoView({
             source={{ uri: backPhotoUrl }}
             style={{
               width: 96,
-              height: 128,
+              aspectRatio: 3 / 5,
               position: "absolute",
               top: 0,
               left: 0,
