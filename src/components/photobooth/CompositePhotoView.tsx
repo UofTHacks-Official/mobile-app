@@ -1,14 +1,18 @@
 import React, { useState } from "react";
-import { View, Image, TouchableOpacity } from "react-native";
+import { View, Image, TouchableOpacity, Text, Platform } from "react-native";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { BlurView } from "expo-blur";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
   backPhotoUrl: string;
+  timestamp?: Date;
 }
 
 export default function CompositePhotoView({
   frontPhotoUrl,
   backPhotoUrl,
+  timestamp,
 }: CompositePhotoViewProps) {
   const [isSwapped, setIsSwapped] = useState(false);
 
@@ -16,12 +20,21 @@ export default function CompositePhotoView({
     setIsSwapped((prev) => !prev);
   };
 
+  // Format timestamp
+  const formattedTime = timestamp
+    ? timestamp.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "";
+
   return (
     <View style={{ alignItems: "center" }}>
       {/* Composite Photo Display */}
       <View
         style={{
-          width: 384,
+          width: 354,
           height: 600,
           borderRadius: 16,
           overflow: "hidden",
@@ -56,6 +69,72 @@ export default function CompositePhotoView({
           }}
           resizeMode="cover"
         />
+
+        {/* Timestamp - Glass Effect (Top Right) */}
+        {formattedTime &&
+          (isLiquidGlassAvailable() ? (
+            <GlassView
+              glassEffectStyle="clear"
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                borderRadius: 20,
+                paddingHorizontal: 14,
+                paddingVertical: 7,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: "white",
+                  textShadowColor: "rgba(0, 0, 0, 0.5)",
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 3,
+                }}
+              >
+                {formattedTime}
+              </Text>
+            </GlassView>
+          ) : (
+            <View
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                borderRadius: 20,
+                overflow: "hidden",
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.3)",
+              }}
+            >
+              <BlurView
+                intensity={100}
+                tint="light"
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: "white",
+                    textShadowColor: "rgba(0, 0, 0, 0.5)",
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 3,
+                  }}
+                >
+                  {formattedTime}
+                </Text>
+              </BlurView>
+            </View>
+          ))}
 
         {/* Small Overlay Photo (Top Left) - Clickable */}
         <TouchableOpacity

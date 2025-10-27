@@ -133,16 +133,8 @@ export default function GalleryPage() {
                 <CompositePhotoView
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
+                  timestamp={photo.timestamp}
                 />
-                <Text
-                  className={cn(
-                    "text-center mt-2 text-sm",
-                    themeStyles.secondaryText
-                  )}
-                >
-                  {photo.timestamp.toLocaleDateString()}{" "}
-                  {photo.timestamp.toLocaleTimeString()}
-                </Text>
               </View>
             ))}
           </ScrollView>
