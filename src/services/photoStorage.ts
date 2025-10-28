@@ -74,9 +74,11 @@ export class PhotoStorageService {
     backPhotoUri: string
   ): Promise<PhotoUploadResult> {
     try {
-      // Use regular timestamp - we'll sort by S3 LastModified instead of filename
       const timestamp = Date.now();
-      const photoId = `photobooth_${timestamp}`;
+      // Use reverse timestamp so S3's lexicographic order = newest first
+      // This enables efficient S3 pagination without fetching all photos
+      const reverseTimestamp = Number.MAX_SAFE_INTEGER - timestamp;
+      const photoId = `photobooth_${reverseTimestamp}`;
 
       const frontFileName = `photos/${photoId}_front.jpg`;
       const backFileName = `photos/${photoId}_back.jpg`;
@@ -126,13 +128,21 @@ export class PhotoStorageService {
         );
         if (!match) return;
 
-        const [, timestamp, type] = match;
-        const photoId = `photobooth_${timestamp}`;
+        const [, timestampStr, type] = match;
+        const photoId = `photobooth_${timestampStr}`;
+        const timestampNum = parseInt(timestampStr);
+
+        // Detect if this is a reverse timestamp (much larger number)
+        // Reverse timestamps are > 7000000000000000 (year ~2191)
+        const isReverse = timestampNum > 7000000000000000;
+        const actualTimestamp = isReverse
+          ? Number.MAX_SAFE_INTEGER - timestampNum
+          : timestampNum;
 
         if (!photoMap.has(photoId)) {
           photoMap.set(photoId, {
             photoId,
-            timestamp: new Date(parseInt(timestamp)),
+            timestamp: new Date(actualTimestamp),
           });
         }
 
@@ -156,7 +166,7 @@ export class PhotoStorageService {
 
       // Sort by timestamp (newest first)
       return completePairs.sort(
-        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
       );
     } catch (error) {
       console.error("Failed to fetch photo gallery:", error);
@@ -166,17 +176,18 @@ export class PhotoStorageService {
 
   /**
    * Get paginated photo gallery (most recent photos first)
+   * Uses S3 pagination efficiently with reverse timestamps
    */
   static async getPhotoGalleryPaginated(
     maxKeys: number = 5,
     continuationToken?: string
   ): Promise<PaginatedPhotoResult> {
     try {
-      // Use S3 pagination - fetch only what we need (each photo pair = 2 files)
+      // Fetch enough to account for incomplete pairs
       const command = new ListObjectsV2Command({
         Bucket: BUCKET_NAME,
         Prefix: "photos/",
-        MaxKeys: maxKeys * 2, // Each photo pair = 2 files (front + back)
+        MaxKeys: maxKeys * 4,
         ContinuationToken: continuationToken,
       });
 
@@ -190,30 +201,31 @@ export class PhotoStorageService {
         };
       }
 
-      // Sort by S3 LastModified (most recent uploads first)
-      const sortedContents = response.Contents.sort((a, b) => {
-        if (!a.LastModified || !b.LastModified) return 0;
-        return b.LastModified.getTime() - a.LastModified.getTime();
-      });
-
       // Group photos by photoId
       const photoMap = new Map<string, Partial<PhotoPair>>();
 
-      sortedContents.forEach((obj) => {
-        if (!obj.Key || !obj.LastModified) return;
+      response.Contents.forEach((obj) => {
+        if (!obj.Key) return;
 
         const match = obj.Key.match(
           /photos\/photobooth_(\d+)_(front|back)\.jpg$/
         );
         if (!match) return;
 
-        const [, timestamp, type] = match;
-        const photoId = `photobooth_${timestamp}`;
+        const [, timestampStr, type] = match;
+        const photoId = `photobooth_${timestampStr}`;
+        const timestampNum = parseInt(timestampStr);
+
+        // Detect if this is a reverse timestamp
+        const isReverse = timestampNum > 7000000000000000;
+        const actualTimestamp = isReverse
+          ? Number.MAX_SAFE_INTEGER - timestampNum
+          : timestampNum;
 
         if (!photoMap.has(photoId)) {
           photoMap.set(photoId, {
             photoId,
-            timestamp: obj.LastModified,
+            timestamp: new Date(actualTimestamp),
           });
         }
 
@@ -227,33 +239,24 @@ export class PhotoStorageService {
         }
       });
 
-      // Filter complete pairs only and preserve LastModified sort order
+      // Filter complete pairs only
       const completePairs: PhotoPair[] = [];
-      const processedIds = new Set<string>();
-
-      // Process in LastModified order to get most recent complete pairs
-      sortedContents.forEach((obj) => {
-        if (!obj.Key) return;
-        const match = obj.Key.match(
-          /photos\/photobooth_(\d+)_(front|back)\.jpg$/
-        );
-        if (!match) return;
-
-        const photoId = `photobooth_${match[1]}`;
-        if (processedIds.has(photoId)) return;
-
-        const photo = photoMap.get(photoId);
-        if (photo && photo.frontPhotoUrl && photo.backPhotoUrl) {
+      photoMap.forEach((photo) => {
+        if (photo.frontPhotoUrl && photo.backPhotoUrl) {
           completePairs.push(photo as PhotoPair);
-          processedIds.add(photoId);
-
-          // Stop when we have enough complete pairs
-          if (completePairs.length >= maxKeys) return;
         }
       });
 
+      // Sort by timestamp (reverse timestamps already in correct S3 order, but handle mixed old/new)
+      completePairs.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      );
+
+      // Take only requested number
+      const paginatedPhotos = completePairs.slice(0, maxKeys);
+
       return {
-        photos: completePairs,
+        photos: paginatedPhotos,
         nextToken: response.NextContinuationToken,
         hasMore: response.IsTruncated || false,
       };

@@ -20,6 +20,14 @@ export default function CompositePhotoView({
   };
 
   // Format timestamp
+  const formattedDate = timestamp
+    ? timestamp.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
   const formattedTime = timestamp
     ? timestamp.toLocaleTimeString("en-US", {
         hour: "numeric",
@@ -71,7 +79,7 @@ export default function CompositePhotoView({
         />
 
         {/* Timestamp - Blur Effect (Top Right) */}
-        {formattedTime && (
+        {formattedDate && formattedTime && (
           <View
             style={{
               position: "absolute",
@@ -89,17 +97,31 @@ export default function CompositePhotoView({
               tint="light"
               style={{
                 paddingHorizontal: 14,
-                paddingVertical: 7,
+                paddingVertical: 8,
+                alignItems: "center",
               }}
             >
               <Text
                 style={{
                   fontSize: 10,
+                  fontWeight: "600",
+                  color: "#FFF",
+                  textShadowColor: "rgba(0, 0, 0, 0.5)",
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 3,
+                }}
+              >
+                {formattedDate}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 9,
                   fontWeight: "400",
                   color: "#FFF",
                   textShadowColor: "rgba(0, 0, 0, 0.5)",
                   textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 3,
+                  marginTop: 2,
                 }}
               >
                 {formattedTime}

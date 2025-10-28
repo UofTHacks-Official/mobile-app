@@ -115,7 +115,14 @@ export default function PhotoboothPage() {
         nextToken
       );
 
-      setPhotoPairs((prev) => [...prev, ...result.photos]);
+      // Display photos by photoId to prevent key conflicts
+      setPhotoPairs((prev) => {
+        const existingIds = new Set(prev.map((p) => p.photoId));
+        const newPhotos = result.photos.filter(
+          (photo) => !existingIds.has(photo.photoId)
+        );
+        return [...prev, ...newPhotos];
+      });
       setNextToken(result.nextToken);
       setHasMore(result.hasMore);
     } catch (error) {
