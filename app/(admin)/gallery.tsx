@@ -140,7 +140,7 @@ export default function GalleryPage() {
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className={cn("text-center", themeStyles.secondaryText)}>
-              No photos yet. Take your first BeReal!
+              No photos yet. Take your first PhotoBooth Photo!
             </Text>
           </View>
         ) : (

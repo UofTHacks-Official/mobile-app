@@ -4,6 +4,7 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useTheme } from "@/context/themeContext";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import * as Haptics from "expo-haptics";
 import { usePathname } from "expo-router";
 import {
@@ -201,42 +202,57 @@ const CustomTabBar = ({
             pointerEvents={isExpanded ? "auto" : "none"}
           >
             <View className="space-y-2">
-              <TouchableOpacity
-                onPress={() => handleScanOption("qr")}
-                className="rounded-xl p-2 flex-row items-center justify-between"
-              >
-                <Text
-                  className={cn(
-                    "text-lg font-onest-extralight",
-                    themeStyles.navBarText
-                  )}
+              {FEATURE_FLAGS.ENABLE_EVENT_CHECKIN && (
+                <TouchableOpacity
+                  onPress={() => handleScanOption("qr")}
+                  className="rounded-xl p-2 flex-row items-center justify-between"
                 >
-                  Event Check-in
-                </Text>
-                <ScanLine
-                  size={28}
-                  strokeWidth={1.5}
-                  color={themeStyles.navBarIconActive}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleScanOption("hackerbucks")}
-                className="rounded-xl p-2 flex-row items-center justify-between"
-              >
-                <Text
-                  className={cn(
-                    "text-lg font-onest-extralight",
-                    themeStyles.navBarText
-                  )}
+                  <Text
+                    className={cn(
+                      "text-lg font-onest-extralight",
+                      themeStyles.navBarText
+                    )}
+                  >
+                    Event Check-in
+                  </Text>
+                  <ScanLine
+                    size={28}
+                    strokeWidth={1.5}
+                    color={themeStyles.navBarIconActive}
+                  />
+                </TouchableOpacity>
+              )}
+              {FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
+                <TouchableOpacity
+                  onPress={() => handleScanOption("hackerbucks")}
+                  className="rounded-xl p-2 flex-row items-center justify-between"
                 >
-                  Send Hacker Bucks
-                </Text>
-                <BanknoteArrowUp
-                  size={28}
-                  strokeWidth={1.5}
-                  color={themeStyles.navBarIconActive}
-                />
-              </TouchableOpacity>
+                  <Text
+                    className={cn(
+                      "text-lg font-onest-extralight",
+                      themeStyles.navBarText
+                    )}
+                  >
+                    Send Hacker Bucks
+                  </Text>
+                  <BanknoteArrowUp
+                    size={28}
+                    strokeWidth={1.5}
+                    color={themeStyles.navBarIconActive}
+                  />
+                </TouchableOpacity>
+              )}
+              {!FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
+                !FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
+                  <Text
+                    className={cn(
+                      "text-center text-sm py-4",
+                      themeStyles.navBarText
+                    )}
+                  >
+                    Scanner features coming soon!
+                  </Text>
+                )}
             </View>
             <View className="flex-row justify-end">
               <TouchableOpacity
