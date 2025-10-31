@@ -41,9 +41,9 @@ const Schedule = () => {
   const hourHeight = 100;
 
   const allDates = [
-    new Date(2025, 8, 26),
-    new Date(2025, 8, 27),
-    new Date(2025, 8, 28),
+    new Date(2026, 0, 16), // January 16, 2026
+    new Date(2026, 0, 17), // January 17, 2026
+    new Date(2026, 0, 18), // January 18, 2026
   ];
 
   const getDatesToShow = () => {
@@ -58,7 +58,7 @@ const Schedule = () => {
 
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
-  const currentDate = new Date(2025, 8, 27);
+  const currentDate = new Date(2026, 0, 17); // January 17, 2026
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -90,6 +90,7 @@ const Schedule = () => {
         if (isStartDay) {
           const firstPart = {
             ...schedule,
+            id: `${schedule.id}-part1`, // Unique ID for first part
             endTime: new Date(
               start.getFullYear(),
               start.getMonth(),
@@ -111,7 +112,7 @@ const Schedule = () => {
         if (isEndDay) {
           const secondPart = {
             ...schedule,
-            id: schedule.id, // Use a unique number instead of string
+            id: `${schedule.id}-part2`, // Unique ID for second part
             startTime: new Date(
               end.getFullYear(),
               end.getMonth(),
@@ -141,7 +142,7 @@ const Schedule = () => {
       }
     });
 
-    const now = new Date(2025, 8, 27); // September 27, 2025
+    const now = new Date(2026, 0, 17); // January 17, 2026
     const isToday =
       date.getFullYear() === now.getFullYear() &&
       date.getMonth() === now.getMonth() &&
