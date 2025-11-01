@@ -341,6 +341,7 @@ const CustomTabBar = ({
                       />
                     );
                   case "Photo":
+                  case "Gallery":
                     return (
                       <Camera
                         size={24}
