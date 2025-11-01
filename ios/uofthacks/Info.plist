@@ -31,9 +31,15 @@
           <string>com.uofthacks.uoft-hacks</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+uoft-hacks</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>LSMinimumSystemVersion</key>
@@ -88,6 +94,10 @@
       <string>OpenSans_SemiCondensed-ExtraBold.ttf</string>
       <string>OpenSans-VariableFont_wdth,wght.ttf</string>
       <string>OpenSans-Italic-VariableFont_wdth,wght.ttf</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>remote-notification</string>
     </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
