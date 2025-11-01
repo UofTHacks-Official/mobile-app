@@ -5,6 +5,7 @@ import {
   RefreshControl,
   Text,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/context/themeContext";
@@ -12,6 +13,8 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { PhotoStorageService, PhotoPair } from "@/services/photoStorage";
 import CompositePhotoView from "@/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
+import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
 
 export default function GalleryPage() {
   const { isDark } = useTheme();
@@ -19,6 +22,7 @@ export default function GalleryPage() {
   const [photoPairs, setPhotoPairs] = useState<PhotoPair[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
 
   // Bottom nav bar controls
   const { hideNavBar, showNavBar } = useBottomNavBarStore();
@@ -27,6 +31,7 @@ export default function GalleryPage() {
   const lastScrollY = useRef(0);
   const scrollY = useRef(0);
   const scrollDirection = useRef<"up" | "down">("up");
+  const headerAnimation = useRef(new Animated.Value(1)).current;
 
   const loadGallery = async () => {
     try {
@@ -56,12 +61,14 @@ export default function GalleryPage() {
         if (scrollDirection.current !== "down") {
           scrollDirection.current = "down";
           hideNavBar();
+          setShowHeader(false);
         }
       } else if (scrollDelta < 0) {
         // Scrolling up
         if (scrollDirection.current !== "up") {
           scrollDirection.current = "up";
           showNavBar();
+          setShowHeader(true);
         }
       }
     }
@@ -84,6 +91,15 @@ export default function GalleryPage() {
     showNavBar();
   }, [showNavBar]);
 
+  // Animate header visibility
+  useEffect(() => {
+    Animated.timing(headerAnimation, {
+      toValue: showHeader ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [showHeader, headerAnimation]);
+
   if (loading) {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
@@ -100,19 +116,31 @@ export default function GalleryPage() {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <View className="flex-1">
-        <Text
-          className={cn(
-            "text-2xl font-bold text-center py-4",
-            themeStyles.primaryText
-          )}
+        <Animated.View
+          className="items-center overflow-hidden"
+          style={{
+            opacity: headerAnimation,
+            height: headerAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 72],
+            }),
+            paddingVertical: headerAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 16],
+            }),
+          }}
         >
-          Feed
-        </Text>
+          {isDark ? (
+            <UoftDeerWhite width={40} height={40} />
+          ) : (
+            <UoftDeerBlack width={40} height={40} />
+          )}
+        </Animated.View>
 
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className={cn("text-center", themeStyles.secondaryText)}>
-              No photos yet. Take your first BeReal!
+              No photos yet. Take your first PhotoBooth Photo!
             </Text>
           </View>
         ) : (
@@ -133,16 +161,8 @@ export default function GalleryPage() {
                 <CompositePhotoView
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
+                  timestamp={photo.timestamp}
                 />
-                <Text
-                  className={cn(
-                    "text-center mt-2 text-sm",
-                    themeStyles.secondaryText
-                  )}
-                >
-                  {photo.timestamp.toLocaleDateString()}{" "}
-                  {photo.timestamp.toLocaleTimeString()}
-                </Text>
               </View>
             ))}
           </ScrollView>

@@ -16,7 +16,7 @@ const ENDPOINTS_WITHOUT_AUTH = [
   "/api/v13/admins/refresh",
   "/api/v13/hackers/google-auth/token",
 
-  "/api/v13/hackers/schedules",
+  "/api/v13/hackers/schedules/",
 ] as const;
 
 export const axiosInstance: AxiosInstance = axios.create({

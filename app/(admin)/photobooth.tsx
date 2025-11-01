@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import {
@@ -9,6 +9,7 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
@@ -22,6 +23,8 @@ import {
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { useScrollNavBar } from "@/utils/navigation";
+import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
+import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -40,10 +43,15 @@ export default function PhotoboothPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextToken, setNextToken] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
 
   // Bottom nav bar controls
   const { showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
   const { handleScroll: handleNavBarScroll } = useScrollNavBar();
+
+  // Header animation
+  const headerAnimation = useRef(new Animated.Value(1)).current;
+  const lastScrollY = useRef(0);
 
   // Clear captured photos when page comes into focus
   useFocusEffect(
@@ -55,6 +63,15 @@ export default function PhotoboothPage() {
       }
     }, [viewMode, setPhotoboothViewMode])
   );
+
+  // Animate header visibility
+  useEffect(() => {
+    Animated.timing(headerAnimation, {
+      toValue: showHeader ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [showHeader, headerAnimation]);
 
   const handlePhotosCapture = async (frontPhoto: string, backPhoto: string) => {
     try {
@@ -110,11 +127,26 @@ export default function PhotoboothPage() {
 
   const handleInfiniteScroll = (event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const currentScrollY = contentOffset.y;
+    const scrollDelta = currentScrollY - lastScrollY.current;
     const isNearBottom =
       contentOffset.y + layoutMeasurement.height >= contentSize.height - 200;
 
     // Handle nav bar scroll behavior
     handleNavBarScroll(event);
+
+    // Handle header visibility based on scroll direction
+    if (Math.abs(scrollDelta) > 5) {
+      if (scrollDelta > 0 && currentScrollY > 50) {
+        // Scrolling down
+        setShowHeader(false);
+      } else if (scrollDelta < 0) {
+        // Scrolling up
+        setShowHeader(true);
+      }
+    }
+
+    lastScrollY.current = currentScrollY;
 
     // Handle infinite scroll loading
     if (isNearBottom && hasMore && !loadingMore) {
@@ -142,7 +174,7 @@ export default function PhotoboothPage() {
 
       Alert.alert(
         "Photos Saved!",
-        `Your BeReal-style photos have been uploaded successfully!`,
+        `Your photos have been uploaded successfully!`,
         [
           {
             text: "Take Another",
@@ -193,19 +225,31 @@ export default function PhotoboothPage() {
 
     return (
       <View className="flex-1">
-        <Text
-          className={cn(
-            "text-2xl font-bold text-center py-4",
-            themeStyles.primaryText
-          )}
+        <Animated.View
+          className="items-center overflow-hidden"
+          style={{
+            opacity: headerAnimation,
+            height: headerAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 72],
+            }),
+            paddingVertical: headerAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 16],
+            }),
+          }}
         >
-          Feed
-        </Text>
+          {isDark ? (
+            <UoftDeerWhite width={40} height={40} />
+          ) : (
+            <UoftDeerBlack width={40} height={40} />
+          )}
+        </Animated.View>
 
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className={cn("text-center", themeStyles.secondaryText)}>
-              No photos yet. Take your first BeReal!
+              No photos yet. Take your first PhotoBooth Photo!
             </Text>
           </View>
         ) : (
@@ -226,16 +270,8 @@ export default function PhotoboothPage() {
                 <CompositePhotoView
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
+                  timestamp={photo.timestamp}
                 />
-                <Text
-                  className={cn(
-                    "text-center mt-2 text-sm",
-                    themeStyles.secondaryText
-                  )}
-                >
-                  {photo.timestamp.toLocaleDateString()}{" "}
-                  {photo.timestamp.toLocaleTimeString()}
-                </Text>
               </View>
             ))}
 

@@ -2,7 +2,7 @@
 export type ScheduleType = "networking" | "food" | "activity";
 
 export interface Schedule {
-  id: number;
+  id: number | string; // Can be number from API or string for split events
   title: string;
   description: string;
   startTime: string;

@@ -1,8 +1,15 @@
 import { useTheme } from "@/context/themeContext";
 import { useAuth } from "@/context/authContext";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { router } from "expo-router";
-import { ArrowLeft, Calendar, Coins, QrCode, Users } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Calendar,
+  Camera,
+  QrCode,
+  Users,
+} from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,48 +24,65 @@ interface OnboardingStep {
   feature: string;
 }
 
-const onboardingSteps: OnboardingStep[] = [
-  {
-    id: 0,
-    icon: null, // Welcome SVG will be displayed
-    title: "Welcome to UofT Hacks!",
-    description:
-      "Get ready for an amazing hackathon experience. Let's get you set up!",
-    feature: "Welcome",
-  },
-  {
-    id: 1,
-    icon: null, // Will be set dynamically
-    title: "View Event Schedule",
-    description:
-      "Browse all hackathon events, workshops, and activities. Tap on any event to see details and set reminders.",
-    feature: "Schedule",
-  },
-  {
-    id: 2,
-    icon: null, // Will be set dynamically
-    title: "Scan QR Codes",
-    description:
-      "Use the QR scanner to check into events, receive hacker bucks, and interact with sponsors.",
-    feature: "QR Scanner",
-  },
-  {
-    id: 3,
-    icon: null, // Will be set dynamically
-    title: "Earn Hacker Bucks",
-    description:
-      "Collect hacker bucks by attending events, completing challenges, and engaging with sponsors. Use them for prizes!",
-    feature: "Hacker Bucks",
-  },
-  {
-    id: 4,
-    icon: null, // Will be set dynamically
+// Build onboarding steps based on feature flags
+const buildOnboardingSteps = (): OnboardingStep[] => {
+  const steps: OnboardingStep[] = [
+    {
+      id: 0,
+      icon: null, // Welcome SVG will be displayed
+      title: "Welcome to UofT Hacks!",
+      description:
+        "Get ready for an amazing hackathon experience. Let's get you set up!",
+      feature: "Welcome",
+    },
+  ];
+
+  if (FEATURE_FLAGS.ENABLE_SCHEDULE) {
+    steps.push({
+      id: steps.length,
+      icon: null,
+      title: "View Event Schedule",
+      description:
+        "Browse all hackathon events, workshops, and activities. Tap on any event to see details and set reminders.",
+      feature: "Schedule",
+    });
+  }
+
+  if (FEATURE_FLAGS.ENABLE_QR_SCANNER) {
+    steps.push({
+      id: steps.length,
+      icon: null,
+      title: "Scan QR Codes",
+      description:
+        "Use the QR scanner to check into events and interact with sponsors throughout the hackathon.",
+      feature: "QR Scanner",
+    });
+  }
+
+  if (FEATURE_FLAGS.ENABLE_PHOTOBOOTH) {
+    steps.push({
+      id: steps.length,
+      icon: null,
+      title: "Capture Memories",
+      description:
+        "Use the photobooth feature to take fun photos during the event and share your hackathon experience!",
+      feature: "Photobooth",
+    });
+  }
+
+  steps.push({
+    id: steps.length,
+    icon: null,
     title: "Connect & Network",
     description:
       "Meet other hackers, join teams, and connect with mentors and sponsors throughout the event.",
     feature: "Networking",
-  },
-];
+  });
+
+  return steps;
+};
+
+const onboardingSteps: OnboardingStep[] = buildOnboardingSteps();
 
 export default function OnboardingPage() {
   const { isDark } = useTheme();
@@ -69,32 +93,31 @@ export default function OnboardingPage() {
     new Animated.Value(1 / onboardingSteps.length)
   ).current;
 
-  const stepsWithIcons: OnboardingStep[] = [
-    {
-      ...onboardingSteps[0],
-      icon: isDark ? (
-        <WelcomeDarkSvg width={400} height={400} />
-      ) : (
-        <WelcomeLightSvg width={400} height={400} />
-      ),
-    },
-    {
-      ...onboardingSteps[1],
-      icon: <Calendar color={themeStyles.iconColor} size={48} />,
-    },
-    {
-      ...onboardingSteps[2],
-      icon: <QrCode color={themeStyles.iconColor} size={48} />,
-    },
-    {
-      ...onboardingSteps[3],
-      icon: <Coins color={themeStyles.iconColor} size={48} />,
-    },
-    {
-      ...onboardingSteps[4],
-      icon: <Users color={themeStyles.iconColor} size={48} />,
-    },
-  ];
+  const getIconForStep = (step: OnboardingStep) => {
+    switch (step.feature) {
+      case "Welcome":
+        return isDark ? (
+          <WelcomeDarkSvg width={400} height={400} />
+        ) : (
+          <WelcomeLightSvg width={400} height={400} />
+        );
+      case "Schedule":
+        return <Calendar color={themeStyles.iconColor} size={48} />;
+      case "QR Scanner":
+        return <QrCode color={themeStyles.iconColor} size={48} />;
+      case "Photobooth":
+        return <Camera color={themeStyles.iconColor} size={48} />;
+      case "Networking":
+        return <Users color={themeStyles.iconColor} size={48} />;
+      default:
+        return null;
+    }
+  };
+
+  const stepsWithIcons: OnboardingStep[] = onboardingSteps.map((step) => ({
+    ...step,
+    icon: getIconForStep(step),
+  }));
 
   useEffect(() => {
     const progress = (currentStep + 1) / onboardingSteps.length;
