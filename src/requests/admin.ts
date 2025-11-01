@@ -8,6 +8,7 @@ export const loginEndpoints = {
   ADMIN_PROFILE: "/api/v13/admins/profile",
   CREATE_ADMIN: "/api/v13/admins",
   GET_ADMIN_BY_TOKEN: "/api/v13/admins/{admin_id}",
+  ADMIN_GOOGLE_AUTH: "/api/v13/admins/google-auth/token",
 };
 
 export interface Admin {
@@ -114,5 +115,44 @@ export const getAdminProfile = async (bearerToken: string) => {
     return { error };
   }
 };
+
+export interface AdminAuthResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface GoogleAuthAdminRequest {
+  code: string;
+  code_verifier: string;
+  redirect_uri: string;
+}
+
+/**
+ * Authenticates an admin using Google OAuth authorization code + PKCE
+ * @param code Google OAuth authorization code
+ * @param code_verifier PKCE code verifier
+ * @param redirect_uri OAuth redirect URI used in the authorization request
+ * @returns Authentication response with access and refresh tokens
+ */
+export const googleAuthAdmin = async (
+  code: string,
+  code_verifier: string,
+  redirect_uri: string
+) => {
+  try {
+    const response = await axiosInstance.post<AdminAuthResponse>(
+      loginEndpoints.ADMIN_GOOGLE_AUTH,
+      {
+        code,
+        code_verifier,
+        redirect_uri,
+      }
+    );
+    return { response };
+  } catch (error) {
+    return { error };
+  }
+};
+
 // Default export for Expo Router
 export default loginEndpoints;

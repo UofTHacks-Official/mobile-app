@@ -1,16 +1,17 @@
 import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { useAdminLogin } from "@/queries/user";
+import { useAdminLogin, useGoogleAuthAdmin } from "@/queries/user";
 import { useUserTypeStore } from "@/reducers/userType";
 
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
+import * as AuthSession from "expo-auth-session";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Image, Pressable, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
   interpolateColor,
@@ -34,6 +35,35 @@ const SignInAdmin = () => {
 
   const { signIn, isFirstSignIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
+  const googleAuthMutation = useGoogleAuthAdmin();
+
+  // Use explicit Expo proxy URL - makeRedirectUri generates custom scheme which Google rejects
+  const redirectUri = "https://auth.expo.io/@mzhang055/uoft-hacks";
+  const [codeVerifier, setCodeVerifier] = useState<string>("");
+
+  const discovery = {
+    authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+  };
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+      scopes: ["openid", "profile", "email"],
+      redirectUri,
+      extraParams: {
+        access_type: "offline",
+      },
+      responseType: AuthSession.ResponseType.Code,
+      usePKCE: true,
+    },
+    discovery
+  );
+
+  useEffect(() => {
+    if (request?.codeVerifier) {
+      setCodeVerifier(request.codeVerifier);
+    }
+  }, [request]);
 
   const roleTitle = "Sign In";
   const roleDescription = `Sign in to access your ${displayRole} dashboard`;
@@ -86,6 +116,63 @@ const SignInAdmin = () => {
     };
   });
 
+  const handleAuthCode = useCallback(
+    async (code: string) => {
+      try {
+        const result = await googleAuthMutation.mutateAsync({
+          code,
+          code_verifier: codeVerifier,
+          redirect_uri: redirectUri,
+        });
+
+        const { access_token, refresh_token } = result;
+
+        await signIn(access_token, refresh_token);
+        router.dismissAll();
+
+        if (isFirstSignIn) {
+          router.replace("/auth/congrats");
+        } else {
+          router.replace("/(admin)");
+        }
+      } catch (error: any) {
+        console.error("Google Auth Error:", error);
+        Toast.show({
+          type: "error",
+          text1: "Authentication Failed",
+          text2: "Failed to authenticate with Google. Please try again.",
+        });
+      }
+    },
+    [codeVerifier, googleAuthMutation, signIn, isFirstSignIn, redirectUri]
+  );
+
+  useEffect(() => {
+    if (response?.type === "success" && response.params.code) {
+      handleAuthCode(response.params.code);
+    } else if (response?.type === "error") {
+      Toast.show({
+        type: "error",
+        text1: "Authentication Failed",
+        text2: response.error?.description || "Google authentication failed",
+      });
+    }
+  }, [response, handleAuthCode]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      impactAsync(ImpactFeedbackStyle.Medium);
+      await promptAsync();
+    } catch (error: any) {
+      console.error("Google Sign-In Error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Authentication Failed",
+        text2: "Failed to start Google authentication.",
+      });
+    }
+  };
+
   const handleSignIn = async () => {
     if (!isFormValid) {
       return;
@@ -127,7 +214,7 @@ const SignInAdmin = () => {
     router.back();
   };
 
-  if (adminLoginMutation.isPending) {
+  if (adminLoginMutation.isPending || googleAuthMutation.isPending) {
     return <CustomSplashScreen />;
   }
 
@@ -230,6 +317,42 @@ const SignInAdmin = () => {
               {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}
             </Text>
           </Animated.View>
+        </Pressable>
+
+        <View className="flex-row items-center px-8 mt-6">
+          <View className={cn("flex-1 h-px", themeStyles.border)} />
+          <Text className={cn("mx-4 text-sm", themeStyles.secondaryText)}>
+            or
+          </Text>
+          <View className={cn("flex-1 h-px", themeStyles.border)} />
+        </View>
+
+        <Pressable
+          onPress={handleGoogleSignIn}
+          disabled={googleAuthMutation.isPending}
+          className="px-8 mt-6"
+        >
+          <View
+            className={cn(
+              "w-full flex-row items-center justify-center py-4 px-6 rounded-xl border border-gray-300",
+              themeStyles.lightCardBackground
+            )}
+          >
+            <Image
+              source={{
+                uri: "https://developers.google.com/identity/images/g-logo.png",
+              }}
+              className="w-5 h-5 mr-3"
+              resizeMode="contain"
+            />
+            <Text
+              className={cn("text-lg font-medium", themeStyles.primaryText)}
+            >
+              {googleAuthMutation.isPending
+                ? "Signing in..."
+                : "Continue with Google"}
+            </Text>
+          </View>
         </Pressable>
 
         <View className="w-full px-12 absolute bottom-0 mb-8">

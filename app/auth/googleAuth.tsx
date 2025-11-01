@@ -16,7 +16,8 @@ const GoogleAuth = () => {
   const themeStyles = getThemeStyles(isDark);
   const { signIn, isFirstSignIn } = useAuth();
   const googleAuthMutation = useGoogleAuthHacker();
-  const redirectUri = "https://auth.expo.io/@uofthacks/uoft-hacks";
+
+  const redirectUri = "https://auth.expo.io/@mzhang055/uoft-hacks";
 
   console.log("Redirect URI:", redirectUri);
 
@@ -49,9 +50,21 @@ const GoogleAuth = () => {
   const handleAuthCode = useCallback(
     async (code: string) => {
       try {
+        console.log("Sending to backend:", {
+          code: code.substring(0, 20) + "...",
+          code_verifier: codeVerifier.substring(0, 20) + "...",
+          redirect_uri: redirectUri,
+        });
+
         const result = await googleAuthMutation.mutateAsync({
           code,
           code_verifier: codeVerifier,
+          redirect_uri: redirectUri,
+        });
+
+        console.log("Backend response received:", {
+          hasAccessToken: !!result.access_token,
+          hasRefreshToken: !!result.refresh_token,
         });
 
         const { access_token, refresh_token } = result;
@@ -66,25 +79,37 @@ const GoogleAuth = () => {
         }
       } catch (error: any) {
         console.error("Google Auth Error:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         Toast.show({
           type: "error",
           text1: "Authentication Failed",
-          text2: "Failed to authenticate with Google. Please try again.",
+          text2:
+            error?.message ||
+            "Failed to authenticate with Google. Please try again.",
         });
       }
     },
-    [codeVerifier, googleAuthMutation, signIn, isFirstSignIn]
+    [codeVerifier, googleAuthMutation, signIn, isFirstSignIn, redirectUri]
   );
 
   useEffect(() => {
+    console.log("Auth Response:", JSON.stringify(response, null, 2));
+
     if (response?.type === "success" && response.params.code) {
+      console.log(
+        "Success! Got auth code:",
+        response.params.code.substring(0, 20) + "..."
+      );
       handleAuthCode(response.params.code);
     } else if (response?.type === "error") {
+      console.error("OAuth Error:", response.error);
       Toast.show({
         type: "error",
         text1: "Authentication Failed",
         text2: response.error?.description || "Google authentication failed",
       });
+    } else if (response) {
+      console.log("Response type:", response.type);
     }
   }, [response, handleAuthCode]);
 
