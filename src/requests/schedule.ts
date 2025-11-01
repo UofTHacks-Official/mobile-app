@@ -3,8 +3,8 @@ import { devLog } from "@/utils/logger";
 import axios from "./axios";
 
 const scheduleEndpoints = {
-  fetchAllSchedules: "/api/v13/hackers/schedules",
-  fetchScheduleByID: "/api/v13/hackers/schedules/{id}",
+  fetchAllSchedules: "/api/v13/hackers/schedules/",
+  fetchScheduleByID: "/api/v13/hackers/schedules/{id}/",
 };
 // Fetch all scheduled events
 export async function fetchAllSchedules(): Promise<Schedule[]> {

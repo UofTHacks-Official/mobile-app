@@ -8,7 +8,7 @@ export interface CombinedPhotoResult {
 
 export class PhotoCombiner {
   /**
-   * Combines front and back photos BeReal-style
+   * Combines front and back photos
    * Front photo as small overlay on top-left of back photo
    */
   static async combinePhotos(

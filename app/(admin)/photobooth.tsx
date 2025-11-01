@@ -174,7 +174,7 @@ export default function PhotoboothPage() {
 
       Alert.alert(
         "Photos Saved!",
-        `Your BeReal-style photos have been uploaded successfully!`,
+        `Your photos have been uploaded successfully!`,
         [
           {
             text: "Take Another",
@@ -249,7 +249,7 @@ export default function PhotoboothPage() {
         {photoPairs.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className={cn("text-center", themeStyles.secondaryText)}>
-              No photos yet. Take your first BeReal!
+              No photos yet. Take your first PhotoBooth Photo!
             </Text>
           </View>
         ) : (
