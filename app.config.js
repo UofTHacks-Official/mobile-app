@@ -20,10 +20,14 @@ export default ({ config }) => {
       icon: "./assets/images/icon.png",
       supportsTablet: true,
       bundleIdentifier: "com.uofthacks.uoft-hacks",
-      buildNumber: "2",
+      buildNumber: "3",
       infoPlist: {
-        NSCameraUsageDescription: "This app uses the camera to scan QR codes.",
+        NSCameraUsageDescription:
+          "This app uses the camera to take photobooth pictures and capture memories during your hackathon experience.",
         ITSAppUsesNonExemptEncryption: false,
+      },
+      config: {
+        usesNonExemptEncryption: false,
       },
     },
     android: {
@@ -121,5 +125,8 @@ export default ({ config }) => {
       },
     },
     owner: "uofthacks",
+    privacy: "https://uofthacks.com/privacypolicy",
+    description:
+      "The official UofTHacks mobile app for event schedules, photobooth memories, and hackathon updates.",
   };
 };
