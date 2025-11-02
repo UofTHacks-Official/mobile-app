@@ -126,7 +126,7 @@ export default ({ config }) => {
         projectId: "19c11133-81b6-44cb-908b-61cf473cbbc9",
       },
     },
-    owner: "uofthacks",
+    owner: "mzhang055", // Temporarily changed for dev testing - change back to "uofthacks" for production
     privacy: "https://uofthacks.com/privacypolicy",
     description:
       "The official UofTHacks mobile app for event schedules, photobooth memories, and hackathon updates.",
