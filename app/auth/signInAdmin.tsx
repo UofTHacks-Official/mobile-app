@@ -37,8 +37,9 @@ const SignInAdmin = () => {
   const adminLoginMutation = useAdminLogin();
   const googleAuthMutation = useGoogleAuthAdmin();
 
-  // Use explicit Expo proxy URL - makeRedirectUri generates custom scheme which Google rejects
-  const redirectUri = "https://auth.expo.io/@mzhang055/uoft-hacks";
+  const clientIdPrefix =
+    process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.split(".")[0];
+  const redirectUri = `com.googleusercontent.apps.${clientIdPrefix}:/oauth2redirect/google`;
   const [codeVerifier, setCodeVerifier] = useState<string>("");
 
   const discovery = {
@@ -47,7 +48,7 @@ const SignInAdmin = () => {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+      clientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
       scopes: ["openid", "profile", "email"],
       redirectUri,
       extraParams: {

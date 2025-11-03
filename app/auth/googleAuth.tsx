@@ -17,7 +17,9 @@ const GoogleAuth = () => {
   const { signIn, isFirstSignIn } = useAuth();
   const googleAuthMutation = useGoogleAuthHacker();
 
-  const redirectUri = "https://auth.expo.io/@mzhang055/uoft-hacks";
+  const clientIdPrefix =
+    process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.split(".")[0];
+  const redirectUri = `com.googleusercontent.apps.${clientIdPrefix}:/oauth2redirect/google`;
 
   console.log("Redirect URI:", redirectUri);
 
@@ -29,7 +31,7 @@ const GoogleAuth = () => {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+      clientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
       scopes: ["openid", "profile", "email"],
       redirectUri,
       extraParams: {

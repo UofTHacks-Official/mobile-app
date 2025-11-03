@@ -25,6 +25,14 @@ export default ({ config }) => {
         NSCameraUsageDescription:
           "This app uses the camera to take photobooth pictures and capture memories during your hackathon experience.",
         ITSAppUsesNonExemptEncryption: false,
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: [
+              "com.uofthacks.uofthacks",
+              "com.googleusercontent.apps.268617867891-31798uq62begvrn2joouemkb2u5ojmhb",
+            ],
+          },
+        ],
       },
       config: {
         usesNonExemptEncryption: false,
