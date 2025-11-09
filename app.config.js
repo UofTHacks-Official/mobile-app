@@ -105,7 +105,8 @@ export default ({ config }) => {
       [
         "expo-camera",
         {
-          cameraPermission: "Allow UoftHacks to access your camera",
+          cameraPermission:
+            "The app uses your camera to take photobooth pictures during the hackathon.",
           microphonePermission: "Allow UoftHacks to access your microphone",
           recordAudioAndroid: true,
         },

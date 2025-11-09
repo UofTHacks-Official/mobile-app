@@ -30,7 +30,7 @@ export default function QRCodeScanner({
           className="bg-uoft__orange px-6 py-3 rounded-lg"
           onPress={requestPermission}
         >
-          <Text className="text-white font-bold">Grant Permission</Text>
+          <Text className="text-white font-bold">Continue</Text>
         </TouchableOpacity>
         {onCancel && (
           <TouchableOpacity

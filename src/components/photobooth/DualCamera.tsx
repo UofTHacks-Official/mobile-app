@@ -36,7 +36,7 @@ function DualCamera({
           onPress={requestPermission}
           className="bg-blue-500 px-4 py-2 rounded-lg"
         >
-          <Text className="text-white font-medium">Grant Permission</Text>
+          <Text className="text-white font-medium">Continue</Text>
         </TouchableOpacity>
       </View>
     );
