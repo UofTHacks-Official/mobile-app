@@ -44,6 +44,7 @@ const CustomTabBar = ({
   // Use useMemo to recreate when routes change (e.g., feature flags)
   const animatedValues = useMemo(
     () => state.routes.map(() => new Animated.Value(0)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.routes.length]
   );
 
