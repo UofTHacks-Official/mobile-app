@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { schedulePushNotification } from "@/utils/notifications";
@@ -22,6 +23,7 @@ interface DashboardItem {
   description: string;
   icon: React.ComponentType<{ size: number; color: string }>;
   backgroundColor: string;
+  enabled: boolean;
   route?: string;
   onPress?: () => void;
   params?: {
@@ -38,6 +40,7 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     description: "Scan volunteer QR codes",
     icon: ScanQrCode,
     backgroundColor: "bg-uoft_primary_blue",
+    enabled: FEATURE_FLAGS.ENABLE_QR_SCANNER,
     route: "/(admin)/qr",
   },
   {
@@ -46,6 +49,7 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     description: "Manage event schedules",
     icon: Calendar,
     backgroundColor: "bg-uoft_yellow",
+    enabled: FEATURE_FLAGS.ENABLE_SCHEDULE,
     route: "/(admin)/schedule",
   },
   {
@@ -54,6 +58,7 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     description: "Manage hacker bucks",
     icon: MoneyWavy,
     backgroundColor: "bg-uoft_accent_purple",
+    enabled: FEATURE_FLAGS.ENABLE_HACKERBUCKS,
     route: "/hackerbucks",
   },
   {
@@ -62,6 +67,7 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     description: "Send a notification from phone async",
     icon: BellPlus,
     backgroundColor: "bg-uoft_grey_light",
+    enabled: FEATURE_FLAGS.ENABLE_NOTIFICATION_EXAMPLE,
     onPress: schedulePushNotification,
   },
   {
@@ -70,6 +76,7 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     description: "Navigate to non-existent route",
     icon: AlertTriangle,
     backgroundColor: "bg-red-500",
+    enabled: FEATURE_FLAGS.ENABLE_404_TEST,
     route: "/non-existent-route",
   },
 ];
@@ -134,24 +141,28 @@ const DashboardCard = ({
   );
 };
 
-const DashboardGrid = ({ items }: { items: DashboardItem[] }) => (
-  <View className="mt-12 gap-y-6">
-    {items.map((item) => (
-      <DashboardCard
-        key={item.id}
-        item={item}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          if (item.onPress) {
-            item.onPress();
-          } else if (item.route) {
-            router.push(item.route as any);
-          }
-        }}
-      />
-    ))}
-  </View>
-);
+const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
+  const enabledItems = items.filter((item) => item.enabled);
+
+  return (
+    <View className="mt-12 gap-y-6">
+      {enabledItems.map((item) => (
+        <DashboardCard
+          key={item.id}
+          item={item}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            if (item.onPress) {
+              item.onPress();
+            } else if (item.route) {
+              router.push(item.route as any);
+            }
+          }}
+        />
+      ))}
+    </View>
+  );
+};
 
 const ModalTestWidget = () => {
   const handleModalTestPress = () => {
@@ -207,7 +218,7 @@ const AdminDashboard = () => {
           themeStyles={themeStyles}
         />
         <DashboardGrid items={DASHBOARD_ITEMS} />
-        <ModalTestWidget />
+        {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
       </View>
       {/* <View className="items-center justify-center pb-8">
         <LottieView

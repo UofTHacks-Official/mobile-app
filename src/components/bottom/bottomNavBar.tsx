@@ -16,7 +16,7 @@ import {
   ScanQrCode,
   X,
 } from "lucide-react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -41,9 +41,12 @@ const CustomTabBar = ({
   const closeNavBar = useBottomNavBarStore((s) => s.closeNavBar);
 
   // Animation values for each tab
-  const animatedValues = useRef(
-    state.routes.map(() => new Animated.Value(0))
-  ).current;
+  // Use useMemo to recreate when routes change (e.g., feature flags)
+  const animatedValues = useMemo(
+    () => state.routes.map(() => new Animated.Value(0)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.routes.length]
+  );
 
   // Animation for expansion
   const expandAnimation = useRef(new Animated.Value(0)).current;
@@ -202,7 +205,8 @@ const CustomTabBar = ({
             pointerEvents={isExpanded ? "auto" : "none"}
           >
             <View className="space-y-2">
-              {FEATURE_FLAGS.ENABLE_EVENT_CHECKIN && (
+              {(FEATURE_FLAGS.ENABLE_QR_SCANNER ||
+                FEATURE_FLAGS.ENABLE_EVENT_CHECKIN) && (
                 <TouchableOpacity
                   onPress={() => handleScanOption("qr")}
                   className="rounded-xl p-2 flex-row items-center justify-between"
@@ -222,7 +226,8 @@ const CustomTabBar = ({
                   />
                 </TouchableOpacity>
               )}
-              {FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
+              {(FEATURE_FLAGS.ENABLE_QR_SCANNER ||
+                FEATURE_FLAGS.ENABLE_HACKERBUCKS) && (
                 <TouchableOpacity
                   onPress={() => handleScanOption("hackerbucks")}
                   className="rounded-xl p-2 flex-row items-center justify-between"
@@ -242,7 +247,8 @@ const CustomTabBar = ({
                   />
                 </TouchableOpacity>
               )}
-              {!FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
+              {!FEATURE_FLAGS.ENABLE_QR_SCANNER &&
+                !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
                 !FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
                   <Text
                     className={cn(

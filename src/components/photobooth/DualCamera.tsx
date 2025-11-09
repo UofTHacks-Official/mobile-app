@@ -1,6 +1,10 @@
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
-import { useRef, useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { useRef, useState, useEffect } from "react";
+import { Alert, Text, TouchableOpacity, View, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
+import CameraOwlSvg from "../../../assets/images/animals/camera_owl.svg";
 
 interface DualCameraProps {
   onPhotosCapture: (frontPhoto: string, backPhoto: string) => void;
@@ -11,11 +15,21 @@ function DualCamera({
   onPhotosCapture,
   isProcessing = false,
 }: DualCameraProps) {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const [permission, requestPermission] = useCameraPermissions();
   const [currentCamera, setCurrentCamera] = useState<CameraType>("front");
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+
+  // Auto-request permission on mount (no pre-dialog)
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check permissions
   if (!permission) {
@@ -26,19 +40,50 @@ function DualCamera({
     );
   }
 
+  // Show full screen AFTER permission is denied (not before)
   if (!permission.granted) {
     return (
-      <View className="w-80 h-80 bg-gray-100 rounded-2xl items-center justify-center p-4">
-        <Text className="text-center mb-4 text-gray-700">
-          Camera access needed
-        </Text>
-        <TouchableOpacity
-          onPress={requestPermission}
-          className="bg-blue-500 px-4 py-2 rounded-lg"
-        >
-          <Text className="text-white font-medium">Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 px-8">
+          <View className="flex-1 justify-center items-center">
+            <View className="mb-8">
+              <CameraOwlSvg width={200} height={200} />
+            </View>
+
+            <Text
+              className={cn(
+                "text-2xl font-semibold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Camera Access Required
+            </Text>
+            <Text
+              className={cn("text-center px-4 mb-8", themeStyles.secondaryText)}
+            >
+              To participate in the photobooth, please enable camera access in
+              your device settings.
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => Linking.openSettings()}
+              className={cn(
+                "py-4 px-8 rounded-lg w-full items-center",
+                themeStyles.primaryButtonColorBg
+              )}
+            >
+              <Text
+                className={cn(
+                  "font-semibold text-base",
+                  themeStyles.primaryText1
+                )}
+              >
+                Open Settings
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 

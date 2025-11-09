@@ -22,6 +22,11 @@ export const FEATURE_FLAGS = {
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,
   ENABLE_SCHEDULE: true,
+
+  // Dashboard test features
+  ENABLE_NOTIFICATION_EXAMPLE: false,
+  ENABLE_404_TEST: false,
+  ENABLE_MODAL_TEST_WIDGET: false,
 } as const;
 
 // Helper function to check if a feature is enabled
