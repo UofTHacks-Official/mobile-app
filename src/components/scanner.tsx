@@ -3,8 +3,12 @@ import {
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
-import { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useState, useEffect } from "react";
+import { Text, TouchableOpacity, View, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
+import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
 
 export default function QRCodeScanner({
   onScanned,
@@ -13,34 +17,80 @@ export default function QRCodeScanner({
   onScanned?: (data: string) => void;
   onCancel?: () => void;
 }) {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+
+  // Auto-request permission on mount (no pre-dialog)
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!permission) {
     return <View className="flex-1 bg-black" />;
   }
 
+  // Show full screen AFTER permission is denied (not before)
   if (!permission.granted) {
     return (
-      <View className="flex-1 justify-center items-center bg-black">
-        <Text className="text-white mb-4">
-          We need your permission to use the camera
-        </Text>
-        <TouchableOpacity
-          className="bg-uoft__orange px-6 py-3 rounded-lg"
-          onPress={requestPermission}
-        >
-          <Text className="text-white font-bold">Continue</Text>
-        </TouchableOpacity>
-        {onCancel && (
-          <TouchableOpacity
-            className="mt-4 px-6 py-3 rounded-lg border border-white"
-            onPress={onCancel}
-          >
-            <Text className="text-white font-bold">Cancel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 px-8">
+          <View className="flex-1 justify-center items-center">
+            <View className="mb-8">
+              <CameraOwlSvg width={200} height={200} />
+            </View>
+
+            <Text
+              className={cn(
+                "text-2xl font-semibold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Camera Access Required
+            </Text>
+            <Text
+              className={cn("text-center px-4 mb-8", themeStyles.secondaryText)}
+            >
+              To scan QR codes, please enable camera access in your device
+              settings.
+            </Text>
+
+            <TouchableOpacity
+              className={cn(
+                "py-4 px-8 rounded-lg w-full items-center mb-4",
+                themeStyles.primaryButtonColorBg
+              )}
+              onPress={() => Linking.openSettings()}
+            >
+              <Text
+                className={cn("font-bold text-base", themeStyles.primaryText1)}
+              >
+                Open Settings
+              </Text>
+            </TouchableOpacity>
+
+            {onCancel && (
+              <TouchableOpacity
+                className={cn(
+                  "py-4 px-8 rounded-lg w-full items-center border-2",
+                  isDark ? "border-gray-600" : "border-gray-300"
+                )}
+                onPress={onCancel}
+              >
+                <Text
+                  className={cn("font-bold text-base", themeStyles.primaryText)}
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
