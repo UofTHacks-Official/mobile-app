@@ -7,7 +7,7 @@
 
 export const FEATURE_FLAGS = {
   // QR Scanner features
-  ENABLE_QR_SCANNER: true,
+  ENABLE_QR_SCANNER: false,
   ENABLE_EVENT_CHECKIN: false,
 
   // HackerBucks features
