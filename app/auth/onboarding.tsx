@@ -1,7 +1,14 @@
-import { useTheme } from "@/context/themeContext";
-import { useAuth } from "@/context/authContext";
-import { cn, getThemeStyles } from "@/utils/theme";
+import { AnimatedBell, NotificationCard } from "@/components/notifications";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
+import { useAuth } from "@/context/authContext";
+import { useTheme } from "@/context/themeContext";
+import { useUserTypeStore } from "@/reducers/userType";
+import { registerPushToken } from "@/requests/push_token";
+import { devError, devLog } from "@/utils/logger";
+import { registerForPushNotificationsAsync } from "@/utils/notifications";
+import { cn, getThemeStyles } from "@/utils/theme";
+import { Camera } from "expo-camera";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { ArrowLeft, Calendar, Camera as CameraIcon } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -13,20 +20,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
+import LionSvg from "../../assets/images/icons/Goat.svg";
+import GoatSvg from "../../assets/images/icons/Hed.svg";
+import PinkSvg from "../../assets/images/icons/deer.svg";
 import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
-import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
-import GoatSvg from "../../assets/images/animals/goat.svg";
-import LionSvg from "../../assets/images/animals/lion.svg";
-import PinkSvg from "../../assets/images/animals/pink.svg";
-import { Camera } from "expo-camera";
-import { registerForPushNotificationsAsync } from "@/utils/notifications";
-import { registerPushToken } from "@/requests/push_token";
-import { useUserTypeStore } from "@/reducers/userType";
-import { devLog, devError } from "@/utils/logger";
-import Toast from "react-native-toast-message";
-import * as Haptics from "expo-haptics";
-import { NotificationCard, AnimatedBell } from "@/components/notifications";
 
 interface OnboardingStep {
   id: number;
@@ -130,25 +130,29 @@ export default function OnboardingPage() {
         return <CameraIcon color={themeStyles.iconColor} size={48} />;
       case "Notifications":
         return (
-          <View className="w-full gap-y-3">
-            <NotificationCard
-              icon={<PinkSvg width={40} height={40} />}
-              title="Judging is starting in 30 minutes!"
-              body="Check your judging schedule"
-              timestamp="2m"
-            />
+          <View className="w-full gap-y-2">
+            <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
+              <NotificationCard
+                icon={<PinkSvg width={40} height={40} />}
+                title="Judging is starting in 30 minutes!"
+                body="Check your judging schedule"
+                timestamp="2m"
+              />
+            </View>
             <NotificationCard
               icon={<LionSvg width={40} height={40} />}
               title="📸 Photo Booth"
               body="Capture your 3am hacking setup"
               timestamp="1h"
             />
-            <NotificationCard
-              icon={<GoatSvg width={40} height={40} />}
-              title="Closing Ceremony has been delayed 10 minutes!"
-              body="Technical difficulties :("
-              timestamp="2h"
-            />
+            <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
+              <NotificationCard
+                icon={<GoatSvg width={40} height={40} />}
+                title="Closing Ceremony has been delayed 10 minutes!"
+                body="Technical difficulties :("
+                timestamp="2h"
+              />
+            </View>
           </View>
         );
       case "Camera":
@@ -296,34 +300,18 @@ export default function OnboardingPage() {
               />
             </View>
           </View>
-          {currentStepData.skipEnabled && (
-            <Pressable
-              className="py-2 ml-2"
-              onPress={handleSkip}
-              accessibilityLabel="Skip"
-            >
-              <Text
-                className={cn(
-                  "underline text-gray-500",
-                  themeStyles.skipButtonColor
-                )}
-              >
-                Skip
-              </Text>
-            </Pressable>
-          )}
         </View>
-        <View className="flex-1 justify-center px-6">
+        <View className="flex-1 justify-center px-1">
           {currentStepData.feature === "Notifications" ? (
             /* Notifications layout: Bell icon, title, then cards */
             <>
-              <View className="mb-6">
-                <View className="mb-2">
-                  <AnimatedBell color={themeStyles.iconColor} size={36} />
+              <View className="mb-4">
+                <View className="mb-1">
+                  <AnimatedBell color={themeStyles.iconColor} size={32} />
                 </View>
                 <Text
                   className={cn(
-                    "text-3xl font-bold mb-2",
+                    "text-3xl font-bold mb-1",
                     themeStyles.primaryText
                   )}
                 >

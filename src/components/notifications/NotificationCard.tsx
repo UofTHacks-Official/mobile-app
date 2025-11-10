@@ -36,13 +36,13 @@ export const NotificationCard = ({
         {/* Content Container */}
         <View className="flex-1">
           <Text
-            className="text-lg font-onest-bold mb-1 text-white"
+            className="text-sm font-onest-bold mb-1 text-white"
             numberOfLines={1}
           >
             {title}
           </Text>
           <Text
-            className="text-sm font-opensans text-gray-300"
+            className="text-xs font-opensans text-gray-300"
             numberOfLines={1}
           >
             {body}
