@@ -101,7 +101,7 @@ const SignInAdmin = () => {
       router.dismissAll();
 
       if (isFirstSignIn) {
-        router.replace("/auth/congrats");
+        router.replace("/auth/onboarding");
       } else {
         router.replace("/(admin)");
       }
