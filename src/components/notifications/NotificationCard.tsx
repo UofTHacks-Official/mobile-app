@@ -1,5 +1,4 @@
 import { useTheme } from "@/context/themeContext";
-import { cn, getThemeStyles } from "@/utils/theme";
 import { BlurView } from "expo-blur";
 import { View, Text, Pressable } from "react-native";
 
@@ -19,7 +18,6 @@ export const NotificationCard = ({
   onPress,
 }: NotificationCardProps) => {
   const { isDark } = useTheme();
-  const themeStyles = getThemeStyles(isDark);
 
   const Content = () => (
     <BlurView

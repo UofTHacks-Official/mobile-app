@@ -10,7 +10,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { ArrowLeft, Calendar, Camera as CameraIcon } from "lucide-react-native";
+import { ArrowLeft, Calendar } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -245,7 +245,6 @@ export default function OnboardingPage() {
 
   const handleSkip = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const currentStepData = stepsWithIcons[currentStep];
 
     if (currentStep === onboardingSteps.length - 1) {
       // Last screen - complete onboarding
