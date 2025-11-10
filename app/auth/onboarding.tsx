@@ -3,12 +3,7 @@ import { useAuth } from "@/context/authContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { router } from "expo-router";
-import {
-  ArrowLeft,
-  Calendar,
-  Camera as CameraIcon,
-  Bell,
-} from "lucide-react-native";
+import { ArrowLeft, Calendar, Camera as CameraIcon } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -31,7 +26,7 @@ import { useUserTypeStore } from "@/reducers/userType";
 import { devLog, devError } from "@/utils/logger";
 import Toast from "react-native-toast-message";
 import * as Haptics from "expo-haptics";
-import { NotificationCard } from "@/components/notifications";
+import { NotificationCard, AnimatedBell } from "@/components/notifications";
 
 interface OnboardingStep {
   id: number;
@@ -324,7 +319,7 @@ export default function OnboardingPage() {
             <>
               <View className="mb-6">
                 <View className="mb-2">
-                  <Bell color={themeStyles.iconColor} size={36} />
+                  <AnimatedBell color={themeStyles.iconColor} size={36} />
                 </View>
                 <Text
                   className={cn(
