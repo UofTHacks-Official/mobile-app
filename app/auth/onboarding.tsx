@@ -25,8 +25,8 @@ import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
 
 import GoatSvg from "../../assets/images/icons/Goat.svg";
 import HedSvg from "../../assets/images/icons/Hed.svg";
+import DeerSvg from "../../assets/images/icons/deer.svg";
 
-import PinkSvg from "../../assets/images/icons/deer.svg";
 import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
 
@@ -122,14 +122,14 @@ export default function OnboardingPage() {
           <View className="w-full gap-y-2">
             <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
               <NotificationCard
-                icon={<PinkSvg width={40} height={40} />}
+                icon={<DeerSvg width={40} height={40} />}
                 title="Judging is starting in 30 minutes!"
                 body="Check your judging schedule"
                 timestamp="2h"
               />
             </View>
             <NotificationCard
-              icon={<LionSvg width={40} height={40} />}
+              icon={<HedSvg width={40} height={40} />}
               title="📸 Photo Booth"
               body="Capture your 3am hacking setup"
               timestamp="1h"
