@@ -22,8 +22,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
-import LionSvg from "../../assets/images/icons/Goat.svg";
-import GoatSvg from "../../assets/images/icons/Hed.svg";
+
+import GoatSvg from "../../assets/images/icons/Goat.svg";
+import HedSvg from "../../assets/images/icons/Hed.svg";
+
 import PinkSvg from "../../assets/images/icons/deer.svg";
 import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
