@@ -41,10 +41,7 @@ export const NotificationCard = ({
           >
             {title}
           </Text>
-          <Text
-            className="text-xs font-opensans text-gray-300"
-            numberOfLines={1}
-          >
+          <Text className="text-xs font-opensans text-white" numberOfLines={1}>
             {body}
           </Text>
         </View>
@@ -52,7 +49,7 @@ export const NotificationCard = ({
         {/* Timestamp */}
         {timestamp && (
           <View className="ml-3">
-            <Text className="text-xs font-opensans text-gray-400">
+            <Text className="text-xs font-opensans text-gray-100">
               {timestamp}
             </Text>
           </View>

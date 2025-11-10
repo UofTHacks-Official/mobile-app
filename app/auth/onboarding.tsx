@@ -63,17 +63,6 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
     });
   }
 
-  if (FEATURE_FLAGS.ENABLE_PHOTOBOOTH) {
-    steps.push({
-      id: steps.length,
-      icon: null,
-      title: "Capture Memories",
-      description:
-        "Use the photobooth feature to take fun photos during the event and share your hackathon experience!",
-      feature: "Photobooth",
-    });
-  }
-
   // Add notification permission screen
   steps.push({
     id: steps.length,
@@ -126,8 +115,6 @@ export default function OnboardingPage() {
         );
       case "Schedule":
         return <Calendar color={themeStyles.iconColor} size={48} />;
-      case "Photobooth":
-        return <CameraIcon color={themeStyles.iconColor} size={48} />;
       case "Notifications":
         return (
           <View className="w-full gap-y-2">
@@ -136,7 +123,7 @@ export default function OnboardingPage() {
                 icon={<PinkSvg width={40} height={40} />}
                 title="Judging is starting in 30 minutes!"
                 body="Check your judging schedule"
-                timestamp="2m"
+                timestamp="2h"
               />
             </View>
             <NotificationCard
@@ -150,7 +137,7 @@ export default function OnboardingPage() {
                 icon={<GoatSvg width={40} height={40} />}
                 title="Closing Ceremony has been delayed 10 minutes!"
                 body="Technical difficulties :("
-                timestamp="2h"
+                timestamp="2m"
               />
             </View>
           </View>
