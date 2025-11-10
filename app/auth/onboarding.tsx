@@ -3,7 +3,12 @@ import { useAuth } from "@/context/authContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { router } from "expo-router";
-import { ArrowLeft, Calendar, Camera as CameraIcon } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Calendar,
+  Camera as CameraIcon,
+  Bell,
+} from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +21,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
 import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
+import GoatSvg from "../../assets/images/animals/goat.svg";
+import LionSvg from "../../assets/images/animals/lion.svg";
+import PinkSvg from "../../assets/images/animals/pink.svg";
 import { Camera } from "expo-camera";
 import { registerForPushNotificationsAsync } from "@/utils/notifications";
 import { registerPushToken } from "@/requests/push_token";
@@ -23,6 +31,7 @@ import { useUserTypeStore } from "@/reducers/userType";
 import { devLog, devError } from "@/utils/logger";
 import Toast from "react-native-toast-message";
 import * as Haptics from "expo-haptics";
+import { NotificationCard } from "@/components/notifications";
 
 interface OnboardingStep {
   id: number;
@@ -74,9 +83,9 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
   steps.push({
     id: steps.length,
     icon: null,
-    title: "Allow notifications",
+    title: "Get Notified",
     description:
-      "We only send notifications for food alerts, event details, and important updates. No spam, promise!",
+      "Keep up with event invites, updates, and chats from your friends.",
     feature: "Notifications",
     requiresAction: true,
     actionLabel: "Enable push notifications",
@@ -125,7 +134,28 @@ export default function OnboardingPage() {
       case "Photobooth":
         return <CameraIcon color={themeStyles.iconColor} size={48} />;
       case "Notifications":
-        return <CameraOwlSvg width={200} height={200} />;
+        return (
+          <View className="w-full gap-y-3">
+            <NotificationCard
+              icon={<PinkSvg width={40} height={40} />}
+              title="Judging is starting in 30 minutes!"
+              body="Check your judging schedule"
+              timestamp="2m"
+            />
+            <NotificationCard
+              icon={<LionSvg width={40} height={40} />}
+              title="📸 Photo Booth"
+              body="Capture your 3am hacking setup"
+              timestamp="1h"
+            />
+            <NotificationCard
+              icon={<GoatSvg width={40} height={40} />}
+              title="Closing Ceremony has been delayed 10 minutes!"
+              body="Technical difficulties :("
+              timestamp="2h"
+            />
+          </View>
+        );
       case "Camera":
         return <CameraOwlSvg width={200} height={200} />;
       default:
@@ -288,36 +318,66 @@ export default function OnboardingPage() {
             </Pressable>
           )}
         </View>
-        <View className="flex-1 justify-center items-center px-4">
-          {/* Icon/SVG */}
-          <View className="mb-8 items-center">{currentStepData.icon}</View>
-
-          {/* Title and Description */}
-          <View className="items-center">
-            <Text
-              className={cn(
-                "text-2xl font-bold text-center mb-4",
-                themeStyles.primaryText
-              )}
-            >
-              {currentStepData.title}
-            </Text>
-            <Text
-              className={cn(
-                "text-base text-center opacity-80",
-                themeStyles.primaryText
-              )}
-            >
-              {currentStepData.description}
-            </Text>
-          </View>
+        <View className="flex-1 justify-center px-6">
+          {currentStepData.feature === "Notifications" ? (
+            /* Notifications layout: Bell icon, title, then cards */
+            <>
+              <View className="mb-6">
+                <View className="mb-2">
+                  <Bell color={themeStyles.iconColor} size={36} />
+                </View>
+                <Text
+                  className={cn(
+                    "text-3xl font-bold mb-2",
+                    themeStyles.primaryText
+                  )}
+                >
+                  {currentStepData.title}
+                </Text>
+                <Text
+                  className={cn(
+                    "text-base opacity-80",
+                    themeStyles.primaryText
+                  )}
+                >
+                  {currentStepData.description}
+                </Text>
+              </View>
+              <View className="w-full">{currentStepData.icon}</View>
+            </>
+          ) : (
+            /* Default layout: Icon first, then title */
+            <>
+              <View className="mb-8 items-center w-full">
+                {currentStepData.icon}
+              </View>
+              <View className="items-center">
+                <Text
+                  className={cn(
+                    "text-2xl font-bold text-center mb-4",
+                    themeStyles.primaryText
+                  )}
+                >
+                  {currentStepData.title}
+                </Text>
+                <Text
+                  className={cn(
+                    "text-base text-center opacity-80",
+                    themeStyles.primaryText
+                  )}
+                >
+                  {currentStepData.description}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
         {/* Navigation Buttons */}
         <View className="pb-4">
           <Pressable onPress={handleNext} disabled={isLoading}>
             <View
               className={cn(
-                "py-4 px-2 rounded-full mb-4 items-center",
+                "py-4 px-2 rounded-full mb-2 items-center",
                 themeStyles.primaryButtonColorBg
               )}
             >
@@ -336,6 +396,28 @@ export default function OnboardingPage() {
               )}
             </View>
           </Pressable>
+
+          {/* Not Now button - only for permission screens */}
+          {currentStepData.requiresAction && (
+            <Pressable
+              onPress={handleSkip}
+              disabled={isLoading}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <View className="py-4 px-2 items-center">
+                <Text
+                  className={cn(
+                    "text-center font-semibold",
+                    themeStyles.secondaryText
+                  )}
+                >
+                  Not Now
+                </Text>
+              </View>
+            </Pressable>
+          )}
         </View>
       </View>
     </SafeAreaView>
