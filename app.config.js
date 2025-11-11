@@ -24,6 +24,10 @@ export default ({ config }) => {
       infoPlist: {
         NSCameraUsageDescription:
           "This app uses the camera to take photobooth pictures and capture memories during your hackathon experience.",
+        NSPhotoLibraryAddUsageDescription:
+          "This app needs permission to save your photobooth pictures to your photo library.",
+        NSPhotoLibraryUsageDescription:
+          "This app needs permission to access your photo library to share photobooth pictures.",
         ITSAppUsesNonExemptEncryption: false,
       },
       config: {
@@ -41,6 +45,9 @@ export default ({ config }) => {
       permissions: [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
       ],
       package: "com.uofthacks.uofthacks",
     },
@@ -109,6 +116,16 @@ export default ({ config }) => {
             "The app uses your camera to take photobooth pictures during the hackathon.",
           microphonePermission: "Allow UoftHacks to access your microphone",
           recordAudioAndroid: true,
+        },
+      ],
+      [
+        "expo-media-library",
+        {
+          photosPermission:
+            "Allow UoftHacks to save your photobooth pictures to your photo library.",
+          savePhotosPermission:
+            "Allow UoftHacks to save your photobooth pictures.",
+          isAccessMediaLocationEnabled: true,
         },
       ],
     ],

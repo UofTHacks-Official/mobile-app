@@ -199,7 +199,7 @@ export default function PhotoboothPage() {
     setRefreshing(false);
   };
 
-  const handleSave = async () => {
+  const handleUploadAndViewGallery = async () => {
     if (!capturedPhotos) return;
 
     // Check if we're within the active 10-minute window
@@ -228,35 +228,19 @@ export default function PhotoboothPage() {
         notificationBody || undefined
       );
 
+      // Clear captured photos and switch to gallery
+      setCapturedPhotos(null);
+      setViewMode("gallery");
+      setOffset(0);
+      await loadGallery();
+
       const timeRemaining = getTimeRemaining();
       const minutesRemaining = Math.floor(timeRemaining / 60);
       const secondsRemaining = timeRemaining % 60;
 
       Alert.alert(
-        "Photos Saved!",
-        `Your photos have been uploaded successfully!\n\nTime remaining: ${minutesRemaining}m ${secondsRemaining}s`,
-        [
-          {
-            text: "Take Another",
-            onPress: () => {
-              setCapturedPhotos(null);
-              // Refresh gallery in background if in gallery view
-              if (viewMode === "gallery") {
-                setOffset(0);
-                loadGallery();
-              }
-            },
-          },
-          {
-            text: "View Gallery",
-            onPress: () => {
-              setCapturedPhotos(null);
-              setViewMode("gallery");
-              setOffset(0);
-              loadGallery();
-            },
-          },
-        ]
+        "Photos Uploaded!",
+        `Time remaining: ${minutesRemaining}m ${secondsRemaining}s`
       );
     } catch (error) {
       console.error("Photo upload error:", error);
@@ -416,7 +400,7 @@ export default function PhotoboothPage() {
             <CompositePhoto
               frontPhotoUri={capturedPhotos.front}
               backPhotoUri={capturedPhotos.back}
-              onSave={handleSave}
+              onUploadAndViewGallery={handleUploadAndViewGallery}
             />
           ) : (
             <DualCamera
