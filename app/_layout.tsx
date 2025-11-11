@@ -113,7 +113,7 @@ export default function RootLayout() {
         notificationReceivedListener.current.remove();
       }
     };
-  }, []);
+  }, [setNotificationBody]);
 
   return (
     <SafeAreaProvider>

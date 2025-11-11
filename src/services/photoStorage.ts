@@ -62,7 +62,7 @@ export class PhotoStorageService {
       const metadata = await response.json();
       console.log(`[Metadata] Found for ${photoId}:`, metadata);
       return metadata;
-    } catch (error) {
+    } catch (_error) {
       // Metadata file doesn't exist or failed to fetch - that's okay
       console.log(`[Metadata] Not found for ${photoId}`);
       return null;
