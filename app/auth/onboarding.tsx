@@ -71,7 +71,7 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
     icon: null,
     title: "Get Notified",
     description:
-      "Keep up with event invites, updates, and chats from your friends.",
+      "Keep up with important event updates and gain access to Photobooth.",
     feature: "Notifications",
     requiresAction: true,
     actionLabel: "Enable push notifications",
@@ -123,8 +123,8 @@ export default function OnboardingPage() {
             <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
               <NotificationCard
                 icon={<DeerSvg width={40} height={40} />}
-                title="Judging is starting in 30 minutes!"
-                body="Check your judging schedule"
+                title="Judging Schedules are out!"
+                body="Check your schedule in the dashboard"
                 timestamp="2h"
               />
             </View>
@@ -137,8 +137,8 @@ export default function OnboardingPage() {
             <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
               <NotificationCard
                 icon={<GoatSvg width={40} height={40} />}
-                title="Closing Ceremony has been delayed 10 minutes!"
-                body="Technical difficulties :("
+                title="Lunch is delayed by 10 minutes!"
+                body="Catering came late, we're hungry too"
                 timestamp="2m"
               />
             </View>
