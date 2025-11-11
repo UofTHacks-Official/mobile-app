@@ -85,8 +85,8 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     title: "Test Onboarding",
     description: "View onboarding screens with progress bar",
     icon: Presentation,
-    backgroundColor: "bg-uoft_green",
-    enabled: true,
+    backgroundColor: "bg-uoft_yellow",
+    enabled: FEATURE_FLAGS.ENABLE_ONBOARDING_TEST,
     route: "/auth/onboarding",
   },
 ];
