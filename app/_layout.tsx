@@ -12,6 +12,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "./globals.css";
 import { devLog } from "@/utils/logger";
+import { usePhotoboothNotificationStore } from "@/reducers/photoboothNotification";
 
 type ScheduleNotificationData = {
   route?: string;
@@ -34,6 +35,7 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useCustomFonts();
+  const { setNotificationBody } = usePhotoboothNotificationStore();
   const notificationResponseListener = useRef<
     Notifications.EventSubscription | undefined
   >(undefined);
@@ -70,12 +72,20 @@ export default function RootLayout() {
 
     notificationReceivedListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        const { data } = notification.request.content;
+        const { data, title, body } = notification.request.content;
         const notificationData = data as ScheduleNotificationData;
 
         devLog(
           `[Notification Received]: ${notification.request.content.title}`
         );
+
+        // Check if the notification title is "photobooth"
+        if (title?.toLowerCase() === "photobooth") {
+          devLog(`[Photobooth Notification]: Captured body: ${body}`);
+          if (body) {
+            setNotificationBody(body);
+          }
+        }
 
         Toast.show({
           type: "info",

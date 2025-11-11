@@ -6,12 +6,14 @@ interface CompositePhotoViewProps {
   frontPhotoUrl: string;
   backPhotoUrl: string;
   timestamp?: Date;
+  prompt?: string;
 }
 
 export default function CompositePhotoView({
   frontPhotoUrl,
   backPhotoUrl,
   timestamp,
+  prompt,
 }: CompositePhotoViewProps) {
   const [isSwapped, setIsSwapped] = useState(false);
 
@@ -144,6 +146,45 @@ export default function CompositePhotoView({
             resizeMode="cover"
           />
         </TouchableOpacity>
+
+        {/* Prompt Overlay (Bottom) */}
+        {prompt && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              borderBottomLeftRadius: 16,
+              borderBottomRightRadius: 16,
+              overflow: "hidden",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+            }}
+          >
+            <BlurView
+              intensity={80}
+              tint="dark"
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: "#FFF",
+                  textAlign: "center",
+                  textShadowColor: "rgba(0, 0, 0, 0.8)",
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 4,
+                }}
+              >
+                {prompt}
+              </Text>
+            </BlurView>
+          </View>
+        )}
       </View>
     </View>
   );

@@ -22,6 +22,7 @@ import {
 } from "../../src/services/photoStorage";
 import CompositePhotoView from "../../src/components/photobooth/CompositePhotoView";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { usePhotoboothNotificationStore } from "@/reducers/photoboothNotification";
 import { useScrollNavBar } from "@/utils/navigation";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -41,13 +42,17 @@ export default function PhotoboothPage() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [nextToken, setNextToken] = useState<string | undefined>();
+  const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
 
   // Bottom nav bar controls
   const { showNavBar, setPhotoboothViewMode } = useBottomNavBarStore();
   const { handleScroll: handleNavBarScroll } = useScrollNavBar();
+
+  // Photobooth notification state
+  const { notificationBody, isWithinActiveWindow, getTimeRemaining } =
+    usePhotoboothNotificationStore();
 
   // Header animation
   const headerAnimation = useRef(new Animated.Value(1)).current;
@@ -73,7 +78,26 @@ export default function PhotoboothPage() {
     }).start();
   }, [showHeader, headerAnimation]);
 
+  // Log notification body for testing
+  useEffect(() => {
+    if (notificationBody) {
+      console.log(
+        "[Photobooth Page] Received notification body:",
+        notificationBody
+      );
+    }
+  }, [notificationBody]);
+
   const handlePhotosCapture = async (frontPhoto: string, backPhoto: string) => {
+    // Check if we're within the active 10-minute window
+    if (!isWithinActiveWindow()) {
+      Alert.alert(
+        "PhotoBooth Closed",
+        "The photobooth session has ended. Please wait for the next notification to take photos."
+      );
+      return;
+    }
+
     try {
       setIsProcessing(true);
 
@@ -93,10 +117,11 @@ export default function PhotoboothPage() {
   const loadGallery = async () => {
     try {
       setLoading(true);
-      // Use paginated method - shows 5 most recent photos
-      const result = await PhotoStorageService.getPhotoGalleryPaginated(5);
+      // Reset to start - fetch first 10 most recent photos
+      const result = await PhotoStorageService.getPhotoGalleryPaginated(10, 0);
+
       setPhotoPairs(result.photos);
-      setNextToken(result.nextToken);
+      setOffset(10); // Next batch starts at offset 10
       setHasMore(result.hasMore);
     } catch (error) {
       console.error("Failed to load gallery:", error);
@@ -110,13 +135,15 @@ export default function PhotoboothPage() {
 
     try {
       setLoadingMore(true);
+      // Fetch next 10 photos starting from current offset
       const result = await PhotoStorageService.getPhotoGalleryPaginated(
-        5,
-        nextToken
+        10,
+        offset
       );
 
+      // Append to existing photos
       setPhotoPairs((prev) => [...prev, ...result.photos]);
-      setNextToken(result.nextToken);
+      setOffset(offset + 10); // Increment offset for next batch
       setHasMore(result.hasMore);
     } catch (error) {
       console.error("Failed to load more photos:", error);
@@ -156,6 +183,8 @@ export default function PhotoboothPage() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    setOffset(0); // Reset offset when refreshing
+    PhotoStorageService.clearPhotoCache(); // Clear cache to fetch fresh data
     await loadGallery();
     setRefreshing(false);
   };
@@ -163,28 +192,51 @@ export default function PhotoboothPage() {
   const handleSave = async () => {
     if (!capturedPhotos) return;
 
+    // Check if we're within the active 10-minute window
+    if (!isWithinActiveWindow()) {
+      Alert.alert(
+        "PhotoBooth Closed",
+        "The photobooth session has ended. Please wait for the next notification to take photos.",
+        [{ text: "OK", onPress: () => setCapturedPhotos(null) }]
+      );
+      return;
+    }
+
     try {
       setIsProcessing(true);
 
-      // Upload photos to Cloudflare R2
+      // Upload photos to Cloudflare R2 with the prompt if available
       await PhotoStorageService.uploadPhotoboothPhotos(
         capturedPhotos.front,
-        capturedPhotos.back
+        capturedPhotos.back,
+        notificationBody || undefined
       );
+
+      const timeRemaining = getTimeRemaining();
+      const minutesRemaining = Math.floor(timeRemaining / 60);
+      const secondsRemaining = timeRemaining % 60;
 
       Alert.alert(
         "Photos Saved!",
-        `Your photos have been uploaded successfully!`,
+        `Your photos have been uploaded successfully!\n\nTime remaining: ${minutesRemaining}m ${secondsRemaining}s`,
         [
           {
             text: "Take Another",
-            onPress: () => setCapturedPhotos(null),
+            onPress: () => {
+              setCapturedPhotos(null);
+              // Refresh gallery in background if in gallery view
+              if (viewMode === "gallery") {
+                setOffset(0);
+                loadGallery();
+              }
+            },
           },
           {
             text: "View Gallery",
             onPress: () => {
               setCapturedPhotos(null);
               setViewMode("gallery");
+              setOffset(0);
               loadGallery();
             },
           },
@@ -271,6 +323,7 @@ export default function PhotoboothPage() {
                   frontPhotoUrl={photo.frontPhotoUrl}
                   backPhotoUrl={photo.backPhotoUrl}
                   timestamp={photo.timestamp}
+                  prompt={photo.prompt}
                 />
               </View>
             ))}
