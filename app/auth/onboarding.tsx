@@ -262,7 +262,10 @@ export default function OnboardingPage() {
   const isLastStep = currentStep === onboardingSteps.length - 1;
 
   return (
-    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: isDark ? "#1C1C1E" : "#F6F5F8" }}
+    >
       <View className="flex-1 px-8">
         {/* Progress Bar and Skip Button */}
         <View className="flex flex-row items-center py-4">
@@ -289,17 +292,22 @@ export default function OnboardingPage() {
             </View>
           </View>
         </View>
-        <View className="flex-1 justify-center px-1">
+        <View
+          className={cn(
+            "flex-1 px-1",
+            currentStepData.feature === "Notifications" ? "" : "justify-center"
+          )}
+        >
           {currentStepData.feature === "Notifications" ? (
             /* Notifications layout: Bell icon, title, then cards */
             <>
-              <View className="mb-4">
-                <View className="mb-1">
+              <View className="mt-20 mb-20">
+                <View className="mb-2">
                   <AnimatedBell color={themeStyles.iconColor} size={32} />
                 </View>
                 <Text
                   className={cn(
-                    "text-3xl font-bold mb-1",
+                    "text-3xl font-bold mb-2",
                     themeStyles.primaryText
                   )}
                 >

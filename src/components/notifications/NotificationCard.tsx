@@ -1,5 +1,4 @@
 import { useTheme } from "@/context/themeContext";
-import { BlurView } from "expo-blur";
 import { View, Text, Pressable } from "react-native";
 
 interface NotificationCardProps {
@@ -20,12 +19,18 @@ export const NotificationCard = ({
   const { isDark } = useTheme();
 
   const Content = () => (
-    <BlurView
-      intensity={80}
-      tint={isDark ? "dark" : "light"}
+    <View
       className="overflow-hidden rounded-2xl h-20 w-full"
+      style={{
+        backgroundColor: isDark ? "#2C2C2E" : "#FFFFFF",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 2,
+      }}
     >
-      <View className="flex-row items-center px-4 py-4 bg-black/30 h-full">
+      <View className="flex-row items-center px-4 py-4 h-full">
         {/* Icon Container */}
         <View className="mr-3 w-12 h-12 items-center justify-center overflow-hidden">
           {icon}
@@ -33,27 +38,31 @@ export const NotificationCard = ({
 
         {/* Content Container */}
         <View className="flex-1">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text
+              className={`text-sm font-semibold flex-1 ${isDark ? "text-white" : "text-black"}`}
+              numberOfLines={1}
+            >
+              {title}
+            </Text>
+            {/* Timestamp */}
+            {timestamp && (
+              <Text
+                className={`text-xs ml-2 ${isDark ? "text-gray-400" : "text-gray-400"}`}
+              >
+                {timestamp}
+              </Text>
+            )}
+          </View>
           <Text
-            className="text-sm font-onest-bold mb-1 text-white"
+            className={`text-xs ${isDark ? "text-gray-300" : "text-gray-500"}`}
             numberOfLines={1}
           >
-            {title}
-          </Text>
-          <Text className="text-xs font-opensans text-white" numberOfLines={1}>
             {body}
           </Text>
         </View>
-
-        {/* Timestamp */}
-        {timestamp && (
-          <View className="ml-3">
-            <Text className="text-xs font-opensans text-gray-100">
-              {timestamp}
-            </Text>
-          </View>
-        )}
       </View>
-    </BlurView>
+    </View>
   );
 
   if (onPress) {
