@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
 import { BlurView } from "expo-blur";
+import { useAuth } from "@/context/authContext";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
@@ -16,6 +17,7 @@ export default function CompositePhotoView({
   prompt,
 }: CompositePhotoViewProps) {
   const [isSwapped, setIsSwapped] = useState(false);
+  const { adminData } = useAuth();
 
   const handleToggle = () => {
     setIsSwapped((prev) => !prev);
@@ -31,12 +33,40 @@ export default function CompositePhotoView({
       })
     : "";
 
+  // Get username - for now just admin, can extend for hackers later
+  const username = adminData?.admin_username || "User";
+
   return (
-    <View style={{ alignItems: "center" }}>
+    <View style={{ alignItems: "center", width: "96%" }}>
+      {/* Username and Prompt Above Photo */}
+      {prompt && (
+        <View style={{ alignSelf: "flex-start", marginBottom: 8 }}>
+          <Text
+            style={{
+              color: "#FFF",
+              fontSize: 14,
+              fontWeight: "700",
+              marginBottom: 2,
+            }}
+          >
+            {username}
+          </Text>
+          <Text
+            style={{
+              color: "#FFF",
+              fontSize: 14,
+              fontWeight: "400",
+            }}
+          >
+            {prompt}
+          </Text>
+        </View>
+      )}
+
       {/* Composite Photo Display */}
       <View
         style={{
-          width: "96%",
+          width: "100%",
           aspectRatio: 3 / 5,
           borderRadius: 16,
           overflow: "hidden",
@@ -146,45 +176,6 @@ export default function CompositePhotoView({
             resizeMode="cover"
           />
         </TouchableOpacity>
-
-        {/* Prompt Overlay (Bottom) */}
-        {prompt && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              borderBottomLeftRadius: 16,
-              borderBottomRightRadius: 16,
-              overflow: "hidden",
-              backgroundColor: "rgba(0, 0, 0, 0.6)",
-            }}
-          >
-            <BlurView
-              intensity={80}
-              tint="dark"
-              style={{
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: "600",
-                  color: "#FFF",
-                  textAlign: "center",
-                  textShadowColor: "rgba(0, 0, 0, 0.8)",
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 4,
-                }}
-              >
-                {prompt}
-              </Text>
-            </BlurView>
-          </View>
-        )}
       </View>
     </View>
   );
