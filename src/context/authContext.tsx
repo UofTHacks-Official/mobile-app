@@ -4,11 +4,8 @@ import { getAdminProfile } from "@/requests/admin";
 import { authEventEmitter } from "@/utils/eventEmitter";
 import { devError } from "@/utils/logger";
 import {
-  FIRST_SIGN_SIGN_IN,
   getAuthTokens,
-  getSecureToken,
   removeAuthTokens,
-  removeSecureToken,
   storeAuthTokens,
 } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
@@ -69,7 +66,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserToken(null);
       setIsFirstSignIn(false);
       setAdminData(null);
-      await removeSecureToken(FIRST_SIGN_SIGN_IN);
     } catch (error) {
       devError("Error during sign out:", error);
     }
@@ -97,8 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const tokens = await getAuthTokens();
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
-          const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
-          setIsFirstSignIn(firstSignInValue === null);
+          // isFirstSignIn will be set when admin profile is fetched
         }
       } catch (error) {
         devError("AuthContext: Error restoring session:", error);
@@ -127,7 +122,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
         if (result.response) {
           if (fetchIdRef.current === fetchId) {
-            setAdminData(result.response.data as Admin);
+            const adminProfile = result.response.data as Admin;
+            setAdminData(adminProfile);
+            // Set isFirstSignIn based on last_login field
+            setIsFirstSignIn(!adminProfile.last_login);
           }
         }
       } catch (error) {
@@ -163,8 +161,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-    const firstSignInValue = await getSecureToken(FIRST_SIGN_SIGN_IN);
-    setIsFirstSignIn(firstSignInValue === null);
+    // isFirstSignIn will be set when admin profile is fetched
   };
 
   return (
