@@ -10,15 +10,9 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { ArrowLeft, Calendar } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Animated,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Calendar, Camera as CameraIcon } from "lucide-react-native";
+import { useState } from "react";
+import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
@@ -60,7 +54,7 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
       icon: null,
       title: "View Event Schedule",
       description:
-        "Browse all hackathon events, workshops, and activities. Tap on any event to see details and set reminders.",
+        "Browse all hackathon events, workshops, and activities. Tap on any event to see details and filter through event types.",
       feature: "Schedule",
     });
   }
@@ -82,9 +76,9 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
   steps.push({
     id: steps.length,
     icon: null,
-    title: "Allow camera access",
+    title: "Scan & Capture",
     description:
-      "We need camera to sign in users and send hacker bucks via QR code scan.",
+      "We need camera access to scan QR codes for Photobooth and sending hacker bucks.",
     feature: "Camera",
     requiresAction: true,
     actionLabel: "Allow camera access",
@@ -103,9 +97,6 @@ export default function OnboardingPage() {
   const themeStyles = getThemeStyles(isDark);
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const progressAnim = useRef(
-    new Animated.Value(1 / onboardingSteps.length)
-  ).current;
 
   const getIconForStep = (step: OnboardingStep) => {
     switch (step.feature) {
@@ -116,7 +107,15 @@ export default function OnboardingPage() {
           <WelcomeLightSvg width={400} height={400} />
         );
       case "Schedule":
-        return <Calendar color={themeStyles.iconColor} size={48} />;
+        return (
+          <View className="w-full items-center">
+            <Image
+              source={require("../../assets/images/onboarding/schdule_preview.png")}
+              style={{ width: 360, height: 360 }}
+              resizeMode="contain"
+            />
+          </View>
+        );
       case "Notifications":
         return (
           <View className="w-full gap-y-2">
@@ -145,7 +144,11 @@ export default function OnboardingPage() {
           </View>
         );
       case "Camera":
-        return <CameraOwlSvg width={200} height={200} />;
+        return (
+          <View className="w-full items-center">
+            <CameraOwlSvg width={200} height={200} />
+          </View>
+        );
       default:
         return null;
     }
@@ -155,15 +158,6 @@ export default function OnboardingPage() {
     ...step,
     icon: getIconForStep(step),
   }));
-
-  useEffect(() => {
-    const progress = (currentStep + 1) / onboardingSteps.length;
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [currentStep, progressAnim]);
 
   const handleEnableNotifications = async () => {
     setIsLoading(true);
@@ -267,43 +261,33 @@ export default function OnboardingPage() {
       style={{ backgroundColor: isDark ? "#1C1C1E" : "#F6F5F8" }}
     >
       <View className="flex-1 px-8">
-        {/* Progress Bar and Skip Button */}
-        <View className="flex flex-row items-center py-4">
-          {currentStep > 0 && !currentStepData.requiresAction && (
-            <Pressable
-              className="py-2 mr-4"
-              onPress={() => setCurrentStep(currentStep - 1)}
-              accessibilityLabel="Back"
-            >
-              <ArrowLeft color={themeStyles.iconColor} size={24} />
-            </Pressable>
-          )}
-          <View className="flex-1 mr-2">
-            <View className="h-3.5 bg-gray-200 rounded-full overflow-hidden">
-              <Animated.View
-                className="h-full bg-uoft_primary_blue rounded-full"
-                style={{
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["0%", "100%"],
-                  }),
-                }}
-              />
-            </View>
-          </View>
-        </View>
         <View
           className={cn(
             "flex-1 px-1",
-            currentStepData.feature === "Notifications" ? "" : "justify-center"
+            currentStepData.feature === "Notifications" ||
+              currentStepData.feature === "Camera" ||
+              currentStepData.feature === "Schedule"
+              ? ""
+              : "justify-center"
           )}
         >
-          {currentStepData.feature === "Notifications" ? (
-            /* Notifications layout: Bell icon, title, then cards */
+          {currentStepData.feature === "Notifications" ||
+          currentStepData.feature === "Camera" ||
+          currentStepData.feature === "Schedule" ? (
+            /* Notifications/Camera/Schedule layout: Icon, title, description, then illustration */
             <>
-              <View className="mt-20 mb-20">
-                <View className="mb-2">
-                  <AnimatedBell color={themeStyles.iconColor} size={32} />
+              <View className="mt-20 mb-12">
+                <View
+                  className="mb-2 w-14 h-14 rounded-full items-center justify-center"
+                  style={{ backgroundColor: "#F0EFF2" }}
+                >
+                  {currentStepData.feature === "Notifications" ? (
+                    <AnimatedBell color="#99979B" size={32} />
+                  ) : currentStepData.feature === "Camera" ? (
+                    <CameraIcon color="#99979B" size={32} />
+                  ) : (
+                    <Calendar color="#99979B" size={32} />
+                  )}
                 </View>
                 <Text
                   className={cn(
@@ -313,12 +297,7 @@ export default function OnboardingPage() {
                 >
                   {currentStepData.title}
                 </Text>
-                <Text
-                  className={cn(
-                    "text-base opacity-80",
-                    themeStyles.primaryText
-                  )}
-                >
+                <Text className="text-base" style={{ color: "#99979B" }}>
                   {currentStepData.description}
                 </Text>
               </View>
