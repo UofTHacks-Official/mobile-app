@@ -1,7 +1,6 @@
 // React Native polyfill for crypto (MUST be first)
 import "react-native-get-random-values";
 import {
-  GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -47,20 +46,25 @@ export class PhotoStorageService {
   ): Promise<{ prompt?: string } | null> {
     try {
       const metadataFileName = `photos/${photoId}_metadata.json`;
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: metadataFileName,
-      });
 
-      const response = await r2Client.send(command);
-      if (!response.Body) return null;
+      // Use fetch instead of AWS SDK to avoid Blob issues in React Native
+      const metadataUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${metadataFileName}`;
+      const response = await fetch(metadataUrl);
 
-      // Convert stream to string
-      const bodyString = await response.Body.transformToString();
-      const metadata = JSON.parse(bodyString);
+      if (!response.ok) {
+        // 404 means no metadata file exists - that's okay
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const metadata = await response.json();
+      console.log(`[Metadata] Found for ${photoId}:`, metadata);
       return metadata;
     } catch (error) {
       // Metadata file doesn't exist or failed to fetch - that's okay
+      console.log(`[Metadata] Not found for ${photoId}`);
       return null;
     }
   }

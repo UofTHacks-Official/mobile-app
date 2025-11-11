@@ -120,6 +120,16 @@ export default function PhotoboothPage() {
       // Reset to start - fetch first 10 most recent photos
       const result = await PhotoStorageService.getPhotoGalleryPaginated(10, 0);
 
+      // Debug: Log photos to check if prompts are present
+      console.log(
+        "[Gallery] Loaded photos:",
+        result.photos.map((p) => ({
+          id: p.photoId,
+          prompt: p.prompt,
+          hasPrompt: !!p.prompt,
+        }))
+      );
+
       setPhotoPairs(result.photos);
       setOffset(10); // Next batch starts at offset 10
       setHasMore(result.hasMore);
@@ -204,6 +214,12 @@ export default function PhotoboothPage() {
 
     try {
       setIsProcessing(true);
+
+      // Debug: Log notification body being uploaded
+      console.log(
+        "[Upload] Uploading with notification body:",
+        notificationBody
+      );
 
       // Upload photos to Cloudflare R2 with the prompt if available
       await PhotoStorageService.uploadPhotoboothPhotos(
