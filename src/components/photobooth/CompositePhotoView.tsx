@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
 import { BlurView } from "expo-blur";
 import { useAuth } from "@/context/authContext";
+import { useTheme } from "@/context/themeContext";
+import { getThemeStyles } from "@/utils/theme";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
@@ -18,6 +20,8 @@ export default function CompositePhotoView({
 }: CompositePhotoViewProps) {
   const [isSwapped, setIsSwapped] = useState(false);
   const { adminData } = useAuth();
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
 
   const handleToggle = () => {
     setIsSwapped((prev) => !prev);
@@ -43,7 +47,7 @@ export default function CompositePhotoView({
         <View style={{ alignSelf: "flex-start", marginBottom: 8 }}>
           <Text
             style={{
-              color: "#FFF",
+              color: isDark ? "#FFFFFF" : "#1F2937",
               fontSize: 14,
               fontWeight: "700",
               marginBottom: 2,
@@ -53,7 +57,7 @@ export default function CompositePhotoView({
           </Text>
           <Text
             style={{
-              color: "#FFF",
+              color: isDark ? "#E5E7EB" : "#4B5563",
               fontSize: 14,
               fontWeight: "400",
             }}
