@@ -10,6 +10,7 @@ import {
   Route,
   ScanQrCode,
   AlertTriangle,
+  Presentation,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
 import { useCallback } from "react";
@@ -78,6 +79,15 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     backgroundColor: "bg-red-500",
     enabled: FEATURE_FLAGS.ENABLE_404_TEST,
     route: "/non-existent-route",
+  },
+  {
+    id: "onboarding-test",
+    title: "Test Onboarding",
+    description: "View onboarding screens with progress bar",
+    icon: Presentation,
+    backgroundColor: "bg-uoft_yellow",
+    enabled: FEATURE_FLAGS.ENABLE_ONBOARDING_TEST,
+    route: "/auth/onboarding",
   },
 ];
 

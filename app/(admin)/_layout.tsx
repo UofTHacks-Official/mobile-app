@@ -18,7 +18,7 @@ export default function AdminLayout() {
   }
 
   if (isFirstSignIn && !loading && userToken) {
-    return <Redirect href="/auth/notification" />;
+    return <Redirect href="/auth/onboarding" />;
   }
 
   return (
