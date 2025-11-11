@@ -29,6 +29,7 @@ export interface PhotoPair {
   frontPhotoUrl: string;
   backPhotoUrl: string;
   timestamp: Date;
+  prompt?: string; // The notification body that prompted this photo
 }
 
 export interface PaginatedPhotoResult {
@@ -37,9 +38,41 @@ export interface PaginatedPhotoResult {
   hasMore: boolean;
 }
 export class PhotoStorageService {
+  /**
+   * Fetch metadata JSON for a photo pair
+   */
+  private static async fetchPhotoMetadata(
+    photoId: string
+  ): Promise<{ prompt?: string } | null> {
+    try {
+      const metadataFileName = `photos/${photoId}_metadata.json`;
+
+      // Use fetch instead of AWS SDK to avoid Blob issues in React Native
+      const metadataUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${metadataFileName}`;
+      const response = await fetch(metadataUrl);
+
+      if (!response.ok) {
+        // 404 means no metadata file exists - that's okay
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const metadata = await response.json();
+      console.log(`[Metadata] Found for ${photoId}:`, metadata);
+      return metadata;
+    } catch (_error) {
+      // Metadata file doesn't exist or failed to fetch - that's okay
+      console.log(`[Metadata] Not found for ${photoId}`);
+      return null;
+    }
+  }
+
   static async uploadPhoto(
     photoUri: string,
-    fileName: string
+    fileName: string,
+    metadata?: Record<string, string>
   ): Promise<string> {
     try {
       // Get photo as ArrayBuffer (React Native compatible)
@@ -53,6 +86,7 @@ export class PhotoStorageService {
         Key: fileName,
         Body: uint8Array,
         ContentType: "image/jpeg",
+        Metadata: metadata,
       });
 
       await r2Client.send(command);
@@ -71,7 +105,8 @@ export class PhotoStorageService {
    */
   static async uploadPhotoboothPhotos(
     frontPhotoUri: string,
-    backPhotoUri: string
+    backPhotoUri: string,
+    prompt?: string
   ): Promise<PhotoUploadResult> {
     try {
       // Use regular timestamp - we'll sort by S3 LastModified instead of filename
@@ -80,12 +115,39 @@ export class PhotoStorageService {
 
       const frontFileName = `photos/${photoId}_front.jpg`;
       const backFileName = `photos/${photoId}_back.jpg`;
+      const metadataFileName = `photos/${photoId}_metadata.json`;
 
-      // Upload both photos in parallel
-      const [frontPhotoUrl, backPhotoUrl] = await Promise.all([
-        this.uploadPhoto(frontPhotoUri, frontFileName),
-        this.uploadPhoto(backPhotoUri, backFileName),
-      ]);
+      // Prepare metadata with prompt if provided
+      const metadata = prompt ? { prompt } : undefined;
+
+      // Create metadata JSON if we have a prompt
+      const uploadPromises: Promise<string>[] = [
+        this.uploadPhoto(frontPhotoUri, frontFileName, metadata),
+        this.uploadPhoto(backPhotoUri, backFileName, metadata),
+      ];
+
+      // Upload metadata JSON file if prompt exists
+      if (prompt) {
+        const metadataJson = JSON.stringify({ prompt, timestamp });
+        const metadataBuffer = new TextEncoder().encode(metadataJson);
+
+        const metadataCommand = new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: metadataFileName,
+          Body: metadataBuffer,
+          ContentType: "application/json",
+        });
+
+        uploadPromises.push(
+          r2Client.send(metadataCommand).then(() => `metadata uploaded`)
+        );
+      }
+
+      // Upload both photos (and metadata) in parallel
+      const [frontPhotoUrl, backPhotoUrl] = await Promise.all(uploadPromises);
+
+      // Clear cache so gallery refreshes with new photo
+      this.clearPhotoCache();
 
       return {
         frontPhotoUrl,
@@ -164,102 +226,112 @@ export class PhotoStorageService {
     }
   }
 
+  // Cache for sorted photo IDs to avoid re-sorting on every pagination
+  private static sortedPhotoCache: { ids: string[]; timestamp: number } | null =
+    null;
+  private static CACHE_TTL = 60000; // Cache for 1 minute
+
+  /**
+   * Get all photo IDs sorted by timestamp (cached)
+   */
+  private static async getSortedPhotoIds(): Promise<string[]> {
+    // Check cache
+    if (
+      this.sortedPhotoCache &&
+      Date.now() - this.sortedPhotoCache.timestamp < this.CACHE_TTL
+    ) {
+      return this.sortedPhotoCache.ids;
+    }
+
+    // Fetch all photo files from S3
+    const command = new ListObjectsV2Command({
+      Bucket: BUCKET_NAME,
+      Prefix: "photos/",
+    });
+
+    const response = await r2Client.send(command);
+    if (!response.Contents) return [];
+
+    // Extract unique photo IDs from filenames
+    const photoIds = new Set<string>();
+    response.Contents.forEach((obj) => {
+      if (!obj.Key) return;
+      const match = obj.Key.match(
+        /photos\/photobooth_(\d+)_(front|back)\.jpg$/
+      );
+      if (match) {
+        photoIds.add(`photobooth_${match[1]}`);
+      }
+    });
+
+    // Sort photo IDs by timestamp (newest first)
+    const sorted = Array.from(photoIds).sort((a, b) => {
+      const tsA = parseInt(a.replace("photobooth_", ""));
+      const tsB = parseInt(b.replace("photobooth_", ""));
+      return tsB - tsA; // Descending (newest first)
+    });
+
+    // Cache the result
+    this.sortedPhotoCache = { ids: sorted, timestamp: Date.now() };
+    return sorted;
+  }
+
   /**
    * Get paginated photo gallery (most recent photos first)
    */
   static async getPhotoGalleryPaginated(
-    maxKeys: number = 5,
-    continuationToken?: string
+    pageSize: number = 10,
+    offset: number = 0
   ): Promise<PaginatedPhotoResult> {
     try {
-      // Use S3 pagination - fetch only what we need (each photo pair = 2 files)
-      const command = new ListObjectsV2Command({
-        Bucket: BUCKET_NAME,
-        Prefix: "photos/",
-        MaxKeys: maxKeys * 2, // Each photo pair = 2 files (front + back)
-        ContinuationToken: continuationToken,
-      });
+      // Get sorted photo IDs (cached for efficiency)
+      const sortedIds = await this.getSortedPhotoIds();
 
-      const response = await r2Client.send(command);
+      // Get the page of photo IDs
+      const pageIds = sortedIds.slice(offset, offset + pageSize);
 
-      if (!response.Contents) {
-        return {
-          photos: [],
-          nextToken: undefined,
-          hasMore: false,
-        };
+      // Fetch photo pairs for this page
+      const photoPairs: PhotoPair[] = [];
+
+      for (const photoId of pageIds) {
+        const timestamp = parseInt(photoId.replace("photobooth_", ""));
+        const frontUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/photos/${photoId}_front.jpg`;
+        const backUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/photos/${photoId}_back.jpg`;
+
+        photoPairs.push({
+          photoId,
+          frontPhotoUrl: frontUrl,
+          backPhotoUrl: backUrl,
+          timestamp: new Date(timestamp),
+        });
       }
 
-      // Sort by S3 LastModified (most recent uploads first)
-      const sortedContents = response.Contents.sort((a, b) => {
-        if (!a.LastModified || !b.LastModified) return 0;
-        return b.LastModified.getTime() - a.LastModified.getTime();
-      });
-
-      // Group photos by photoId
-      const photoMap = new Map<string, Partial<PhotoPair>>();
-
-      sortedContents.forEach((obj) => {
-        if (!obj.Key || !obj.LastModified) return;
-
-        const match = obj.Key.match(
-          /photos\/photobooth_(\d+)_(front|back)\.jpg$/
-        );
-        if (!match) return;
-
-        const [, timestamp, type] = match;
-        const photoId = `photobooth_${timestamp}`;
-
-        if (!photoMap.has(photoId)) {
-          photoMap.set(photoId, {
-            photoId,
-            timestamp: obj.LastModified,
-          });
-        }
-
-        const photo = photoMap.get(photoId)!;
-        const publicUrl = `https://pub-8699413992d644f2b85a9b4cb11b2bc5.r2.dev/${obj.Key}`;
-
-        if (type === "front") {
-          photo.frontPhotoUrl = publicUrl;
-        } else {
-          photo.backPhotoUrl = publicUrl;
-        }
-      });
-
-      // Filter complete pairs only and preserve LastModified sort order
-      const completePairs: PhotoPair[] = [];
-      const processedIds = new Set<string>();
-
-      // Process in LastModified order to get most recent complete pairs
-      sortedContents.forEach((obj) => {
-        if (!obj.Key) return;
-        const match = obj.Key.match(
-          /photos\/photobooth_(\d+)_(front|back)\.jpg$/
-        );
-        if (!match) return;
-
-        const photoId = `photobooth_${match[1]}`;
-        if (processedIds.has(photoId)) return;
-
-        const photo = photoMap.get(photoId);
-        if (photo && photo.frontPhotoUrl && photo.backPhotoUrl) {
-          completePairs.push(photo as PhotoPair);
-          processedIds.add(photoId);
-
-          // Stop when we have enough complete pairs
-          if (completePairs.length >= maxKeys) return;
-        }
-      });
+      // Fetch metadata (prompts) for the paginated pairs
+      const pairsWithMetadata = await Promise.all(
+        photoPairs.map(async (pair) => {
+          const metadata = await this.fetchPhotoMetadata(pair.photoId);
+          return {
+            ...pair,
+            prompt: metadata?.prompt,
+          };
+        })
+      );
 
       return {
-        photos: completePairs,
-        nextToken: response.NextContinuationToken,
-        hasMore: response.IsTruncated || false,
+        photos: pairsWithMetadata,
+        nextToken: (offset + pageSize).toString(),
+        hasMore: offset + pageSize < sortedIds.length,
       };
     } catch (error) {
       console.error("Failed to fetch paginated photo gallery:", error);
       throw new Error("Failed to fetch paginated photo gallery");
     }
+  }
+
+  /**
+   * Clear the photo cache (call this after uploading new photos)
+   */
+  static clearPhotoCache(): void {
+    this.sortedPhotoCache = null;
   }
 }

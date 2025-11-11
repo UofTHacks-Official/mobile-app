@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
 import { BlurView } from "expo-blur";
+import { useAuth } from "@/context/authContext";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
   backPhotoUrl: string;
   timestamp?: Date;
+  prompt?: string;
 }
 
 export default function CompositePhotoView({
   frontPhotoUrl,
   backPhotoUrl,
   timestamp,
+  prompt,
 }: CompositePhotoViewProps) {
   const [isSwapped, setIsSwapped] = useState(false);
+  const { adminData } = useAuth();
 
   const handleToggle = () => {
     setIsSwapped((prev) => !prev);
@@ -29,12 +33,40 @@ export default function CompositePhotoView({
       })
     : "";
 
+  // Get username - for now just admin, can extend for hackers later
+  const username = adminData?.admin_username || "User";
+
   return (
-    <View style={{ alignItems: "center" }}>
+    <View style={{ alignItems: "center", width: "96%" }}>
+      {/* Username and Prompt Above Photo */}
+      {prompt && (
+        <View style={{ alignSelf: "flex-start", marginBottom: 8 }}>
+          <Text
+            style={{
+              color: "#FFF",
+              fontSize: 14,
+              fontWeight: "700",
+              marginBottom: 2,
+            }}
+          >
+            {username}
+          </Text>
+          <Text
+            style={{
+              color: "#FFF",
+              fontSize: 14,
+              fontWeight: "400",
+            }}
+          >
+            {prompt}
+          </Text>
+        </View>
+      )}
+
       {/* Composite Photo Display */}
       <View
         style={{
-          width: "96%",
+          width: "100%",
           aspectRatio: 3 / 5,
           borderRadius: 16,
           overflow: "hidden",
