@@ -1,6 +1,9 @@
 // AuthContext.tsx
 import type { Admin } from "@/requests/admin";
 import { getAdminProfile } from "@/requests/admin";
+import type { Hacker } from "@/requests/hacker";
+import { getHackerProfile } from "@/requests/hacker";
+import { useUserTypeStore } from "@/reducers/userType";
 import { authEventEmitter } from "@/utils/eventEmitter";
 import { devError } from "@/utils/logger";
 import {
@@ -22,12 +25,13 @@ import {
 interface AuthContextType {
   userToken: string | null;
   adminData: Admin | null;
+  hackerData: Hacker | null;
   signIn: (access_token: string, refresh_token: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
-  adminLoading: boolean;
+  profileLoading: boolean;
   isFirstSignIn: boolean;
-  refreshAdminData: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
   updateFirstSignInStatus: (status: boolean) => void;
 }
 
@@ -50,10 +54,12 @@ export const useAuth = (): AuthContextType => {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userToken, setUserToken] = useState<string | null>(null);
   const [adminData, setAdminData] = useState<Admin | null>(null);
+  const [hackerData, setHackerData] = useState<Hacker | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [adminLoading, setAdminLoading] = useState<boolean>(false);
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
+  const { userType } = useUserTypeStore();
 
   const updateFirstSignInStatus = useCallback((status: boolean) => {
     setIsFirstSignIn(status);
@@ -66,6 +72,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserToken(null);
       setIsFirstSignIn(false);
       setAdminData(null);
+      setHackerData(null);
     } catch (error) {
       devError("Error during sign out:", error);
     }
@@ -104,64 +111,88 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     restoreSession();
   }, []);
 
-  // Function to fetch admin profile data
-  const fetchAdminProfile = useCallback(
+  // Function to fetch user profile data (admin or hacker based on userType)
+  const fetchUserProfile = useCallback(
     async (token: string, fetchId: number) => {
       if (!token) return;
-      setAdminLoading(true);
+      setProfileLoading(true);
       try {
-        const result = await getAdminProfile(token);
-        if (result.error) {
-          devError(
-            "Error fetching admin profile:",
-            result.error,
-            result.response
-          );
-          await signOut();
-          return;
-        }
-        if (result.response) {
-          if (fetchIdRef.current === fetchId) {
-            const adminProfile = result.response.data as Admin;
-            setAdminData(adminProfile);
-            // Set isFirstSignIn based on last_login field
-            setIsFirstSignIn(!adminProfile.last_login);
+        // Fetch profile based on user type
+        if (userType === "hacker") {
+          const result = await getHackerProfile(token);
+          if (result.error) {
+            devError(
+              "Error fetching hacker profile:",
+              result.error,
+              result.response
+            );
+            await signOut();
+            return;
+          }
+          if (result.response) {
+            if (fetchIdRef.current === fetchId) {
+              const hackerProfile = result.response.data as Hacker;
+              setHackerData(hackerProfile);
+              // For hackers, always set isFirstSignIn to true initially
+              // You can adjust this logic based on your hacker data structure
+              setIsFirstSignIn(true);
+            }
+          }
+        } else {
+          // Default to admin profile for admin, volunteer, etc.
+          const result = await getAdminProfile(token);
+          if (result.error) {
+            devError(
+              "Error fetching admin profile:",
+              result.error,
+              result.response
+            );
+            await signOut();
+            return;
+          }
+          if (result.response) {
+            if (fetchIdRef.current === fetchId) {
+              const adminProfile = result.response.data as Admin;
+              setAdminData(adminProfile);
+              // Set isFirstSignIn based on last_login field
+              setIsFirstSignIn(!adminProfile.last_login);
+            }
           }
         }
       } catch (error) {
-        devError("Error fetching admin profile:", error);
+        devError("Error fetching user profile:", error);
         await signOut();
       } finally {
         if (fetchIdRef.current === fetchId) {
-          setAdminLoading(false);
+          setProfileLoading(false);
         }
       }
     },
-    [signOut]
+    [signOut, userType]
   );
 
-  // Listen for token changes and update admin data
+  // Listen for token changes and update user data
   useEffect(() => {
     if (userToken) {
       fetchIdRef.current += 1;
       const currentFetchId = fetchIdRef.current;
-      fetchAdminProfile(userToken, currentFetchId);
+      fetchUserProfile(userToken, currentFetchId);
     }
-  }, [userToken, fetchAdminProfile]);
+  }, [userToken, fetchUserProfile]);
 
-  // Function to refresh admin data (useful after token refresh)
-  const refreshAdminData = async () => {
+  // Function to refresh user data (useful after token refresh)
+  const refreshUserData = async () => {
     fetchIdRef.current += 1;
     const currentFetchId = fetchIdRef.current;
     if (userToken) {
-      await fetchAdminProfile(userToken, currentFetchId);
+      await fetchUserProfile(userToken, currentFetchId);
     }
   };
 
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
-    // isFirstSignIn will be set when admin profile is fetched
+    // isFirstSignIn will be set when user profile is fetched
   };
 
   return (
@@ -169,12 +200,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       value={{
         userToken,
         adminData,
+        hackerData,
         signIn,
         signOut,
         loading,
-        adminLoading,
+        profileLoading,
         isFirstSignIn,
-        refreshAdminData,
+        refreshUserData,
         updateFirstSignInStatus,
       }}
     >

@@ -13,18 +13,17 @@ import {
   Presentation,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
 import { useScheduleData } from "@/queries/schedule/schedule";
-import { Schedule } from "@/types/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
-const DeerSquare = require("../../assets/images/icons/deer-square.png");
+const LionSquare = require("../../assets/images/icons/lion-square.png");
 const AxSquare = require("../../assets/images/icons/ax-square.png");
 
 // Types
@@ -266,7 +265,7 @@ const UpcomingEvents = ({
   const getEventTypeIcon = (type: string) => {
     switch (type) {
       case "food":
-        return DeerSquare;
+        return LionSquare;
       case "networking":
         return GoatSquare;
       case "activity":

@@ -121,6 +121,7 @@ const SelectRole = () => {
         break;
       case "Hacker":
         setUserType("hacker");
+        router.navigate(`/auth/signInAdmin?role=hacker`);
         break;
     }
     devLog("Selected role: ", role);
@@ -152,7 +153,7 @@ const SelectRole = () => {
       name: "Hacker",
       icon: OwlIcon,
       color: "bg-uoft_accent_red",
-      available: false,
+      available: true,
       description: "Participate in the hackathon",
     },
   ];
