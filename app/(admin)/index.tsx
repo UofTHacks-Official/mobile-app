@@ -12,8 +12,8 @@ import {
   AlertTriangle,
   Presentation,
 } from "lucide-react-native";
-import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
-import { useCallback, useMemo, useEffect, useState } from "react";
+import { Calendar, MoneyWavy } from "phosphor-react-native";
+import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
@@ -102,16 +102,14 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
 
 // Components
 const DashboardHeader = ({
-  onProfilePress,
   themeStyles,
   isDark,
 }: {
-  onProfilePress: () => void;
   themeStyles: ReturnType<typeof getThemeStyles>;
   isDark: boolean;
 }) => {
   return (
-    <View className="mt-6 flex-row items-center justify-between">
+    <View className="mt-6">
       <View className="flex-row items-center gap-x-3">
         {isDark ? (
           <UoftDeerWhite width={40} height={40} />
@@ -124,9 +122,6 @@ const DashboardHeader = ({
           Dashboard
         </Text>
       </View>
-      <Pressable onPress={onProfilePress} className="p-2">
-        <UserCircle size={32} color={themeStyles.iconColor} />
-      </Pressable>
     </View>
   );
 };
@@ -386,19 +381,10 @@ const AdminDashboard = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
 
-  const handleProfilePress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(admin)/profile");
-  }, []);
-
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <ScrollView className="flex-1 px-6">
-        <DashboardHeader
-          onProfilePress={handleProfilePress}
-          themeStyles={themeStyles}
-          isDark={isDark}
-        />
+        <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
         <DashboardGrid items={DASHBOARD_ITEMS} />
         <UpcomingEvents themeStyles={themeStyles} />
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}

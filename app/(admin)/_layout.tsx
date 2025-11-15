@@ -27,41 +27,46 @@ export default function AdminLayout() {
         headerShown: false,
       }}
       tabBar={(props) => {
+        const filteredRoutes = props.state.routes.filter((route) => {
+          // Always hide these routes
+          if (
+            route.name === "hackerbucks" ||
+            route.name === "gallery" ||
+            route.name.startsWith("schedule-detail")
+          ) {
+            return false;
+          }
+
+          // Hide QR scanner if all scanner features are disabled
+          if (
+            route.name === "qr" &&
+            !FEATURE_FLAGS.ENABLE_QR_SCANNER &&
+            !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
+            !FEATURE_FLAGS.ENABLE_HACKERBUCKS
+          ) {
+            return false;
+          }
+
+          // Hide photobooth if disabled
+          if (route.name === "photobooth" && !FEATURE_FLAGS.ENABLE_PHOTOBOOTH) {
+            return false;
+          }
+
+          return true;
+        });
+
+        // Find the new index in the filtered array
+        const currentRoute = props.state.routes[props.state.index];
+        const newIndex = filteredRoutes.findIndex(
+          (route) => route.key === currentRoute?.key
+        );
+
         const filteredProps = {
           ...props,
           state: {
             ...props.state,
-            routes: props.state.routes.filter((route) => {
-              // Always hide these routes
-              if (
-                route.name === "profile" ||
-                route.name === "hackerbucks" ||
-                route.name === "gallery" ||
-                route.name.startsWith("schedule-detail")
-              ) {
-                return false;
-              }
-
-              // Hide QR scanner if all scanner features are disabled
-              if (
-                route.name === "qr" &&
-                !FEATURE_FLAGS.ENABLE_QR_SCANNER &&
-                !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
-                !FEATURE_FLAGS.ENABLE_HACKERBUCKS
-              ) {
-                return false;
-              }
-
-              // Hide photobooth if disabled
-              if (
-                route.name === "photobooth" &&
-                !FEATURE_FLAGS.ENABLE_PHOTOBOOTH
-              ) {
-                return false;
-              }
-
-              return true;
-            }),
+            routes: filteredRoutes,
+            index: newIndex >= 0 ? newIndex : 0,
           },
         };
         return <CustomTabBar {...filteredProps} />;
@@ -98,6 +103,12 @@ export default function AdminLayout() {
           title: "Photo",
           // Hide tab if photobooth is disabled
           href: FEATURE_FLAGS.ENABLE_PHOTOBOOTH ? undefined : null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
         }}
       />
       <Tabs.Screen

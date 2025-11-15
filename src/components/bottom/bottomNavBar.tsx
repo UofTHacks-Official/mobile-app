@@ -14,6 +14,7 @@ import {
   Home,
   ScanLine,
   ScanQrCode,
+  User,
   X,
 } from "lucide-react-native";
 import { useEffect, useRef, useMemo } from "react";
@@ -81,8 +82,7 @@ const CustomTabBar = ({
 
   // Animate the selected tab
   useEffect(() => {
-    state.routes.forEach((_, index) => {
-      const route = state.routes[index];
+    state.routes.forEach((route, index) => {
       const isSelected =
         state.index === index ||
         (route.name === "qr" && isOnHackerBucksRoute) ||
@@ -359,6 +359,18 @@ const CustomTabBar = ({
                   case "photobooth":
                     return (
                       <Camera
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "profile":
+                    return (
+                      <User
                         size={24}
                         strokeWidth={1.5}
                         color={
