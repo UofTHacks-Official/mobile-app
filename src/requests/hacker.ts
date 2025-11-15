@@ -10,11 +10,22 @@ export const hackerEndpoints = {
 
 export interface Hacker {
   hacker_id: number;
+  hacker_fname: string;
+  hacker_lname: string;
   hacker_email: string;
-  hacker_fname?: string;
-  hacker_lname?: string;
+  hacker_verified: boolean;
+  hacker_completed_rsvp: boolean;
+  hacker_discord?: string;
+  hacker_personality?: string;
+  hacker_bucks: number;
+  pronoun?: string;
+  application_status: string;
+  age?: number;
+  level_of_study?: string;
+  school?: string;
+  major?: string;
+  dietary_condition?: string;
   team_id?: number;
-  // Add other hacker fields as needed
 }
 
 /**

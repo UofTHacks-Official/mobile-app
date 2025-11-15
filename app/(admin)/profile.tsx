@@ -17,7 +17,7 @@ import { Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
-  const { signOut, adminData, adminLoading } = useAuth();
+  const { signOut, adminData, hackerData, profileLoading } = useAuth();
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   const [signOutModal, setSignOutModal] = useState(false);
@@ -27,6 +27,8 @@ const Profile = () => {
     admin_role: "",
     last_login: null,
   };
+
+  const hacker = hackerData;
 
   return (
     <SafeAreaView className={cn("flex-1", theme.background)}>
@@ -57,8 +59,40 @@ const Profile = () => {
               </Text>
             </View>
 
-            {adminLoading ? (
+            {profileLoading ? (
               <CustomSplashScreen />
+            ) : hacker ? (
+              <View className="space-y-3">
+                <View
+                  className={cn(
+                    "flex-row justify-between",
+                    theme.lightCardBackground
+                  )}
+                >
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    First Name:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_fname}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    Last Name:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_lname}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    Email:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_email}
+                  </Text>
+                </View>
+              </View>
             ) : adminData ? (
               <View className="space-y-3">
                 <View
@@ -125,33 +159,36 @@ const Profile = () => {
             </View>
           </Pressable>
 
-          <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
-            <View className="flex-row items-center gap-2">
-              <CalendarCheck2Icon size={20} color={theme.iconColor} />
-              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
-                Last Sign In
-              </Text>
+          {adminData && (
+            <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
+              <View className="flex-row items-center gap-2">
+                <CalendarCheck2Icon size={20} color={theme.iconColor} />
+                <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                  Last Sign In
+                </Text>
+              </View>
+              <View className="flex-row justify-between py-4">
+                <Text className={cn(theme.textSecondary, theme.cardText)}>
+                  Last Sign In:
+                </Text>
+                <Text className={cn(theme.textPrimary, theme.cardText)}>
+                  {admin.last_login
+                    ? new Date(
+                        new Date(admin.last_login).getTime() -
+                          4 * 60 * 60 * 1000
+                      ).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      }) + " EST"
+                    : "Never"}
+                </Text>
+              </View>
             </View>
-            <View className="flex-row justify-between py-4">
-              <Text className={cn(theme.textSecondary, theme.cardText)}>
-                Last Sign In:
-              </Text>
-              <Text className={cn(theme.textPrimary, theme.cardText)}>
-                {admin.last_login
-                  ? new Date(
-                      new Date(admin.last_login).getTime() - 4 * 60 * 60 * 1000
-                    ).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }) + " EST"
-                  : "Never"}
-              </Text>
-            </View>
-          </View>
+          )}
 
           <ThemeToggle />
 
