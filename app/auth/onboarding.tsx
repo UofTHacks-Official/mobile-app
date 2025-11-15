@@ -77,8 +77,7 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
     id: steps.length,
     icon: null,
     title: "Scan & Capture",
-    description:
-      "We need camera access to scan QR codes for Photobooth and sending hacker bucks.",
+    description: "We need camera access for Photobooth.",
     feature: "Camera",
     requiresAction: true,
     actionLabel: "Allow camera access",

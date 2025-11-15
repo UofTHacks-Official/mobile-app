@@ -50,7 +50,7 @@ export default function QRCodeScanner({
                 themeStyles.primaryText
               )}
             >
-              Camera Access Required
+              No Camera Access!
             </Text>
             <Text
               className={cn("text-center px-4 mb-8", themeStyles.secondaryText)}
