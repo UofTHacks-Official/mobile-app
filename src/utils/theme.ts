@@ -38,8 +38,8 @@ export const getThemeStyles = (isDark: boolean) => ({
   navBarBackground: isDark ? "bg-uoft_dark_mode_bg_light_black" : "bg-navBar",
   navBarSelectedBackground: isDark ? "bg-uoft_dark_bg_black" : "bg-navBar1",
   navBarText: isDark ? "text-white" : "text-white",
-  navBarIconActive: isDark ? "white" : "white",
-  navBarIconInactive: isDark ? "#A0A0A0" : "#BFBDBE",
+  navBarIconActive: isDark ? "#FFFFFF" : "#000000",
+  navBarIconInactive: isDark ? "#6B7280" : "#9CA3AF",
 
   // Common styles
   cardStyle: `w-full p-4 px-6 rounded-md`,

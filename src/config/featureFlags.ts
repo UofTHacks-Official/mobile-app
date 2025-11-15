@@ -21,7 +21,7 @@ export const FEATURE_FLAGS = {
 
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,
-  ENABLE_SCHEDULE: true,
+  ENABLE_SCHEDULE: false,
 
   // Dashboard test features
   ENABLE_NOTIFICATION_EXAMPLE: false,

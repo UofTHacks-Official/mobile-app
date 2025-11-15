@@ -276,7 +276,7 @@ export default function OnboardingPage() {
           currentStepData.feature === "Schedule" ? (
             /* Notifications/Camera/Schedule layout: Icon, title, description, then illustration */
             <>
-              <View className="mt-20 mb-12">
+              <View className="mt-20 mb-12 items-center">
                 <View
                   className="mb-2 w-14 h-14 rounded-full items-center justify-center"
                   style={{ backgroundColor: "#F0EFF2" }}
@@ -291,13 +291,16 @@ export default function OnboardingPage() {
                 </View>
                 <Text
                   className={cn(
-                    "text-3xl font-bold mb-2",
+                    "text-3xl font-bold mb-2 text-center",
                     themeStyles.primaryText
                   )}
                 >
                   {currentStepData.title}
                 </Text>
-                <Text className="text-base" style={{ color: "#99979B" }}>
+                <Text
+                  className="text-base text-center"
+                  style={{ color: "#99979B" }}
+                >
                   {currentStepData.description}
                 </Text>
               </View>

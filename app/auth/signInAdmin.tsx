@@ -1,7 +1,7 @@
 import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { useAdminLogin } from "@/queries/user";
+import { useAdminLogin, useHackerLogin } from "@/queries/user";
 import { useUserTypeStore } from "@/reducers/userType";
 
 import { devError } from "@/utils/logger";
@@ -34,6 +34,11 @@ const SignInAdmin = () => {
 
   const { signIn, isFirstSignIn } = useAuth();
   const adminLoginMutation = useAdminLogin();
+  const hackerLoginMutation = useHackerLogin();
+
+  // Use hacker login for hackers, admin login for everyone else
+  const loginMutation =
+    displayRole === "hacker" ? hackerLoginMutation : adminLoginMutation;
 
   const roleTitle = "Sign In";
   const roleDescription = `Sign in to access your ${displayRole} dashboard`;
@@ -94,7 +99,7 @@ const SignInAdmin = () => {
     impactAsync(ImpactFeedbackStyle.Medium);
 
     try {
-      const result = await adminLoginMutation.mutateAsync({ email, password });
+      const result = await loginMutation.mutateAsync({ email, password });
       const { access_token, refresh_token } = result;
 
       await signIn(access_token, refresh_token);
@@ -127,7 +132,7 @@ const SignInAdmin = () => {
     router.back();
   };
 
-  if (adminLoginMutation.isPending) {
+  if (loginMutation.isPending) {
     return <CustomSplashScreen />;
   }
 
@@ -215,7 +220,7 @@ const SignInAdmin = () => {
 
         <Pressable
           onPress={handleSignIn}
-          disabled={!isFormValid || adminLoginMutation.isPending}
+          disabled={!isFormValid || loginMutation.isPending}
         >
           <Animated.View
             style={[animatedButtonStyle, animatedBackgroundStyle]}
@@ -227,7 +232,7 @@ const SignInAdmin = () => {
                 themeStyles.primaryText1
               )}
             >
-              {adminLoginMutation.isPending ? "Signing In..." : "Sign In"}
+              {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </Text>
           </Animated.View>
         </Pressable>

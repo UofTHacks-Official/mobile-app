@@ -62,11 +62,10 @@ export default function PhotoboothPage() {
   useFocusEffect(
     useCallback(() => {
       setCapturedPhotos(null);
-      setPhotoboothViewMode(viewMode); // Sync store with current view mode
-      if (viewMode === "gallery") {
-        loadGallery();
-      }
-    }, [viewMode, setPhotoboothViewMode])
+      // Always reset to camera view when navigating to photobooth
+      setViewMode("camera");
+      setPhotoboothViewMode("camera");
+    }, [setPhotoboothViewMode])
   );
 
   // Animate header visibility

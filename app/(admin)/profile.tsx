@@ -3,24 +3,27 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { openSettings } from "@/utils/camera/permissions";
+import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import {
   AlertTriangle,
   Bell,
   CalendarCheck2Icon,
+  Camera,
   LogOut,
   User,
   X,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
-  const { signOut, adminData, adminLoading } = useAuth();
+  const { signOut, adminData, hackerData, profileLoading } = useAuth();
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   const [signOutModal, setSignOutModal] = useState(false);
+  const { handleScroll } = useScrollNavBar();
 
   const admin = adminData || {
     admin_username: "",
@@ -28,9 +31,16 @@ const Profile = () => {
     last_login: null,
   };
 
+  const hacker = hackerData;
+
   return (
     <SafeAreaView className={cn("flex-1", theme.background)}>
-      <View className={cn("flex-1 px-6")}>
+      <ScrollView
+        className={cn("flex-1 px-6")}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View className="mt-6">
           <Text
             className={cn("text-3xl font-onest-bold mb-2", theme.primaryText)}
@@ -42,7 +52,7 @@ const Profile = () => {
           </Text>
         </View>
 
-        <View className="mt-12 gap-y-6">
+        <View className="mt-12 gap-y-6 pb-20">
           <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
             <View className="flex-row items-center gap-2 mb-4">
               <User size={20} color={theme.iconColor} />
@@ -57,8 +67,40 @@ const Profile = () => {
               </Text>
             </View>
 
-            {adminLoading ? (
+            {profileLoading ? (
               <CustomSplashScreen />
+            ) : hacker ? (
+              <View className="space-y-3">
+                <View
+                  className={cn(
+                    "flex-row justify-between",
+                    theme.lightCardBackground
+                  )}
+                >
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    First Name:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_fname}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    Last Name:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_lname}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    Email:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    {hacker.hacker_email}
+                  </Text>
+                </View>
+              </View>
             ) : adminData ? (
               <View className="space-y-3">
                 <View
@@ -125,33 +167,67 @@ const Profile = () => {
             </View>
           </Pressable>
 
-          <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
+          {/* Camera Permissions Section */}
+          <Pressable
+            className={cn(theme.cardStyle, theme.lightCardBackground)}
+            onPress={openSettings}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
             <View className="flex-row items-center gap-2">
-              <CalendarCheck2Icon size={20} color={theme.iconColor} />
+              <Camera size={20} color={theme.iconColor} />
               <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
-                Last Sign In
+                Camera
               </Text>
             </View>
-            <View className="flex-row justify-between py-4">
-              <Text className={cn(theme.textSecondary, theme.cardText)}>
-                Last Sign In:
-              </Text>
-              <Text className={cn(theme.textPrimary, theme.cardText)}>
-                {admin.last_login
-                  ? new Date(
-                      new Date(admin.last_login).getTime() - 4 * 60 * 60 * 1000
-                    ).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }) + " EST"
-                  : "Never"}
+
+            <View
+              className={cn(
+                "my-4 p-2 items-center rounded-md",
+                theme.errorBackground
+              )}
+            >
+              <Text className={cn(theme.textSecondary, "text-black")}>
+                Manage Camera Preferences
               </Text>
             </View>
-          </View>
+          </Pressable>
+
+          {(adminData || hackerData) && (
+            <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
+              <View className="flex-row items-center gap-2">
+                <CalendarCheck2Icon size={20} color={theme.iconColor} />
+                <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                  Last Sign In
+                </Text>
+              </View>
+              <View className="flex-row justify-between py-4">
+                <Text className={cn(theme.textSecondary, theme.cardText)}>
+                  Last Sign In:
+                </Text>
+                <Text className={cn(theme.textPrimary, theme.cardText)}>
+                  {(hacker?.last_login ?? admin.last_login)
+                    ? new Date(
+                        new Date(
+                          (hacker?.last_login ?? admin.last_login) || ""
+                        ).getTime() -
+                          5 * 60 * 60 * 1000
+                      ).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                        timeZone: "America/New_York",
+                      }) + " EDT"
+                    : "Never"}
+                </Text>
+              </View>
+            </View>
+          )}
 
           <ThemeToggle />
 
@@ -174,7 +250,7 @@ const Profile = () => {
             </View>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
         animationType="fade"
