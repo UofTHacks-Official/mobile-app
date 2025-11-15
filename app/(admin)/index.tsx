@@ -13,9 +13,19 @@ import {
   Presentation,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy, UserCircle } from "phosphor-react-native";
-import { useCallback } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useCallback, useMemo } from "react";
+import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
+import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
+import { useScheduleData } from "@/queries/schedule/schedule";
+import { Schedule } from "@/types/schedule";
+import { useCurrentTime } from "@/queries/schedule/currentTime";
+
+// Event type icons
+const GoatSquare = require("../../assets/images/icons/goat-square.png");
+const DeerSquare = require("../../assets/images/icons/deer-square.png");
+const AxSquare = require("../../assets/images/icons/ax-square.png");
 
 // Types
 interface DashboardItem {
@@ -95,23 +105,23 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
 const DashboardHeader = ({
   onProfilePress,
   themeStyles,
+  isDark,
 }: {
   onProfilePress: () => void;
   themeStyles: ReturnType<typeof getThemeStyles>;
+  isDark: boolean;
 }) => {
-  const { adminData } = useAuth();
-
   return (
     <View className="mt-6 flex-row items-center justify-between">
-      <View>
+      <View className="flex-row items-center gap-x-3">
+        {isDark ? (
+          <UoftDeerWhite width={40} height={40} />
+        ) : (
+          <UoftDeerBlack width={40} height={40} />
+        )}
         <Text
           className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
         >
-          {adminData?.admin_role
-            ? adminData.admin_role.charAt(0).toUpperCase() +
-              adminData.admin_role.slice(1) +
-              " "
-            : ""}
           Dashboard
         </Text>
       </View>
@@ -174,6 +184,168 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
   );
 };
 
+const UpcomingEvents = ({
+  themeStyles,
+}: {
+  themeStyles: ReturnType<typeof getThemeStyles>;
+}) => {
+  // Fetch all schedules - include all event types
+  const { data: schedules = [] } = useScheduleData([
+    "activity",
+    "networking",
+    "food",
+  ]);
+
+  // Get current time - updates every minute
+  const currentTime = useCurrentTime();
+
+  // Filter and sort to get 10 upcoming events
+  const upcomingEvents = useMemo(() => {
+    return schedules
+      .filter((schedule) => {
+        const startTime = new Date(schedule.startTime);
+        return startTime >= currentTime;
+      })
+      .sort((a, b) => {
+        const aTime = new Date(a.startTime).getTime();
+        const bTime = new Date(b.startTime).getTime();
+        return aTime - bTime;
+      })
+      .slice(0, 10);
+  }, [schedules, currentTime]);
+
+  const formatEventTime = (startTime: string, endTime: string) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const formatTime = (date: Date) => {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      const displayMinutes = minutes.toString().padStart(2, "0");
+      return `${displayHours}:${displayMinutes} ${ampm}`;
+    };
+
+    return `${formatTime(start)} - ${formatTime(end)}`;
+  };
+
+  const formatEventDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+  };
+
+  const getEventTypeColor = (type: string) => {
+    switch (type) {
+      case "food":
+        return "#FFD54F";
+      case "networking":
+        return "#75EDEF";
+      case "activity":
+        return "#C8B6FF";
+      default:
+        return "#E0E0E0";
+    }
+  };
+
+  const getEventTypeIcon = (type: string) => {
+    switch (type) {
+      case "food":
+        return DeerSquare;
+      case "networking":
+        return GoatSquare;
+      case "activity":
+        return AxSquare;
+      default:
+        return AxSquare;
+    }
+  };
+
+  if (upcomingEvents.length === 0) {
+    return null;
+  }
+
+  return (
+    <View className="mt-8">
+      <Text
+        className={cn("text-2xl font-onest-bold mb-4", themeStyles.primaryText)}
+      >
+        Upcoming Events
+      </Text>
+      <View className="gap-y-3">
+        {upcomingEvents.map((event) => (
+          <Pressable
+            key={event.id}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push({
+                pathname: "/schedule-detail/[scheduleID]" as any,
+                params: {
+                  scheduleID: event.id.toString(),
+                },
+              });
+            }}
+            className="flex-row items-center"
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            {/* Square icon on the left */}
+            <View
+              className="w-20 h-20 rounded-lg items-center justify-center mr-4 overflow-hidden"
+              style={{ backgroundColor: getEventTypeColor(event.type) }}
+            >
+              <Image
+                source={getEventTypeIcon(event.type)}
+                style={{ width: 80, height: 80 }}
+                resizeMode="cover"
+              />
+            </View>
+
+            {/* Event info stacked vertically */}
+            <View className="flex-1">
+              <Text
+                className={cn(
+                  "text-base font-['PPObjectSans-Bold']",
+                  themeStyles.primaryText
+                )}
+              >
+                {event.title}
+              </Text>
+              <Text
+                className={cn("text-sm font-pp", themeStyles.secondaryText)}
+              >
+                {formatEventDate(event.startTime)}
+              </Text>
+              <Text
+                className={cn("text-sm font-pp", themeStyles.secondaryText)}
+              >
+                {formatEventTime(event.startTime, event.endTime)}
+              </Text>
+            </View>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 const ModalTestWidget = () => {
   const handleModalTestPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -222,14 +394,17 @@ const AdminDashboard = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <View className="flex-1 px-6">
+      <ScrollView className="flex-1 px-6">
         <DashboardHeader
           onProfilePress={handleProfilePress}
           themeStyles={themeStyles}
+          isDark={isDark}
         />
         <DashboardGrid items={DASHBOARD_ITEMS} />
+        <UpcomingEvents themeStyles={themeStyles} />
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
-      </View>
+        <View className="h-8" />
+      </ScrollView>
       {/* <View className="items-center justify-center pb-8">
         <LottieView
           source={require("../../assets/lottie/moose.json")}
