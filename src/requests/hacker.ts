@@ -26,6 +26,7 @@ export interface Hacker {
   major?: string;
   dietary_condition?: string;
   team_id?: number;
+  last_login?: string | null;
 }
 
 /**

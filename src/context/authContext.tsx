@@ -132,10 +132,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           if (result.response) {
             if (fetchIdRef.current === fetchId) {
               const hackerProfile = result.response.data as Hacker;
+              console.log(
+                "[DEBUG] Hacker profile last_login:",
+                hackerProfile.last_login
+              );
               setHackerData(hackerProfile);
-              // For hackers, always set isFirstSignIn to true initially
-              // You can adjust this logic based on your hacker data structure
-              setIsFirstSignIn(true);
+              // Set isFirstSignIn based on last_login field
+              setIsFirstSignIn(!hackerProfile.last_login);
+              console.log(
+                "[DEBUG] isFirstSignIn set to:",
+                !hackerProfile.last_login
+              );
             }
           }
         } else {

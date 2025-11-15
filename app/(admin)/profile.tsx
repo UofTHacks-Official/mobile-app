@@ -188,7 +188,7 @@ const Profile = () => {
             </View>
           </Pressable>
 
-          {adminData && (
+          {(adminData || hackerData) && (
             <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
               <View className="flex-row items-center gap-2">
                 <CalendarCheck2Icon size={20} color={theme.iconColor} />
@@ -201,9 +201,13 @@ const Profile = () => {
                   Last Sign In:
                 </Text>
                 <Text className={cn(theme.textPrimary, theme.cardText)}>
-                  {admin.last_login
+                  {(adminData && admin.last_login) ||
+                  (hackerData && hacker?.last_login)
                     ? new Date(
-                        new Date(admin.last_login).getTime() -
+                        new Date(
+                          (adminData ? admin.last_login : hacker?.last_login) ||
+                            ""
+                        ).getTime() -
                           4 * 60 * 60 * 1000
                       ).toLocaleString("en-US", {
                         year: "numeric",

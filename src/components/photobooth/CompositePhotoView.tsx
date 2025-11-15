@@ -3,7 +3,6 @@ import { View, Image, TouchableOpacity, Text } from "react-native";
 import { BlurView } from "expo-blur";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { getThemeStyles } from "@/utils/theme";
 
 interface CompositePhotoViewProps {
   frontPhotoUrl: string;
@@ -21,7 +20,6 @@ export default function CompositePhotoView({
   const [isSwapped, setIsSwapped] = useState(false);
   const { adminData } = useAuth();
   const { isDark } = useTheme();
-  const themeStyles = getThemeStyles(isDark);
 
   const handleToggle = () => {
     setIsSwapped((prev) => !prev);

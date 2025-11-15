@@ -13,18 +13,22 @@ import {
   Presentation,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
+import { useAnnouncementsData } from "@/queries/announcement/announcement";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
 const LionSquare = require("../../assets/images/icons/lion-square.png");
 const AxSquare = require("../../assets/images/icons/ax-square.png");
+const AppIcon = require("../../assets/images/icons/app-icon.png");
 
 // Types
 interface DashboardItem {
@@ -174,6 +178,116 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
           }}
         />
       ))}
+    </View>
+  );
+};
+
+const RecentAnnouncement = ({
+  themeStyles,
+}: {
+  themeStyles: ReturnType<typeof getThemeStyles>;
+}) => {
+  // Fetch all announcements
+  const { data: announcements = [] } = useAnnouncementsData();
+  const { isDark } = useTheme();
+
+  // Get the most recent announcement (API returns them sorted newest first)
+  const recentAnnouncement = useMemo(() => {
+    if (announcements.length === 0) return null;
+    // API already returns sorted by newest first, just get the first one
+    return announcements[0];
+  }, [announcements]);
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = Date.now();
+    const diff = now - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  if (!recentAnnouncement) {
+    return null;
+  }
+
+  return (
+    <View className="mt-0.25">
+      <Text
+        className={cn("text-2xl font-onest-bold mb-4", themeStyles.primaryText)}
+      >
+        Recent Announcement
+      </Text>
+      <Pressable
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          // Could navigate to announcements page or show full announcement
+        }}
+        className="rounded-2xl overflow-hidden"
+        android_ripple={null}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
+        <LinearGradient
+          colors={
+            isDark
+              ? ["#1a1a2e", "#16213e", "#0f0f1e"]
+              : ["#EAF5FF", "#F6E6DC", "#FFE9EE"]
+          }
+          locations={isDark ? [0, 0.5, 1] : [0.1443, 0.4882, 0.7784]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0.77, y: 0.36 }}
+          className="rounded-2xl"
+        >
+          <BlurView
+            intensity={100}
+            tint={isDark ? "dark" : "light"}
+            className="p-4"
+          >
+            <View className="flex-row items-start gap-3">
+              <Image
+                source={AppIcon}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                }}
+                resizeMode="cover"
+              />
+              <View className="flex-1">
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text
+                    className={cn(
+                      "text-lg font-['PPObjectSans-Bold'] flex-1",
+                      themeStyles.primaryText
+                    )}
+                    numberOfLines={1}
+                  >
+                    {recentAnnouncement.title}
+                  </Text>
+                  <Text
+                    className={cn("text-xs ml-2", themeStyles.secondaryText)}
+                  >
+                    {formatTimestamp(recentAnnouncement.created_at)}
+                  </Text>
+                </View>
+                <Text
+                  className={cn("text-sm mb-2", themeStyles.secondaryText)}
+                  numberOfLines={2}
+                >
+                  {recentAnnouncement.content}
+                </Text>
+              </View>
+            </View>
+          </BlurView>
+        </LinearGradient>
+      </Pressable>
     </View>
   );
 };
@@ -380,12 +494,22 @@ const ModalTestWidget = () => {
 const AdminDashboard = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const { hackerData } = useAuth();
+
+  // Filter dashboard items - hide onboarding test for hackers
+  const dashboardItems = DASHBOARD_ITEMS.filter((item) => {
+    if (item.id === "onboarding-test" && hackerData) {
+      return false; // Hide onboarding test for hackers
+    }
+    return true;
+  });
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <ScrollView className="flex-1 px-6">
         <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
-        <DashboardGrid items={DASHBOARD_ITEMS} />
+        <DashboardGrid items={dashboardItems} />
+        <RecentAnnouncement themeStyles={themeStyles} />
         <UpcomingEvents themeStyles={themeStyles} />
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
         <View className="h-8" />
