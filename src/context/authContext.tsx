@@ -8,8 +8,10 @@ import { authEventEmitter } from "@/utils/eventEmitter";
 import { devError } from "@/utils/logger";
 import {
   getAuthTokens,
+  getUserType,
   removeAuthTokens,
   storeAuthTokens,
+  storeUserType,
 } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import {
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
-  const { userType } = useUserTypeStore();
+  const { userType, setUserType, clearUserType } = useUserTypeStore();
 
   const updateFirstSignInStatus = useCallback((status: boolean) => {
     setIsFirstSignIn(status);
@@ -73,10 +75,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsFirstSignIn(false);
       setAdminData(null);
       setHackerData(null);
+      clearUserType();
     } catch (error) {
       devError("Error during sign out:", error);
     }
-  }, []);
+  }, [clearUserType]);
 
   // Listen for auth errors from the axios interceptor
   useEffect(() => {
@@ -98,9 +101,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const restoreSession = async () => {
       try {
         const tokens = await getAuthTokens();
+        const savedUserType = await getUserType();
+
+        // Restore userType to Zustand store
+        if (savedUserType) {
+          setUserType(
+            savedUserType as "admin" | "volunteer" | "judge" | "hacker"
+          );
+        }
+
         if (tokens?.access_token) {
           setUserToken(tokens.access_token);
-          // isFirstSignIn will be set when admin profile is fetched
+          // isFirstSignIn will be set when profile is fetched
         }
       } catch (error) {
         devError("AuthContext: Error restoring session:", error);
@@ -109,7 +121,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     };
     restoreSession();
-  }, []);
+  }, [setUserType]);
 
   // Function to fetch user profile data (admin or hacker based on userType)
   const fetchUserProfile = useCallback(
@@ -199,6 +211,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (access_token: string, refresh_token: string) => {
     setUserToken(access_token);
     await storeAuthTokens(access_token, refresh_token);
+    // Persist the current userType
+    if (userType) {
+      await storeUserType(userType);
+    }
     // isFirstSignIn will be set when user profile is fetched
   };
 
