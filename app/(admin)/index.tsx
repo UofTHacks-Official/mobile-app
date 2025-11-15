@@ -1,6 +1,7 @@
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
+import { useScrollNavBar } from "@/utils/navigation";
 import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
@@ -495,6 +496,7 @@ const AdminDashboard = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { hackerData } = useAuth();
+  const { handleScroll } = useScrollNavBar();
 
   // Filter dashboard items - hide onboarding test for hackers
   const dashboardItems = DASHBOARD_ITEMS.filter((item) => {
@@ -506,7 +508,11 @@ const AdminDashboard = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <ScrollView className="flex-1 px-6">
+      <ScrollView
+        className="flex-1 px-6"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
         <DashboardGrid items={dashboardItems} />
         <RecentAnnouncement themeStyles={themeStyles} />

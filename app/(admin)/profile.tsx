@@ -3,6 +3,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { openSettings } from "@/utils/camera/permissions";
+import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import {
   AlertTriangle,
@@ -14,7 +15,7 @@ import {
   X,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
@@ -22,6 +23,7 @@ const Profile = () => {
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   const [signOutModal, setSignOutModal] = useState(false);
+  const { handleScroll } = useScrollNavBar();
 
   const admin = adminData || {
     admin_username: "",
@@ -33,7 +35,12 @@ const Profile = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", theme.background)}>
-      <View className={cn("flex-1 px-6")}>
+      <ScrollView
+        className={cn("flex-1 px-6")}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View className="mt-6">
           <Text
             className={cn("text-3xl font-onest-bold mb-2", theme.primaryText)}
@@ -45,7 +52,7 @@ const Profile = () => {
           </Text>
         </View>
 
-        <View className="mt-12 gap-y-6">
+        <View className="mt-12 gap-y-6 pb-20">
           <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
             <View className="flex-row items-center gap-2 mb-4">
               <User size={20} color={theme.iconColor} />
@@ -244,7 +251,7 @@ const Profile = () => {
             </View>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
         animationType="fade"
