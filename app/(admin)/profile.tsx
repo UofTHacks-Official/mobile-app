@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Bell,
   CalendarCheck2Icon,
+  Camera,
   LogOut,
   User,
   X,
@@ -155,6 +156,34 @@ const Profile = () => {
             >
               <Text className={cn(theme.textSecondary, "text-black")}>
                 Manage Notification Preferences
+              </Text>
+            </View>
+          </Pressable>
+
+          {/* Camera Permissions Section */}
+          <Pressable
+            className={cn(theme.cardStyle, theme.lightCardBackground)}
+            onPress={openSettings}
+            android_ripple={null}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <View className="flex-row items-center gap-2">
+              <Camera size={20} color={theme.iconColor} />
+              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                Camera
+              </Text>
+            </View>
+
+            <View
+              className={cn(
+                "my-4 p-2 items-center rounded-md",
+                theme.errorBackground
+              )}
+            >
+              <Text className={cn(theme.textSecondary, "text-black")}>
+                Manage Camera Preferences
               </Text>
             </View>
           </Pressable>
