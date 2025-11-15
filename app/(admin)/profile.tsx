@@ -208,14 +208,12 @@ const Profile = () => {
                   Last Sign In:
                 </Text>
                 <Text className={cn(theme.textPrimary, theme.cardText)}>
-                  {(adminData && admin.last_login) ||
-                  (hackerData && hacker?.last_login)
+                  {(hacker?.last_login ?? admin.last_login)
                     ? new Date(
                         new Date(
-                          (adminData ? admin.last_login : hacker?.last_login) ||
-                            ""
+                          (hacker?.last_login ?? admin.last_login) || ""
                         ).getTime() -
-                          4 * 60 * 60 * 1000
+                          5 * 60 * 60 * 1000
                       ).toLocaleString("en-US", {
                         year: "numeric",
                         month: "long",
@@ -223,7 +221,8 @@ const Profile = () => {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: true,
-                      }) + " EST"
+                        timeZone: "America/New_York",
+                      }) + " EDT"
                     : "Never"}
                 </Text>
               </View>
