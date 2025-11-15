@@ -19,6 +19,7 @@ import {
 import { useEffect, useRef, useMemo } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 
 const CustomTabBar = ({
   state,
@@ -75,12 +76,17 @@ const CustomTabBar = ({
   // Check if we're on a hackerbucks route
   const isOnHackerBucksRoute = pathname.includes("/hackerbucks");
 
+  // Check if we're on the photobooth route
+  const isOnPhotoboothRoute = pathname.includes("/photobooth");
+
   // Animate the selected tab
   useEffect(() => {
     state.routes.forEach((_, index) => {
       const route = state.routes[index];
       const isSelected =
-        state.index === index || (route.name === "qr" && isOnHackerBucksRoute);
+        state.index === index ||
+        (route.name === "qr" && isOnHackerBucksRoute) ||
+        (route.name === "photobooth" && isOnPhotoboothRoute);
 
       Animated.spring(animatedValues[index], {
         toValue: isSelected ? 1 : 0,
@@ -100,6 +106,7 @@ const CustomTabBar = ({
     animatedValues,
     state.routes,
     isOnHackerBucksRoute,
+    isOnPhotoboothRoute,
     setPhotoboothViewMode,
   ]);
 
@@ -137,7 +144,7 @@ const CustomTabBar = ({
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["75%", "85%"], // Wider default to accommodate labels, wider when expanded
+    outputRange: ["60%", "85%"], // Narrower default without labels, wider when expanded
   });
 
   // Fade in the scan options
@@ -185,10 +192,7 @@ const CustomTabBar = ({
         }}
       >
         <Animated.View
-          className={cn(
-            "rounded-3xl h-full flex flex-col justify-center",
-            themeStyles.navBarBackground
-          )}
+          className="rounded-3xl h-full flex flex-col justify-center overflow-hidden"
           style={{
             width: animatedWidth,
             shadowColor: "#000",
@@ -198,6 +202,11 @@ const CustomTabBar = ({
             elevation: 10,
           }}
         >
+          <BlurView
+            intensity={80}
+            tint={isDark ? "dark" : "light"}
+            className="absolute inset-0"
+          />
           {/* Expanded Scan Options */}
           <Animated.View
             className="absolute top-4 left-4 right-4 bottom-4 flex flex-col justify-between"
@@ -306,11 +315,12 @@ const CustomTabBar = ({
 
               const isFocused =
                 state.index === index ||
-                (route.name === "qr" && isOnHackerBucksRoute);
+                (route.name === "qr" && isOnHackerBucksRoute) ||
+                (route.name === "photobooth" && isOnPhotoboothRoute);
 
               const iconComponent = () => {
-                switch (label) {
-                  case "Home":
+                switch (route.name) {
+                  case "index":
                     return (
                       <Home
                         size={24}
@@ -322,7 +332,7 @@ const CustomTabBar = ({
                         }
                       />
                     );
-                  case "Schedule":
+                  case "schedule":
                     return (
                       <Calendar
                         size={24}
@@ -334,7 +344,7 @@ const CustomTabBar = ({
                         }
                       />
                     );
-                  case "Scan":
+                  case "qr":
                     return (
                       <ScanQrCode
                         size={24}
@@ -346,8 +356,7 @@ const CustomTabBar = ({
                         }
                       />
                     );
-                  case "Photo":
-                  case "Gallery":
+                  case "photobooth":
                     return (
                       <Camera
                         size={24}
@@ -413,35 +422,9 @@ const CustomTabBar = ({
                     accessibilityLabel={options.tabBarAccessibilityLabel}
                     onPress={onPress}
                     onLongPress={onLongPress}
-                    className={cn(
-                      "flex-row items-center justify-center rounded-xl",
-                      isFocused
-                        ? cn(themeStyles.navBarSelectedBackground, "px-3 py-2")
-                        : "p-3"
-                    )}
+                    className="flex-row items-center justify-center p-3"
                   >
                     {iconComponent()}
-                    {isFocused && label && (
-                      <Animated.Text
-                        className={cn(
-                          "ml-2 font-semibold font-onest-extralight",
-                          themeStyles.navBarText
-                        )}
-                        style={{
-                          opacity: animatedValues[index],
-                          transform: [
-                            {
-                              translateX: animatedValues[index].interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [-10, 0],
-                              }),
-                            },
-                          ],
-                        }}
-                      >
-                        {label}
-                      </Animated.Text>
-                    )}
                   </TouchableOpacity>
                 </Animated.View>
               );
