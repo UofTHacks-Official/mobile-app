@@ -54,7 +54,7 @@
       <true/>
     </dict>
     <key>NSCameraUsageDescription</key>
-    <string>Allow UoftHacks to access your camera</string>
+    <string>UoftHacks uses your camera to participate in the photobooth and capture memories during the hackathon.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow UoftHacks to access your microphone</string>
     <key>NSUserActivityTypes</key>

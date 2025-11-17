@@ -92,8 +92,8 @@ export default function NotificationPage() {
             Allow notifications
           </Text>
           <Text className={cn("text-center px-2", themeStyles.secondaryText)}>
-            We only send notifications for food alerts, event details, and
-            important updates. No spam, promise!
+            We only send notifications for important event updates, and
+            Photobooth alerts!
           </Text>
         </View>
 

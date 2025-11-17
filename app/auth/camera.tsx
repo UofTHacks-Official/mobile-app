@@ -67,20 +67,6 @@ export default function CameraPage() {
     <>
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 px-8">
-          <Pressable
-            className="flex flex-row justify-end"
-            onPress={() => router.replace("/(admin)")}
-          >
-            <Text
-              className={cn(
-                "underline text-gray-500",
-                themeStyles.skipButtonColor
-              )}
-            >
-              Skip
-            </Text>
-          </Pressable>
-
           <View className="flex-1 justify-center items-center">
             <View className="mb-8">
               <CameraOwlSvg width={200} height={200} />
@@ -92,13 +78,12 @@ export default function CameraPage() {
                 themeStyles.primaryText
               )}
             >
-              Allow camera access
+              Scan & Capture
             </Text>
             <Text
               className={cn("text-center mt-2 px-4", themeStyles.secondaryText)}
             >
-              We need camera to sign in users and send hacker bucks via QR code
-              scan
+              We need camera access for Photobooth.
             </Text>
           </View>
 
@@ -115,7 +100,7 @@ export default function CameraPage() {
                   themeStyles.primaryText1
                 )}
               >
-                Allow camera access
+                Continue
               </Text>
             </View>
           </Pressable>

@@ -80,8 +80,8 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
     description: "We need camera access for Photobooth.",
     feature: "Camera",
     requiresAction: true,
-    actionLabel: "Allow camera access",
-    skipEnabled: true,
+    actionLabel: "Continue",
+    skipEnabled: false,
   });
 
   return steps;
@@ -357,8 +357,8 @@ export default function OnboardingPage() {
             </View>
           </Pressable>
 
-          {/* Not Now button - only for permission screens */}
-          {currentStepData.requiresAction && (
+          {/* Not Now button - only for permission screens where skip is enabled */}
+          {currentStepData.requiresAction && currentStepData.skipEnabled && (
             <Pressable
               onPress={handleSkip}
               disabled={isLoading}
