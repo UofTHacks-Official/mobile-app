@@ -2,6 +2,7 @@ import { authEventEmitter } from "@/utils/eventEmitter";
 import { devError, devLog } from "@/utils/logger";
 import {
   getAuthTokens,
+  getUserType,
   removeAuthTokens,
   storeAuthTokens,
 } from "@/utils/tokens/secureStorage";
@@ -14,7 +15,10 @@ const ENDPOINTS_WITHOUT_AUTH = [
   // Auth endpoints
   "/api/v13/admins/login",
   "/api/v13/admins/refresh",
+  "/api/v13/hackers/login",
+  "/api/v13/hackers/refresh",
 
+  // Testing: Backend docs say public, but we need to verify
   "/api/v13/hackers/schedules/",
 ] as const;
 
@@ -73,24 +77,32 @@ const handleRefreshError = async (): Promise<void> => {
 
 axiosInstance.interceptors.request.use(
   async (config) => {
-    if (!shouldSkipAuth(config.url!)) {
+    const skipAuth = shouldSkipAuth(config.url!);
+    devLog(`[REQUEST] ${config.url} - Skip auth: ${skipAuth}`);
+
+    if (!skipAuth) {
       try {
         // If a refresh is in progress, wait for it to complete
         if (isRefreshing && refreshPromise) {
           const newToken = await refreshPromise;
           if (newToken) {
             config.headers.Authorization = `Bearer ${newToken}`;
+            devLog(`[REQUEST] Using refreshed token for ${config.url}`);
             return config;
           }
         }
 
         const tokens = await getAuthTokens();
+        const userType = await getUserType();
         if (tokens?.access_token) {
           config.headers.Authorization = `Bearer ${tokens.access_token}`;
+          devLog(`[REQUEST] Sending ${userType} token to ${config.url}`);
         }
       } catch (error) {
         devError("Error retrieving access token:", error);
       }
+    } else {
+      devLog(`[REQUEST] No auth token sent to ${config.url}`);
     }
     return config;
   },
@@ -101,9 +113,13 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
+    devLog(`[RESPONSE] ${response.config.url} - Status: ${response.status}`);
     return response;
   },
   async (error: AxiosError) => {
+    devError(
+      `[RESPONSE ERROR] ${error.config?.url} - Status: ${error.response?.status}`
+    );
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
     };
@@ -114,12 +130,12 @@ axiosInstance.interceptors.response.use(
 
     const isAuthError =
       error.response?.status === 401 || error.response?.status === 403;
-    const isTokenEndpoint = originalRequest.url?.includes(
-      "/api/v13/admins/refresh"
-    );
-    const isLoginEndpoint = originalRequest.url?.includes(
-      "/api/v13/admins/login"
-    );
+    const isTokenEndpoint =
+      originalRequest.url?.includes("/api/v13/admins/refresh") ||
+      originalRequest.url?.includes("/api/v13/hackers/refresh");
+    const isLoginEndpoint =
+      originalRequest.url?.includes("/api/v13/admins/login") ||
+      originalRequest.url?.includes("/api/v13/hackers/login");
 
     if (
       isAuthError &&
@@ -152,19 +168,23 @@ axiosInstance.interceptors.response.use(
       // Create a promise for the refresh operation
       refreshPromise = (async () => {
         try {
-          // Get the refresh token
+          // Get the refresh token and user type
           const tokens = await getAuthTokens();
+          const userType = await getUserType();
 
           if (!tokens?.refresh_token) {
             throw new Error("No refresh token available");
           }
 
-          const refreshResponse = await axiosInstance.post(
-            "/api/v13/admins/refresh",
-            {
-              refresh_token: tokens.refresh_token,
-            }
-          );
+          // Use the correct refresh endpoint based on user type
+          const refreshEndpoint =
+            userType === "hacker"
+              ? "/api/v13/hackers/refresh"
+              : "/api/v13/admins/refresh";
+
+          const refreshResponse = await axiosInstance.post(refreshEndpoint, {
+            refresh_token: tokens.refresh_token,
+          });
 
           if (!refreshResponse?.data?.access_token) {
             throw new Error("Failed to refresh token");
