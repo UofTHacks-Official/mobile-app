@@ -19,6 +19,9 @@ export const FEATURE_FLAGS = {
   // Google OAuth
   ENABLE_GOOGLE_LOGIN: false,
 
+  // Judging features
+  ENABLE_JUDGING: true,
+
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,
   ENABLE_SCHEDULE: false,

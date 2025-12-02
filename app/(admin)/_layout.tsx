@@ -85,6 +85,14 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="judging"
+        options={{
+          title: "Judging",
+          // Hide tab if judging is disabled
+          href: FEATURE_FLAGS.ENABLE_JUDGING ? undefined : null,
+        }}
+      />
+      <Tabs.Screen
         name="qr"
         options={{
           title: "Scan",
@@ -113,6 +121,18 @@ export default function AdminLayout() {
       />
       <Tabs.Screen
         name="gallery"
+        options={{
+          href: null, // Hide from tabs
+        }}
+      />
+      <Tabs.Screen
+        name="judgingTimer"
+        options={{
+          href: null, // Hide from tabs
+        }}
+      />
+      <Tabs.Screen
+        name="hackerbucks"
         options={{
           href: null, // Hide from tabs
         }}

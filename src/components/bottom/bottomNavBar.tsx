@@ -11,6 +11,7 @@ import {
   BanknoteArrowUp,
   Calendar,
   Camera,
+  Gavel,
   Home,
   ScanLine,
   ScanQrCode,
@@ -335,6 +336,18 @@ const CustomTabBar = ({
                   case "schedule":
                     return (
                       <Calendar
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "judging":
+                    return (
+                      <Gavel
                         size={24}
                         strokeWidth={1.5}
                         color={
