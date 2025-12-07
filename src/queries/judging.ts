@@ -8,9 +8,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * TanStack Query hook for fetching all judging schedules
+ * @param enabled - Whether to enable this query (default: true)
  * @returns Query result with all judging schedules
  */
-export const useAllJudgingSchedules = () => {
+export const useAllJudgingSchedules = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["judging-schedules"],
     queryFn: async () => {
@@ -22,6 +23,7 @@ export const useAllJudgingSchedules = () => {
         throw error;
       }
     },
+    enabled,
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,

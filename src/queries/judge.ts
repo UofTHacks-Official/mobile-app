@@ -43,8 +43,13 @@ export const useJudgeLogin = () => {
 
 /**
  * Query hook for fetching judge's schedules
+ * @param judgeId - The judge ID
+ * @param enabled - Whether to enable this query (default: true)
  */
-export const useJudgeSchedules = (judgeId: number | null) => {
+export const useJudgeSchedules = (
+  judgeId: number | null,
+  enabled: boolean = true
+) => {
   return useQuery({
     queryKey: ["judge-schedules", judgeId],
     queryFn: async () => {
@@ -57,7 +62,7 @@ export const useJudgeSchedules = (judgeId: number | null) => {
         throw error;
       }
     },
-    enabled: !!judgeId,
+    enabled: enabled && !!judgeId,
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,

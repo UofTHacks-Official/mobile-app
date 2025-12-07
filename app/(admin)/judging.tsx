@@ -26,22 +26,28 @@ const JudgingLocationScreen = () => {
   const [isJudge, setIsJudge] = useState(false);
   const [judgeId, setJudgeId] = useState<number | null>(null);
 
+  const [userTypeChecked, setUserTypeChecked] = useState(false);
+
   // Check if user is a judge
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
+      console.log("[DEBUG] Judging page - User type:", userType);
       if (userType === "judge") {
         setIsJudge(true);
         const id = await getJudgeId();
+        console.log("[DEBUG] Judging page - Judge ID:", id);
         setJudgeId(id);
       }
+      setUserTypeChecked(true);
     };
     checkUserType();
   }, []);
 
   // Fetch schedules based on user type
-  const adminSchedules = useAllJudgingSchedules();
-  const judgeSchedules = useJudgeSchedules(judgeId);
+  // Only enable the appropriate query based on user type
+  const adminSchedules = useAllJudgingSchedules(!isJudge && userTypeChecked);
+  const judgeSchedules = useJudgeSchedules(judgeId, isJudge && userTypeChecked);
 
   // Use appropriate data source
   const {
@@ -49,6 +55,14 @@ const JudgingLocationScreen = () => {
     isLoading,
     isError,
   } = isJudge ? judgeSchedules : adminSchedules;
+
+  useEffect(() => {
+    console.log("[DEBUG] Judging page - isJudge:", isJudge);
+    console.log("[DEBUG] Judging page - judgeId:", judgeId);
+    console.log("[DEBUG] Judging page - judgingData:", judgingData);
+    console.log("[DEBUG] Judging page - isLoading:", isLoading);
+    console.log("[DEBUG] Judging page - isError:", isError);
+  }, [isJudge, judgeId, judgingData, isLoading, isError]);
 
   // Calculate session status based on timestamps
   const getSessionStatus = (item: JudgingScheduleItem): SessionStatus => {

@@ -1,4 +1,5 @@
 import { CustomSplashScreen } from "@/components/loading/SplashScreen";
+import { AuthContext } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { useGetSponsorByPin, useJudgeLogin } from "@/queries/judge";
 import { Judge } from "@/types/judge";
@@ -12,7 +13,7 @@ import {
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -20,6 +21,7 @@ import Toast from "react-native-toast-message";
 const SignInJudge = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const authContext = useContext(AuthContext);
 
   const [step, setStep] = useState<"pin" | "select">("pin");
   const [pin, setPin] = useState("");
@@ -85,13 +87,19 @@ const SignInJudge = () => {
       // Store user type as judge
       await storeUserType("judge");
 
+      // IMPORTANT: Use signIn from AuthContext to update the app state
+      // This sets userToken which is needed for the (admin) route guard
+      if (authContext?.signIn) {
+        await authContext.signIn(result.token, result.token);
+      }
+
       Toast.show({
         type: "success",
         text1: "Welcome!",
         text2: `Signed in as ${judge.judge_name}`,
       });
 
-      // Navigate to judging screen
+      // Navigate to judging screen (works for both admin and judge)
       router.dismissAll();
       router.replace("/(admin)/judging");
     } catch (error) {
