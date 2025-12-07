@@ -55,7 +55,12 @@ export const useJudgeSchedules = (
     queryFn: async () => {
       if (!judgeId) throw new Error("Judge ID is required");
       try {
+        console.log(`[DEBUG] Fetching schedules for judge ${judgeId}`);
         const data = await getJudgeSchedules(judgeId);
+        console.log(
+          `[DEBUG] Judge ${judgeId} schedules response:`,
+          JSON.stringify(data, null, 2)
+        );
         return data.schedules;
       } catch (error) {
         devError("Judge schedules fetch error:", error);

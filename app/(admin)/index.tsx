@@ -14,8 +14,9 @@ import {
   Presentation,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -185,11 +186,15 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
 
 const RecentAnnouncement = ({
   themeStyles,
+  userType,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
+  userType: string | null;
 }) => {
-  // Fetch all announcements
-  const { data: announcements = [] } = useAnnouncementsData();
+  // Fetch all announcements (skip for judges - they don't have access)
+  const { data: announcements = [] } = useAnnouncementsData(
+    userType !== "judge"
+  );
   const { isDark } = useTheme();
 
   // Get the most recent announcement (API returns them sorted newest first)
@@ -295,15 +300,16 @@ const RecentAnnouncement = ({
 
 const UpcomingEvents = ({
   themeStyles,
+  userType,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
+  userType: string | null;
 }) => {
-  // Fetch all schedules - include all event types
-  const { data: schedules = [] } = useScheduleData([
-    "activity",
-    "networking",
-    "food",
-  ]);
+  // Fetch all schedules - include all event types (skip for judges - they don't have access)
+  const { data: schedules = [] } = useScheduleData(
+    ["activity", "networking", "food"],
+    userType !== "judge"
+  );
 
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
@@ -497,6 +503,16 @@ const AdminDashboard = () => {
   const themeStyles = getThemeStyles(isDark);
   const { hackerData } = useAuth();
   const { handleScroll } = useScrollNavBar();
+  const [userType, setUserType] = useState<string | null>(null);
+
+  // Get user type for conditional rendering
+  useEffect(() => {
+    const loadUserType = async () => {
+      const type = await getUserType();
+      setUserType(type);
+    };
+    loadUserType();
+  }, []);
 
   // Filter dashboard items - hide onboarding test for hackers
   const dashboardItems = DASHBOARD_ITEMS.filter((item) => {
@@ -515,8 +531,8 @@ const AdminDashboard = () => {
       >
         <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
         <DashboardGrid items={dashboardItems} />
-        <RecentAnnouncement themeStyles={themeStyles} />
-        <UpcomingEvents themeStyles={themeStyles} />
+        <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
+        <UpcomingEvents themeStyles={themeStyles} userType={userType} />
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
         <View className="h-8" />
       </ScrollView>

@@ -57,12 +57,21 @@ const JudgingLocationScreen = () => {
   } = isJudge ? judgeSchedules : adminSchedules;
 
   useEffect(() => {
+    console.log("[DEBUG] Judging page - userTypeChecked:", userTypeChecked);
     console.log("[DEBUG] Judging page - isJudge:", isJudge);
     console.log("[DEBUG] Judging page - judgeId:", judgeId);
+    console.log(
+      "[DEBUG] Judging page - admin query enabled:",
+      !isJudge && userTypeChecked
+    );
+    console.log(
+      "[DEBUG] Judging page - judge query enabled:",
+      isJudge && userTypeChecked
+    );
     console.log("[DEBUG] Judging page - judgingData:", judgingData);
     console.log("[DEBUG] Judging page - isLoading:", isLoading);
     console.log("[DEBUG] Judging page - isError:", isError);
-  }, [isJudge, judgeId, judgingData, isLoading, isError]);
+  }, [isJudge, judgeId, judgingData, isLoading, isError, userTypeChecked]);
 
   // Calculate session status based on timestamps
   const getSessionStatus = (item: JudgingScheduleItem): SessionStatus => {
