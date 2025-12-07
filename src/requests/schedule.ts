@@ -1,23 +1,40 @@
 import { Schedule } from "@/types/schedule";
 import { devLog } from "@/utils/logger";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import axios from "./axios";
 
 const scheduleEndpoints = {
-  fetchAllSchedules: "/api/v13/hackers/schedules/",
-  fetchScheduleByID: "/api/v13/hackers/schedules/{id}/",
+  hackers: {
+    fetchAllSchedules: "/api/v13/hackers/schedules/",
+    fetchScheduleByID: "/api/v13/hackers/schedules/{id}/",
+  },
+  admins: {
+    fetchAllSchedules: "/api/v13/admins/schedules/",
+    fetchScheduleByID: "/api/v13/admins/schedules/{id}/",
+  },
 };
+
 // Fetch all scheduled events
 export async function fetchAllSchedules(): Promise<Schedule[]> {
-  const response = await axios.get(scheduleEndpoints.fetchAllSchedules);
+  const userType = await getUserType();
+  const endpoint =
+    userType === "admin"
+      ? scheduleEndpoints.admins.fetchAllSchedules
+      : scheduleEndpoints.hackers.fetchAllSchedules;
+
+  const response = await axios.get(endpoint);
   return response.data;
 }
 
 // Fetch a scheduled event by ID
 export async function fetchScheduleById(schedule: number): Promise<Schedule> {
-  const url = scheduleEndpoints.fetchScheduleByID.replace(
-    "{id}",
-    schedule.toString()
-  );
+  const userType = await getUserType();
+  const baseEndpoint =
+    userType === "admin"
+      ? scheduleEndpoints.admins.fetchScheduleByID
+      : scheduleEndpoints.hackers.fetchScheduleByID;
+
+  const url = baseEndpoint.replace("{id}", schedule.toString());
   devLog("Fetching schedule by ID:", url);
   const response = await axios.get(url);
   return response.data;

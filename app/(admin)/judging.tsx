@@ -1,10 +1,14 @@
 import { useTheme } from "@/context/themeContext";
-import { JudgingScheduleItem } from "@/types/judging";
+import { useJudgeSchedules } from "@/queries/judge";
+import { useAllJudgingSchedules } from "@/queries/judging";
+import { JudgingScheduleItem, SessionStatus } from "@/types/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Timer } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -18,10 +22,88 @@ const JudgingLocationScreen = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
-  // Note: Since there's no list endpoint, we'll show a message
-  const judgingData: JudgingScheduleItem[] | null = null;
-  const isLoading = false;
-  const isError = false;
+
+  const [isJudge, setIsJudge] = useState(false);
+  const [judgeId, setJudgeId] = useState<number | null>(null);
+
+  // Check if user is a judge
+  useEffect(() => {
+    const checkUserType = async () => {
+      const userType = await getUserType();
+      if (userType === "judge") {
+        setIsJudge(true);
+        const id = await getJudgeId();
+        setJudgeId(id);
+      }
+    };
+    checkUserType();
+  }, []);
+
+  // Fetch schedules based on user type
+  const adminSchedules = useAllJudgingSchedules();
+  const judgeSchedules = useJudgeSchedules(judgeId);
+
+  // Use appropriate data source
+  const {
+    data: judgingData,
+    isLoading,
+    isError,
+  } = isJudge ? judgeSchedules : adminSchedules;
+
+  // Calculate session status based on timestamps
+  const getSessionStatus = (item: JudgingScheduleItem): SessionStatus => {
+    const now = new Date().getTime();
+    const scheduledTime = new Date(item.timestamp).getTime();
+    const durationMs = item.duration * 60 * 1000;
+
+    if (item.actual_timestamp) {
+      const actualStartTime = new Date(item.actual_timestamp).getTime();
+      const elapsedMs = now - actualStartTime;
+
+      if (elapsedMs >= durationMs) {
+        return "completed";
+      }
+      return "in-progress";
+    }
+
+    // Not started yet
+    if (now < scheduledTime) {
+      return "upcoming";
+    }
+
+    // Scheduled time has passed but not started
+    return "overdue";
+  };
+
+  const getStatusColor = (status: SessionStatus) => {
+    switch (status) {
+      case "upcoming":
+        return "text-blue-500";
+      case "in-progress":
+        return "text-green-500";
+      case "completed":
+        return "text-gray-500";
+      case "overdue":
+        return "text-red-500";
+      default:
+        return themeStyles.secondaryText;
+    }
+  };
+
+  const getStatusText = (status: SessionStatus) => {
+    switch (status) {
+      case "upcoming":
+        return "Upcoming";
+      case "in-progress":
+        return "In Progress";
+      case "completed":
+        return "Completed";
+      case "overdue":
+        return "Overdue";
+      default:
+        return "";
+    }
+  };
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -34,8 +116,12 @@ const JudgingLocationScreen = () => {
   };
 
   const renderScheduleCard = (item: JudgingScheduleItem, index: number) => {
+    const status = getSessionStatus(item);
+    const statusColor = getStatusColor(status);
+    const statusText = getStatusText(status);
+
     return (
-      <View
+      <Pressable
         key={item.judging_schedule_id || index}
         className={cn(
           "rounded-2xl p-4 mb-3 border",
@@ -48,6 +134,13 @@ const JudgingLocationScreen = () => {
           shadowRadius: 4,
           elevation: 3,
         }}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          router.push({
+            pathname: "/(admin)/judgingTimer",
+            params: { scheduleId: item.judging_schedule_id.toString() },
+          });
+        }}
       >
         <View className="flex-row justify-between items-start mb-2">
           <Text
@@ -58,11 +151,14 @@ const JudgingLocationScreen = () => {
           >
             {item.location}
           </Text>
-          <Text
-            className={cn("text-sm font-pp ml-2", themeStyles.secondaryText)}
-          >
-            {item.duration} min
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Text className={cn("text-xs font-pp font-bold", statusColor)}>
+              {statusText}
+            </Text>
+            <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
+              {item.duration} min
+            </Text>
+          </View>
         </View>
         <View className="flex-row justify-between items-center">
           <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
@@ -72,7 +168,7 @@ const JudgingLocationScreen = () => {
             {formatTime(item.timestamp)}
           </Text>
         </View>
-      </View>
+      </Pressable>
     );
   };
 

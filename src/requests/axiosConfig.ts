@@ -17,9 +17,8 @@ const ENDPOINTS_WITHOUT_AUTH = [
   "/api/v13/admins/refresh",
   "/api/v13/hackers/login",
   "/api/v13/hackers/refresh",
-
-  // Testing: Backend docs say public, but we need to verify
-  "/api/v13/hackers/schedules/",
+  "/api/v13/judges/sponsor-by-pin",
+  "/api/v13/judges/login",
 ] as const;
 
 export const axiosInstance: AxiosInstance = axios.create({

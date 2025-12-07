@@ -5,6 +5,7 @@ export const ACCESS_TOKEN_KEY = "ACCESS_TOKEN";
 export const REFRESH_TOKEN = "REFRESH_TOKEN";
 export const FIRST_SIGN_SIGN_IN = "FIRST_SIGN_IN";
 export const USER_TYPE_KEY = "USER_TYPE";
+export const JUDGE_ID_KEY = "JUDGE_ID";
 
 // Store the auth tokens in the secure storage
 
@@ -106,6 +107,27 @@ export const getUserType = async (): Promise<string | null> => {
   }
 };
 
+export const storeJudgeId = async (judgeId: number): Promise<void | null> => {
+  try {
+    await SecureStore.setItemAsync(JUDGE_ID_KEY, judgeId.toString());
+    devLog("Successfully stored judge ID:", judgeId);
+  } catch (error) {
+    devError("Error storing judge ID:", error);
+    return null;
+  }
+};
+
+export const getJudgeId = async (): Promise<number | null> => {
+  try {
+    const judgeId = await SecureStore.getItemAsync(JUDGE_ID_KEY);
+    devLog("Successfully fetched judge ID:", judgeId);
+    return judgeId ? parseInt(judgeId) : null;
+  } catch (error) {
+    devError("Error retrieving judge ID:", error);
+    return null;
+  }
+};
+
 export default {
   storeAuthTokens,
   getAuthTokens,
@@ -115,4 +137,6 @@ export default {
   removeSecureToken,
   storeUserType,
   getUserType,
+  storeJudgeId,
+  getJudgeId,
 };

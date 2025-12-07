@@ -6,7 +6,7 @@ import {
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Play, Timer } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -24,11 +24,28 @@ const JudgingTimerScreen = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
+  const params = useLocalSearchParams();
 
   const [scheduleId, setScheduleId] = useState("");
   const [activeScheduleId, setActiveScheduleId] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [milestonesTriggered, setMilestonesTriggered] = useState({
+    fifty: false,
+    eighty: false,
+    hundred: false,
+  });
+
+  // Auto-load schedule from route params
+  useEffect(() => {
+    if (params.scheduleId && typeof params.scheduleId === "string") {
+      const id = parseInt(params.scheduleId, 10);
+      if (!isNaN(id) && id > 0) {
+        setActiveScheduleId(id);
+        setScheduleId(params.scheduleId);
+      }
+    }
+  }, [params.scheduleId]);
 
   const {
     data: scheduleData,
@@ -37,7 +54,7 @@ const JudgingTimerScreen = () => {
   } = useJudgingScheduleById(activeScheduleId || 0);
   const startTimerMutation = useStartJudgingTimer();
 
-  // Timer logic
+  // Timer logic with milestone tracking
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -48,18 +65,83 @@ const JudgingTimerScreen = () => {
         const now = Date.now();
         const elapsed = Math.floor((now - startTime) / 1000);
         setElapsedTime(elapsed);
+
+        // Check milestones
+        if (scheduleData) {
+          const durationSeconds = scheduleData.duration * 60;
+          const progress = (elapsed / durationSeconds) * 100;
+
+          // 50% milestone
+          if (progress >= 50 && !milestonesTriggered.fifty) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            Toast.show({
+              type: "info",
+              text1: "Halfway Through",
+              text2: "50% of session time elapsed",
+            });
+            setMilestonesTriggered((prev) => ({ ...prev, fifty: true }));
+          }
+
+          // 80% milestone
+          if (progress >= 80 && !milestonesTriggered.eighty) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            Toast.show({
+              type: "warning",
+              text1: "Time Running Low",
+              text2: "80% of session time elapsed",
+            });
+            setMilestonesTriggered((prev) => ({ ...prev, eighty: true }));
+          }
+
+          // 100% milestone
+          if (progress >= 100 && !milestonesTriggered.hundred) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            Toast.show({
+              type: "error",
+              text1: "Time's Up!",
+              text2: "Scheduled session time has elapsed",
+            });
+            setMilestonesTriggered((prev) => ({ ...prev, hundred: true }));
+          }
+        }
       }, 100);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, scheduleData?.actual_timestamp]);
+  }, [
+    isRunning,
+    scheduleData?.actual_timestamp,
+    milestonesTriggered,
+    scheduleData,
+  ]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Calculate progress percentage and time remaining
+  const getProgress = () => {
+    if (!scheduleData) return 0;
+    const durationSeconds = scheduleData.duration * 60;
+    return Math.min((elapsedTime / durationSeconds) * 100, 100);
+  };
+
+  const getTimeRemaining = () => {
+    if (!scheduleData) return 0;
+    const durationSeconds = scheduleData.duration * 60;
+    const remaining = durationSeconds - elapsedTime;
+    return Math.max(remaining, 0);
+  };
+
+  const getTimerColor = () => {
+    const progress = getProgress();
+    if (progress >= 100) return "#EF4444"; // red-500
+    if (progress >= 80) return "#F59E0B"; // amber-500
+    return "#10B981"; // green-500
   };
 
   const formatDateTime = (timestamp: string) => {
@@ -96,6 +178,7 @@ const JudgingTimerScreen = () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       await startTimerMutation.mutateAsync(activeScheduleId);
       setIsRunning(true);
+      setMilestonesTriggered({ fifty: false, eighty: false, hundred: false });
       Toast.show({
         type: "success",
         text1: "Timer Started",
@@ -348,14 +431,57 @@ const JudgingTimerScreen = () => {
               )}
             >
               <Timer size={48} color={isDark ? "#75EDEF" : "#132B38"} />
+
+              {/* Elapsed Time */}
               <Text
-                className={cn(
-                  "text-6xl font-onest-bold mt-4",
-                  isRunning ? "text-green-500" : themeStyles.primaryText
-                )}
+                className="text-6xl font-onest-bold mt-4"
+                style={{
+                  color: isRunning ? getTimerColor() : isDark ? "#fff" : "#000",
+                }}
               >
                 {formatTime(elapsedTime)}
               </Text>
+
+              {/* Time Remaining */}
+              {isRunning && (
+                <Text
+                  className={cn(
+                    "text-lg font-pp mt-2",
+                    themeStyles.secondaryText
+                  )}
+                >
+                  {formatTime(getTimeRemaining())} remaining
+                </Text>
+              )}
+
+              {/* Progress Bar */}
+              {isRunning && (
+                <View className="w-full mt-4">
+                  <View
+                    className={cn(
+                      "h-2 rounded-full overflow-hidden",
+                      isDark ? "bg-gray-700" : "bg-gray-200"
+                    )}
+                  >
+                    <View
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${getProgress()}%`,
+                        backgroundColor: getTimerColor(),
+                      }}
+                    />
+                  </View>
+                  <Text
+                    className={cn(
+                      "text-xs font-pp mt-2 text-center",
+                      themeStyles.secondaryText
+                    )}
+                  >
+                    {getProgress().toFixed(0)}% complete
+                  </Text>
+                </View>
+              )}
+
               <Text
                 className={cn(
                   "text-sm font-pp mt-2",

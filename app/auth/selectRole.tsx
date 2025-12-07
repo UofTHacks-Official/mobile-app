@@ -118,7 +118,7 @@ const SelectRole = () => {
         break;
       case "Judge":
         setUserType("judge");
-        router.navigate(`/auth/signInAdmin?role=judge`);
+        router.navigate(`/auth/signInJudge`);
         break;
       case "Hacker":
         setUserType("hacker");
