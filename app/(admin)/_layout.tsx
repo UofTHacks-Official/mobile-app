@@ -10,12 +10,14 @@ export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
   const [isJudge, setIsJudge] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isHacker, setIsHacker] = useState(false);
 
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
       setIsJudge(userType === "judge");
       setIsAdmin(userType === "admin");
+      setIsHacker(userType === "hacker");
     };
     checkUserType();
   }, []);
@@ -55,6 +57,11 @@ export default function AdminLayout() {
 
             // Hide schedule for judges
             if (route.name === "schedule" && isJudge) {
+              return false;
+            }
+
+            // Hide judging for hackers
+            if (route.name === "judging" && isHacker) {
               return false;
             }
 
