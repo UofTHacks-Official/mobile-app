@@ -52,24 +52,22 @@ const Event = ({
   return (
     <Pressable
       onPress={handlePress}
-      className={`absolute px-2 py-2 border-l-4 ${colors.borderClass} ${colors.backgroundColor}`}
+      className={`absolute px-1 py-1 border-l-4 ${colors.borderClass} ${colors.backgroundColor}`}
       style={[
         {
           zIndex: 1,
           borderRadius: 4,
-          paddingRight: 8,
+          paddingRight: 4,
           marginRight: 8,
+          justifyContent: "center",
         },
         style,
       ]}
     >
       <Text
         className={`font-pp text-xs font-semibold ${colors.textClass}`}
-        numberOfLines={2}
-        style={{
-          minHeight: 32,
-          lineHeight: 16,
-        }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
       >
         {title}
       </Text>

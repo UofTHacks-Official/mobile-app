@@ -206,42 +206,93 @@ export const useJudgeScheduleData = (
           (s) => s.judge_id === judgeId
         );
 
-        // Transform judging schedules to Schedule format
-        const transformedSchedules: Schedule[] = judgeSchedules.map(
-          (judgeSchedule) => {
-            const startTime = new Date(judgeSchedule.timestamp);
-            const endTime = new Date(
-              startTime.getTime() + judgeSchedule.duration * 60000
-            );
+        if (judgeSchedules.length === 0) {
+          return [];
+        }
 
-            console.log("[DEBUG] Judging schedule item:", {
-              id: judgeSchedule.judging_schedule_id,
-              timestamp: judgeSchedule.timestamp,
-              startTime: startTime.toISOString(),
-              location: judgeSchedule.location,
-            });
-
-            return {
-              id: `judging-${judgeSchedule.judging_schedule_id}`,
-              title: `Judging Session`,
-              description: judgeSchedule.location,
-              startTime: startTime.toISOString(),
-              endTime: endTime.toISOString(),
-              date: startTime,
-              type: "activity" as ScheduleType,
-              sponsorId: null,
-              isShift: false,
-              shiftType: null,
-            };
-          }
+        // Sort by timestamp
+        const sortedSchedules = [...judgeSchedules].sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
+
+        // Group consecutive sessions into blocks
+        const consolidatedBlocks: Schedule[] = [];
+        let currentBlock: {
+          start: Date;
+          end: Date;
+          sessions: typeof judgeSchedules;
+        } | null = null;
+
+        sortedSchedules.forEach((session) => {
+          const sessionStart = new Date(session.timestamp);
+          const sessionEnd = new Date(
+            sessionStart.getTime() + session.duration * 60000
+          );
+
+          if (!currentBlock) {
+            // Start first block
+            currentBlock = {
+              start: sessionStart,
+              end: sessionEnd,
+              sessions: [session],
+            };
+          } else {
+            // Check if this session is within 30 minutes of the last session's end
+            const timeSinceLastEnd =
+              sessionStart.getTime() - currentBlock.end.getTime();
+            const thirtyMinutesInMs = 30 * 60 * 1000;
+
+            if (timeSinceLastEnd <= thirtyMinutesInMs) {
+              // Extend current block
+              currentBlock.end = sessionEnd;
+              currentBlock.sessions.push(session);
+            } else {
+              // Save current block and start new one
+              consolidatedBlocks.push({
+                id: `judging-block-${currentBlock.sessions[0].judging_schedule_id}`,
+                title: `Judging Sessions (${currentBlock.sessions.length})`,
+                description: `${currentBlock.sessions.length} projects to judge`,
+                startTime: currentBlock.start.toISOString(),
+                endTime: currentBlock.end.toISOString(),
+                date: currentBlock.start,
+                type: "activity" as ScheduleType,
+                sponsorId: null,
+                isShift: false,
+                shiftType: null,
+              });
+
+              currentBlock = {
+                start: sessionStart,
+                end: sessionEnd,
+                sessions: [session],
+              };
+            }
+          }
+        });
+
+        // Don't forget the last block
+        if (currentBlock) {
+          consolidatedBlocks.push({
+            id: `judging-block-${currentBlock.sessions[0].judging_schedule_id}`,
+            title: `Judging Sessions (${currentBlock.sessions.length})`,
+            description: `${currentBlock.sessions.length} projects to judge`,
+            startTime: currentBlock.start.toISOString(),
+            endTime: currentBlock.end.toISOString(),
+            date: currentBlock.start,
+            type: "activity" as ScheduleType,
+            sponsorId: null,
+            isShift: false,
+            shiftType: null,
+          });
+        }
 
         console.log(
-          "[DEBUG] Transformed schedules count:",
-          transformedSchedules.length
+          "[DEBUG] Consolidated blocks count:",
+          consolidatedBlocks.length
         );
-        console.log("[DEBUG] First schedule:", transformedSchedules[0]);
-        return transformedSchedules;
+        console.log("[DEBUG] First block:", consolidatedBlocks[0]);
+        return consolidatedBlocks;
       } catch (error) {
         devError("Judge schedule data fetch error:", error);
         throw error;

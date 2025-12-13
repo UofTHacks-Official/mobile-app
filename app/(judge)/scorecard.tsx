@@ -73,7 +73,7 @@ const Scorecard = () => {
 
   // Calculate total score
   const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0);
-  const maxScore = 21; // 7 criteria × 3 points
+  const maxScore = 27; // Design(3) + Completion(4) + Theme(3) + Innovation(5) + Tech(5) + Pitching(5) + Time(2)
 
   // Calculate round information
   const getRoundInfo = () => {
@@ -304,43 +304,50 @@ const Scorecard = () => {
             label="Design"
             value={scores.design}
             onChange={(val) => handleScoreChange("design", val)}
-            tooltipText={SCORING_CRITERIA_INFO.design}
+            criteriaInfo={SCORING_CRITERIA_INFO.design}
+            max={3}
           />
           <ScoringSlider
             label="Completion"
             value={scores.completion}
             onChange={(val) => handleScoreChange("completion", val)}
-            tooltipText={SCORING_CRITERIA_INFO.completion}
+            criteriaInfo={SCORING_CRITERIA_INFO.completion}
+            max={4}
           />
           <ScoringSlider
             label="Theme Relevance"
             value={scores.theme_relevance}
             onChange={(val) => handleScoreChange("theme_relevance", val)}
-            tooltipText={SCORING_CRITERIA_INFO.theme_relevance}
+            criteriaInfo={SCORING_CRITERIA_INFO.theme_relevance}
+            max={3}
           />
           <ScoringSlider
             label="Idea & Innovation"
             value={scores.idea_innovation}
             onChange={(val) => handleScoreChange("idea_innovation", val)}
-            tooltipText={SCORING_CRITERIA_INFO.idea_innovation}
+            criteriaInfo={SCORING_CRITERIA_INFO.idea_innovation}
+            max={5}
           />
           <ScoringSlider
-            label="Technology"
+            label="Technicality"
             value={scores.technology}
             onChange={(val) => handleScoreChange("technology", val)}
-            tooltipText={SCORING_CRITERIA_INFO.technology}
+            criteriaInfo={SCORING_CRITERIA_INFO.technology}
+            max={5}
           />
           <ScoringSlider
             label="Pitching"
             value={scores.pitching}
             onChange={(val) => handleScoreChange("pitching", val)}
-            tooltipText={SCORING_CRITERIA_INFO.pitching}
+            criteriaInfo={SCORING_CRITERIA_INFO.pitching}
+            max={5}
           />
           <ScoringSlider
             label="Time"
             value={scores.time_management}
             onChange={(val) => handleScoreChange("time_management", val)}
-            tooltipText={SCORING_CRITERIA_INFO.time_management}
+            criteriaInfo={SCORING_CRITERIA_INFO.time_management}
+            max={2}
           />
         </View>
 
@@ -357,7 +364,7 @@ const Scorecard = () => {
           <TextInput
             className={cn(
               "p-4 rounded-xl text-base font-pp min-h-[120px]",
-              isDark ? "bg-[#1a1a2e] text-white" : "bg-gray-100 text-black"
+              isDark ? "bg-[#303030] text-white" : "bg-gray-100 text-black"
             )}
             placeholder="Add feedback for the team..."
             placeholderTextColor={isDark ? "#888" : "#666"}

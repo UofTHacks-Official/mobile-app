@@ -16,7 +16,7 @@ import {
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import { getUserType , getJudgeId } from "@/utils/tokens/secureStorage";
+import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -519,6 +519,13 @@ const UpcomingEvents = ({
               >
                 {formatEventTime(event.startTime, event.endTime)}
               </Text>
+              {"location" in event && event.location && (
+                <Text
+                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                >
+                  {event.location}
+                </Text>
+              )}
             </View>
           </Pressable>
         ))}

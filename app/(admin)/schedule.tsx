@@ -114,6 +114,11 @@ const Schedule = () => {
     });
   };
 
+  // Define time range based on user type
+  const timeRange = isJudge
+    ? { start: 7, end: 17 } // 7 AM to 5 PM for judges
+    : { start: 0, end: 24 }; // Full day for hackers/admins
+
   const renderDaySchedules = (date: Date, index: number) => {
     const filtered = schedules.flatMap((schedule) => {
       const start = new Date(schedule.startTime);
@@ -205,6 +210,8 @@ const Schedule = () => {
         showCurrentTimeIndicator={isToday}
         currentMinute={currentMinute}
         hourHeight={hourHeight}
+        startHour={timeRange.start}
+        endHour={timeRange.end}
       />
     );
   };
@@ -277,17 +284,25 @@ const Schedule = () => {
                             borderRightColor: scheduleTheme.lineColor,
                           }}
                         >
-                          {Array.from({ length: 24 }, (_, i) => (
-                            <TimeSlot
-                              key={i}
-                              hour={i}
-                              isCurrentHour={i === currentHour}
-                              schedules={[]}
-                              hourHeight={hourHeight}
-                              onSchedulePress={() => {}}
-                              showTime={true}
-                            />
-                          ))}
+                          {Array.from(
+                            { length: timeRange.end - timeRange.start },
+                            (_, i) => {
+                              const hour = timeRange.start + i;
+                              return (
+                                <TimeSlot
+                                  key={hour}
+                                  hour={hour}
+                                  isCurrentHour={hour === currentHour}
+                                  schedules={[]}
+                                  hourHeight={hourHeight}
+                                  onSchedulePress={() => {}}
+                                  showTime={true}
+                                  startHour={timeRange.start}
+                                  endHour={timeRange.end}
+                                />
+                              );
+                            }
+                          )}
                         </View>
                         {renderDaySchedules(date, dayIndex)}
                       </View>
@@ -305,17 +320,25 @@ const Schedule = () => {
                       borderRightColor: scheduleTheme.lineColor,
                     }}
                   >
-                    {Array.from({ length: 24 }, (_, i) => (
-                      <TimeSlot
-                        key={i}
-                        hour={i}
-                        isCurrentHour={i === currentHour}
-                        schedules={[]}
-                        hourHeight={hourHeight}
-                        onSchedulePress={() => {}}
-                        showTime={true}
-                      />
-                    ))}
+                    {Array.from(
+                      { length: timeRange.end - timeRange.start },
+                      (_, i) => {
+                        const hour = timeRange.start + i;
+                        return (
+                          <TimeSlot
+                            key={hour}
+                            hour={hour}
+                            isCurrentHour={hour === currentHour}
+                            schedules={[]}
+                            hourHeight={hourHeight}
+                            onSchedulePress={() => {}}
+                            showTime={true}
+                            startHour={timeRange.start}
+                            endHour={timeRange.end}
+                          />
+                        );
+                      }
+                    )}
                   </View>
                   {dates.map((date, index) => renderDaySchedules(date, index))}
                 </View>
