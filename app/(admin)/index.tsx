@@ -235,65 +235,53 @@ const RecentAnnouncement = ({
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           // Could navigate to announcements page or show full announcement
         }}
-        className="rounded-2xl overflow-hidden"
+        className={cn("rounded-2xl p-4", isDark ? "bg-[#303030]" : "bg-white")}
         android_ripple={null}
         style={({ pressed }) => ({
           opacity: pressed ? 0.8 : 1,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         })}
       >
-        <LinearGradient
-          colors={
-            isDark
-              ? ["#1a1a2e", "#16213e", "#0f0f1e"]
-              : ["#EAF5FF", "#F6E6DC", "#FFE9EE"]
-          }
-          locations={isDark ? [0, 0.5, 1] : [0.1443, 0.4882, 0.7784]}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 0.77, y: 0.36 }}
-          className="rounded-2xl"
-        >
-          <BlurView
-            intensity={100}
-            tint={isDark ? "dark" : "light"}
-            className="p-4"
-          >
-            <View className="flex-row items-start gap-3">
-              <Image
-                source={AppIcon}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 12,
-                }}
-                resizeMode="cover"
-              />
-              <View className="flex-1">
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text
-                    className={cn(
-                      "text-lg font-['PPObjectSans-Bold'] flex-1",
-                      themeStyles.primaryText
-                    )}
-                    numberOfLines={1}
-                  >
-                    {recentAnnouncement.title}
-                  </Text>
-                  <Text
-                    className={cn("text-xs ml-2", themeStyles.secondaryText)}
-                  >
-                    {formatTimestamp(recentAnnouncement.created_at)}
-                  </Text>
-                </View>
-                <Text
-                  className={cn("text-sm mb-2", themeStyles.secondaryText)}
-                  numberOfLines={2}
-                >
-                  {recentAnnouncement.content}
-                </Text>
-              </View>
+        <View className="flex-row items-start gap-3">
+          <Image
+            source={AppIcon}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+            }}
+            resizeMode="cover"
+          />
+          <View className="flex-1">
+            <View className="flex-row items-start justify-between mb-2">
+              <Text
+                className={cn(
+                  "text-lg font-onest-bold flex-1",
+                  themeStyles.primaryText
+                )}
+                numberOfLines={2}
+              >
+                {recentAnnouncement.title}
+              </Text>
+              <Text
+                className={cn("text-xs ml-3", themeStyles.secondaryText)}
+                style={{ opacity: 0.7 }}
+              >
+                {formatTimestamp(recentAnnouncement.created_at)}
+              </Text>
             </View>
-          </BlurView>
-        </LinearGradient>
+            <Text
+              className={cn("text-sm leading-5", themeStyles.secondaryText)}
+              numberOfLines={3}
+            >
+              {recentAnnouncement.content}
+            </Text>
+          </View>
+        </View>
       </Pressable>
     </View>
   );
