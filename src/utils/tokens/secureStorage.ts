@@ -6,6 +6,7 @@ export const REFRESH_TOKEN = "REFRESH_TOKEN";
 export const FIRST_SIGN_SIGN_IN = "FIRST_SIGN_IN";
 export const USER_TYPE_KEY = "USER_TYPE";
 export const JUDGE_ID_KEY = "JUDGE_ID";
+export const SPONSOR_PIN_KEY = "SPONSOR_PIN";
 
 // Store the auth tokens in the secure storage
 
@@ -128,6 +129,27 @@ export const getJudgeId = async (): Promise<number | null> => {
   }
 };
 
+export const storeSponsorPin = async (pin: number): Promise<void | null> => {
+  try {
+    await SecureStore.setItemAsync(SPONSOR_PIN_KEY, pin.toString());
+    devLog("Successfully stored sponsor PIN:", pin);
+  } catch (error) {
+    devError("Error storing sponsor PIN:", error);
+    return null;
+  }
+};
+
+export const getSponsorPin = async (): Promise<number | null> => {
+  try {
+    const pin = await SecureStore.getItemAsync(SPONSOR_PIN_KEY);
+    devLog("Successfully fetched sponsor PIN:", pin);
+    return pin ? parseInt(pin) : null;
+  } catch (error) {
+    devError("Error retrieving sponsor PIN:", error);
+    return null;
+  }
+};
+
 export default {
   storeAuthTokens,
   getAuthTokens,
@@ -139,4 +161,6 @@ export default {
   getUserType,
   storeJudgeId,
   getJudgeId,
+  storeSponsorPin,
+  getSponsorPin,
 };

@@ -8,6 +8,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import {
   storeAuthTokens,
   storeJudgeId,
+  storeSponsorPin,
   storeUserType,
 } from "@/utils/tokens/secureStorage";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
@@ -80,6 +81,9 @@ const SignInJudge = () => {
 
       // Store judge ID for future API calls
       await storeJudgeId(judge.judge_id);
+
+      // Store sponsor PIN for fetching project data
+      await storeSponsorPin(parseInt(pin));
 
       // Store auth tokens (using same token for both access and refresh)
       await storeAuthTokens(result.token, result.token);

@@ -2,9 +2,11 @@ import { useTheme } from "@/context/themeContext";
 import { useTimer } from "@/context/timerContext";
 import { JudgingScheduleItem } from "@/types/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Play, Clock, MapPin, Users, CheckCircle } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -16,6 +18,16 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { activeTimerId, isTimerRunning } = useTimer();
+  const [isJudge, setIsJudge] = useState(false);
+
+  // Check if user is a judge
+  useEffect(() => {
+    const checkUserType = async () => {
+      const userType = await getUserType();
+      setIsJudge(userType === "judge");
+    };
+    checkUserType();
+  }, []);
 
   // Determine event status
   const getStatus = () => {
@@ -74,6 +86,17 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
     router.push({
       pathname: "/(admin)/judgingTimer",
       params: { scheduleId: event.judging_schedule_id },
+    });
+  };
+
+  const handleStartJudging = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: "/(judge)/projectOverview",
+      params: {
+        teamId: event.team_id,
+        scheduleId: event.judging_schedule_id,
+      },
     });
   };
 
@@ -152,14 +175,16 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         </View>
       </View>
 
-      {/* Start Timer Button */}
+      {/* Action Button - Different for Admin vs Judge */}
       <Pressable
-        onPress={handleStartTimer}
+        onPress={isJudge ? handleStartJudging : handleStartTimer}
         className={cn(
           "py-3 px-4 rounded-xl flex-row items-center justify-center gap-2",
           status.label === "Completed"
             ? "bg-gray-400"
-            : activeTimerId === event.judging_schedule_id && isTimerRunning
+            : activeTimerId === event.judging_schedule_id &&
+                isTimerRunning &&
+                !isJudge
               ? "bg-green-500"
               : isDark
                 ? "bg-[#75EDEF]"
@@ -170,7 +195,19 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
           opacity: status.label === "Completed" ? 0.5 : 1,
         }}
       >
-        {activeTimerId === event.judging_schedule_id && isTimerRunning ? (
+        {isJudge ? (
+          <>
+            <Play size={20} color={isDark ? "#000" : "#fff"} />
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                isDark ? "text-black" : "text-white"
+              )}
+            >
+              Start Judging
+            </Text>
+          </>
+        ) : activeTimerId === event.judging_schedule_id && isTimerRunning ? (
           <>
             <CheckCircle size={20} color="white" />
             <Text className="text-white text-base font-onest-bold">
