@@ -11,7 +11,6 @@ import {
   BanknoteArrowUp,
   Calendar,
   Camera,
-  ClipboardList,
   Gavel,
   Home,
   ScanLine,

@@ -2,7 +2,7 @@ import { ScoringSlider } from "@/components/ScoringSlider";
 import { useTheme } from "@/context/themeContext";
 import { useProject } from "@/queries/project";
 import { useSubmitScore } from "@/queries/scoring";
-import { useAllJudgingSchedules } from "@/queries/judging";
+import { useJudgeSchedules } from "@/queries/judging";
 import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
@@ -69,7 +69,7 @@ const Scorecard = () => {
   }, [params]);
 
   const { data: project, isLoading } = useProject(pin, teamId);
-  const { data: allSchedules } = useAllJudgingSchedules();
+  const { data: judgeSchedules } = useJudgeSchedules(judgeId);
 
   // Calculate total score
   const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0);
@@ -77,11 +77,10 @@ const Scorecard = () => {
 
   // Calculate round information
   const getRoundInfo = () => {
-    if (!allSchedules || !judgeId || !scheduleId) {
+    if (!judgeSchedules || !scheduleId) {
       return { currentRound: 1, totalRounds: 1 };
     }
 
-    const judgeSchedules = allSchedules.filter((s) => s.judge_id === judgeId);
     const sortedSchedules = [...judgeSchedules].sort(
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -138,10 +137,7 @@ const Scorecard = () => {
               });
 
               // Navigate to next project or back to schedule
-              if (allSchedules && judgeId && scheduleId) {
-                const judgeSchedules = allSchedules.filter(
-                  (s) => s.judge_id === judgeId
-                );
+              if (judgeSchedules && scheduleId) {
                 const sortedSchedules = [...judgeSchedules].sort(
                   (a, b) =>
                     new Date(a.timestamp).getTime() -

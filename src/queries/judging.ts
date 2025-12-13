@@ -4,6 +4,7 @@ import {
   getJudgingScheduleById,
   startJudgingTimer,
 } from "@/requests/judging";
+import { getJudgeSchedules } from "@/requests/judge";
 import { devError } from "@/utils/logger";
 import {
   MOCK_JUDGING_SCHEDULES,
@@ -15,7 +16,7 @@ import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
- * TanStack Query hook for fetching all judging schedules
+ * TanStack Query hook for fetching all judging schedules (Admin only)
  * @param enabled - Whether to enable this query (default: true)
  * @returns Query result with all judging schedules
  */
@@ -43,6 +44,55 @@ export const useAllJudgingSchedules = (enabled: boolean = true) => {
       }
     },
     enabled,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
+};
+
+/**
+ * TanStack Query hook for fetching a specific judge's schedules
+ * Uses the judge-specific endpoint that requires judge authentication
+ * @param judgeId - The ID of the judge (optional, will auto-fetch if not provided)
+ * @param enabled - Whether to enable this query (default: true)
+ * @returns Query result with judge's schedules
+ */
+export const useJudgeSchedules = (
+  judgeId?: number | null,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: ["judge-schedules", judgeId],
+    queryFn: async () => {
+      console.log("[DEBUG] Fetching judge schedules...");
+
+      // Get judgeId if not provided
+      const id = judgeId ?? (await getJudgeId());
+      if (!id) {
+        throw new Error("Judge ID not found");
+      }
+
+      // Use mock data if enabled
+      if (USE_MOCK_JUDGING_DATA) {
+        console.log("[DEBUG] Using mock data for judge", id);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const judgeSchedules = MOCK_JUDGING_SCHEDULES.filter(
+          (s) => s.judge_id === id
+        );
+        return judgeSchedules;
+      }
+
+      try {
+        console.log("[DEBUG] Calling GET /api/v13/judges/{judge_id}/schedules");
+        const response = await getJudgeSchedules(id);
+        console.log("[DEBUG] Received judge schedules:", response.schedules);
+        return response.schedules;
+      } catch (error) {
+        devError("Judge schedules fetch error:", error);
+        throw error;
+      }
+    },
+    enabled: enabled && judgeId !== null,
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,

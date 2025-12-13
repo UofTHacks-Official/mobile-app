@@ -9,7 +9,6 @@ import { useContext, useEffect, useState } from "react";
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
   const [isJudge, setIsJudge] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isHacker, setIsHacker] = useState(false);
   const [isVolunteer, setIsVolunteer] = useState(false);
 
@@ -17,7 +16,6 @@ export default function AdminLayout() {
     const checkUserType = async () => {
       const userType = await getUserType();
       setIsJudge(userType === "judge");
-      setIsAdmin(userType === "admin");
       setIsHacker(userType === "hacker");
       setIsVolunteer(userType === "volunteer");
     };

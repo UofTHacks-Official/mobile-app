@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
-import { BlurView } from "expo-blur";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 
