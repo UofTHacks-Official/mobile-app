@@ -3,7 +3,7 @@ import { useTimer } from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
-  useAllJudgingSchedules,
+  useJudgeSchedules,
 } from "@/queries/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
@@ -69,69 +69,83 @@ const JudgingTimerScreen = () => {
   } = useJudgingScheduleById(activeScheduleId || 0);
   const startTimerMutation = useStartJudgingTimer();
 
-  // Fetch all schedules to calculate round count for this judge
-  const { data: allSchedules } = useAllJudgingSchedules();
+  // Fetch judge's schedules to calculate round count
+  // Only enabled when we have schedule data to get the judge_id
+  const { data: judgeSchedules } = useJudgeSchedules(
+    scheduleData?.judge_id ?? null,
+    !!scheduleData?.judge_id
+  );
 
-  // Restore timer state when returning to screen
+  // Restore timer state when returning to screen or context resets
   useEffect(() => {
     if (scheduleData && activeScheduleId && scheduleData.actual_timestamp) {
-      // Check if this schedule has an active timer in context
+      // Calculate current elapsed time to determine stage
+      const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
+        ? scheduleData.actual_timestamp
+        : scheduleData.actual_timestamp + "Z";
+      const startTime = new Date(timestampStr).getTime();
+      const now = Date.now();
+      const realElapsed = Math.floor((now - startTime) / 1000);
+      const totalElapsed = realElapsed - timerContext.totalPausedTime;
+
+      // Determine current stage based on elapsed time
+      const pitchingDuration = stages.pitching * 60;
+      const qaDuration = stages.qa * 60;
+      const bufferDuration = stages.buffer * 60;
+
+      let newStage: "pitching" | "qa" | "buffer" | "complete";
+      if (totalElapsed < pitchingDuration) {
+        newStage = "pitching";
+      } else if (totalElapsed < pitchingDuration + qaDuration) {
+        newStage = "qa";
+      } else if (
+        totalElapsed <
+        pitchingDuration + qaDuration + bufferDuration
+      ) {
+        newStage = "buffer";
+      } else {
+        newStage = "complete";
+      }
+
+      setCurrentStage(newStage);
+
+      // If timer is already running in context for this schedule, restore running state
       if (
         timerContext.isTimerRunning &&
         timerContext.activeTimerId === activeScheduleId
       ) {
-        // Restore the running state
         setIsRunning(true);
-
-        // Calculate current elapsed time to determine stage
-        const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
-          ? scheduleData.actual_timestamp
-          : scheduleData.actual_timestamp + "Z";
-        const startTime = new Date(timestampStr).getTime();
-        const now = Date.now();
-        const realElapsed = Math.floor((now - startTime) / 1000);
-        const totalElapsed = realElapsed - timerContext.totalPausedTime;
-
-        // Determine current stage based on elapsed time
-        const pitchingDuration = stages.pitching * 60;
-        const qaDuration = stages.qa * 60;
-        const bufferDuration = stages.buffer * 60;
-
-        if (totalElapsed < pitchingDuration) {
-          setCurrentStage("pitching");
-        } else if (totalElapsed < pitchingDuration + qaDuration) {
-          setCurrentStage("qa");
-        } else if (
-          totalElapsed <
-          pitchingDuration + qaDuration + bufferDuration
-        ) {
-          setCurrentStage("buffer");
-        } else {
-          setCurrentStage("complete");
-          setIsRunning(false);
-        }
-
         console.log(
-          "[DEBUG] Restored timer state - running:",
-          !timerContext.isPaused,
-          "paused:",
+          "[DEBUG] Restored running timer - paused:",
           timerContext.isPaused,
           "stage:",
-          currentStage
+          newStage
         );
+      } else if (newStage !== "complete") {
+        // Timer was started (has actual_timestamp) but context was reset
+        // Restore the timer state in both local and context
+        setIsRunning(true);
+        timerContext.startTimer(activeScheduleId);
+        console.log(
+          "[DEBUG] Restored timer after context reset - stage:",
+          newStage
+        );
+      } else {
+        // Timer is complete
+        setIsRunning(false);
+        console.log("[DEBUG] Timer complete - stage:", newStage);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     scheduleData,
     activeScheduleId,
     timerContext.isTimerRunning,
     timerContext.activeTimerId,
-    timerContext.isPaused,
     timerContext.totalPausedTime,
     stages.pitching,
     stages.qa,
     stages.buffer,
-    currentStage,
   ]);
 
   // Get current stage duration
@@ -335,14 +349,9 @@ const JudgingTimerScreen = () => {
 
   // Calculate round information for this judge
   const getRoundInfo = () => {
-    if (!scheduleData || !allSchedules) {
+    if (!scheduleData || !judgeSchedules) {
       return { currentRound: 1, totalRounds: 1 };
     }
-
-    // Filter schedules for this judge
-    const judgeSchedules = allSchedules.filter(
-      (s) => s.judge_id === scheduleData.judge_id
-    );
 
     // Sort by timestamp to get chronological order
     const sortedSchedules = [...judgeSchedules].sort(
