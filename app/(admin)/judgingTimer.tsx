@@ -126,6 +126,12 @@ const JudgingTimerScreen = () => {
     activeScheduleId,
     timerContext.isTimerRunning,
     timerContext.activeTimerId,
+    timerContext.isPaused,
+    timerContext.totalPausedTime,
+    stages.pitching,
+    stages.qa,
+    stages.buffer,
+    currentStage,
   ]);
 
   // Get current stage duration
@@ -205,6 +211,9 @@ const JudgingTimerScreen = () => {
     scheduleData?.actual_timestamp,
     currentStage,
     timerContext.totalPausedTime,
+    stages.pitching,
+    stages.qa,
+    stages.buffer,
   ]);
 
   const formatTime = (seconds: number) => {

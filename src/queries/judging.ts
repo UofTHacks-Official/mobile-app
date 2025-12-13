@@ -10,6 +10,7 @@ import {
   USE_MOCK_JUDGING_DATA,
 } from "@/utils/mockJudgingData";
 import { Schedule, ScheduleType } from "@/types/schedule";
+import { JudgingScheduleItem } from "@/types/judging";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -221,7 +222,7 @@ export const useJudgeScheduleData = (
         let currentBlock: {
           start: Date;
           end: Date;
-          sessions: typeof judgeSchedules;
+          sessions: JudgingScheduleItem[];
         } | null = null;
 
         sortedSchedules.forEach((session) => {
@@ -272,14 +273,19 @@ export const useJudgeScheduleData = (
         });
 
         // Don't forget the last block
-        if (currentBlock) {
+        if (currentBlock !== null) {
+          const block = currentBlock as {
+            start: Date;
+            end: Date;
+            sessions: JudgingScheduleItem[];
+          };
           consolidatedBlocks.push({
-            id: `judging-block-${currentBlock.sessions[0].judging_schedule_id}`,
-            title: `Judging Sessions (${currentBlock.sessions.length})`,
-            description: `${currentBlock.sessions.length} projects to judge`,
-            startTime: currentBlock.start.toISOString(),
-            endTime: currentBlock.end.toISOString(),
-            date: currentBlock.start,
+            id: `judging-block-${block.sessions[0].judging_schedule_id}`,
+            title: `Judging Sessions (${block.sessions.length})`,
+            description: `${block.sessions.length} projects to judge`,
+            startTime: block.start.toISOString(),
+            endTime: block.end.toISOString(),
+            date: block.start,
             type: "activity" as ScheduleType,
             sponsorId: null,
             isShift: false,
