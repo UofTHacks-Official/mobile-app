@@ -12,6 +12,8 @@ import {
   ScanQrCode,
   AlertTriangle,
   Presentation,
+  MapPin,
+  Clock,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
@@ -491,28 +493,46 @@ const UpcomingEvents = ({
             <View className="flex-1">
               <Text
                 className={cn(
-                  "text-base font-['PPObjectSans-Bold']",
+                  "text-lg font-onest-bold mb-1",
                   themeStyles.primaryText
                 )}
+                numberOfLines={1}
               >
                 {event.title}
               </Text>
-              <Text
-                className={cn("text-sm font-pp", themeStyles.secondaryText)}
-              >
-                {formatEventDate(event.startTime)}
-              </Text>
-              <Text
-                className={cn("text-sm font-pp", themeStyles.secondaryText)}
-              >
-                {formatEventTime(event.startTime, event.endTime)}
-              </Text>
-              {"location" in event && event.location && (
+              <View className="flex-row items-center gap-1 mb-0.5">
+                <Clock
+                  size={14}
+                  color={
+                    themeStyles.secondaryText === "text-gray-600"
+                      ? "#666"
+                      : "#A0A0A0"
+                  }
+                />
                 <Text
                   className={cn("text-sm font-pp", themeStyles.secondaryText)}
                 >
-                  {event.location}
+                  {formatEventDate(event.startTime)} •{" "}
+                  {formatEventTime(event.startTime, event.endTime)}
                 </Text>
+              </View>
+              {"location" in event && event.location && (
+                <View className="flex-row items-center gap-1">
+                  <MapPin
+                    size={14}
+                    color={
+                      themeStyles.secondaryText === "text-gray-600"
+                        ? "#666"
+                        : "#A0A0A0"
+                    }
+                  />
+                  <Text
+                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                    numberOfLines={1}
+                  >
+                    {event.location}
+                  </Text>
+                </View>
               )}
             </View>
           </Pressable>
