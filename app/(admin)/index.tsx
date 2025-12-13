@@ -25,7 +25,7 @@ import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
-import { useAllJudgingSchedules } from "@/queries/judging";
+import { useJudgeSchedules } from "@/queries/judging";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -295,17 +295,6 @@ const UpcomingEvents = ({
   userType: string | null;
 }) => {
   const isJudge = userType === "judge";
-
-  // Fetch hacker/admin schedules (skip for judges AND when userType is still loading)
-  const { data: hackerSchedules = [] } = useScheduleData(
-    ["activity", "networking", "food"],
-    userType !== null && !isJudge
-  );
-
-  // Fetch judging schedules for judges (only when we know they're a judge)
-  const { data: allJudgingSchedules = [] } = useAllJudgingSchedules(
-    userType !== null && isJudge
-  );
   const [judgeId, setJudgeId] = useState<number | null>(null);
 
   // Get judge ID for filtering
@@ -319,6 +308,18 @@ const UpcomingEvents = ({
     }
   }, [isJudge]);
 
+  // Fetch hacker/admin schedules (skip for judges AND when userType is still loading)
+  const { data: hackerSchedules = [] } = useScheduleData(
+    ["activity", "networking", "food"],
+    userType !== null && !isJudge
+  );
+
+  // Fetch judging schedules for judges using judge-specific endpoint
+  const { data: judgeSchedules = [] } = useJudgeSchedules(
+    judgeId,
+    userType !== null && isJudge
+  );
+
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
 
@@ -326,16 +327,7 @@ const UpcomingEvents = ({
   const upcomingEvents = useMemo(() => {
     if (isJudge) {
       // For judges: combine all judging sessions into one event
-      if (!judgeId) {
-        console.log("[DEBUG] No judge ID yet");
-        return [];
-      }
-
-      const judgeSchedules = allJudgingSchedules.filter(
-        (s) => s.judge_id === judgeId
-      );
-
-      if (judgeSchedules.length === 0) {
+      if (!judgeSchedules || judgeSchedules.length === 0) {
         return [];
       }
 
@@ -377,7 +369,7 @@ const UpcomingEvents = ({
         })
         .slice(0, 10);
     }
-  }, [isJudge, judgeId, allJudgingSchedules, hackerSchedules, currentTime]);
+  }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
