@@ -126,7 +126,7 @@ const Scorecard = () => {
               await submitScoreMutation.mutateAsync({
                 project_id: projectId,
                 score: totalScore,
-                max_score: 100, // Backend may scale this
+                max_score: maxScore,
                 category: project.categories[0] || "General",
                 feedback: notes,
               });
