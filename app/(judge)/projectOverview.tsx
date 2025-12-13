@@ -5,7 +5,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, Bell, ExternalLink } from "lucide-react-native";
+import { ChevronLeft, ExternalLink } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -163,11 +163,10 @@ const ProjectOverview = () => {
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <ScrollView className="flex-1 px-6">
         {/* Header */}
-        <View className="flex-row justify-between items-center mt-6 mb-4">
+        <View className="mt-6 mb-4">
           <Pressable onPress={handleGoBack}>
             <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
           </Pressable>
-          <Bell size={24} color={isDark ? "#fff" : "#000"} />
         </View>
 
         {/* Project Name and Round */}
@@ -196,7 +195,7 @@ const ProjectOverview = () => {
                 key={index}
                 className={cn(
                   "px-3 py-1.5 rounded-full",
-                  isDark ? "bg-[#1a1a2e]" : "bg-gray-200"
+                  isDark ? "bg-[#303030]" : "bg-gray-200"
                 )}
               >
                 <Text
@@ -227,10 +226,8 @@ const ProjectOverview = () => {
             <Pressable
               onPress={() => handleOpenLink(project.devpost_link)}
               className={cn(
-                "flex-row items-center gap-2 py-3 px-4 rounded-xl border",
-                isDark
-                  ? "bg-[#1a1a2e] border-gray-700"
-                  : "bg-white border-gray-300"
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
               )}
             >
               <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />
@@ -248,10 +245,8 @@ const ProjectOverview = () => {
             <Pressable
               onPress={() => handleOpenLink(project.github_link)}
               className={cn(
-                "flex-row items-center gap-2 py-3 px-4 rounded-xl border",
-                isDark
-                  ? "bg-[#1a1a2e] border-gray-700"
-                  : "bg-white border-gray-300"
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
               )}
             >
               <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />
@@ -269,10 +264,8 @@ const ProjectOverview = () => {
             <Pressable
               onPress={() => handleOpenLink(project.demo_link)}
               className={cn(
-                "flex-row items-center gap-2 py-3 px-4 rounded-xl border",
-                isDark
-                  ? "bg-[#1a1a2e] border-gray-700"
-                  : "bg-white border-gray-300"
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
               )}
             >
               <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />

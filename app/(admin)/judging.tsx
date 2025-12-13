@@ -1,4 +1,5 @@
 import { JudgingEventCard } from "@/components/JudgingEventCard";
+import { JudgeScheduleView } from "@/components/JudgeScheduleView";
 import { useTheme } from "@/context/themeContext";
 import { useJudgeSchedules } from "@/queries/judge";
 import {
@@ -205,23 +206,27 @@ const JudgingLocationScreen = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View className="mt-6">
-          <Text
-            className={cn(
-              "text-3xl font-onest-bold mb-2",
-              themeStyles.primaryText
-            )}
-          >
-            Judging
-          </Text>
-          <Text
-            className={cn("text-base font-pp mb-4", themeStyles.secondaryText)}
-          >
-            {isJudge
-              ? "View your judging sessions and timers"
-              : "Manage judging sessions and timers"}
-          </Text>
-        </View>
+        {/* Show different header for judges */}
+        {!isJudge && (
+          <View className="mt-6">
+            <Text
+              className={cn(
+                "text-3xl font-onest-bold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Judging
+            </Text>
+            <Text
+              className={cn(
+                "text-base font-pp mb-4",
+                themeStyles.secondaryText
+              )}
+            >
+              Manage judging sessions and timers
+            </Text>
+          </View>
+        )}
 
         {/* Generate Schedules Button (Admin Only, hidden when using mock data) */}
         {!isJudge && !USE_MOCK_JUDGING_DATA && (
@@ -304,22 +309,30 @@ const JudgingLocationScreen = () => {
           </View>
         )}
 
-        {/* Judging Events List */}
-        <View className="mt-4">
-          {sortedSchedules && sortedSchedules.length > 0 && (
-            <Text
-              className={cn(
-                "text-xl font-onest-bold mb-3",
-                themeStyles.primaryText
-              )}
-            >
-              Judging Events
-            </Text>
-          )}
-          {sortedSchedules?.map((event) => (
-            <JudgingEventCard key={event.judging_schedule_id} event={event} />
-          ))}
-        </View>
+        {/* Judging Events List - Different view for judges */}
+        {isJudge ? (
+          <View className="mt-6">
+            {sortedSchedules && sortedSchedules.length > 0 && (
+              <JudgeScheduleView schedules={sortedSchedules} />
+            )}
+          </View>
+        ) : (
+          <View className="mt-4">
+            {sortedSchedules && sortedSchedules.length > 0 && (
+              <Text
+                className={cn(
+                  "text-xl font-onest-bold mb-3",
+                  themeStyles.primaryText
+                )}
+              >
+                Judging Events
+              </Text>
+            )}
+            {sortedSchedules?.map((event) => (
+              <JudgingEventCard key={event.judging_schedule_id} event={event} />
+            ))}
+          </View>
+        )}
 
         {/* Loading state for admins */}
         {!isJudge && isLoading && (

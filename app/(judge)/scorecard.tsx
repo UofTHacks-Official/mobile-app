@@ -137,8 +137,42 @@ const Scorecard = () => {
                 text2: `Successfully scored ${project.project_name}`,
               });
 
-              // Navigate back to judging schedule
-              router.replace("/(admin)/judging");
+              // Navigate to next project or back to schedule
+              if (allSchedules && judgeId && scheduleId) {
+                const judgeSchedules = allSchedules.filter(
+                  (s) => s.judge_id === judgeId
+                );
+                const sortedSchedules = [...judgeSchedules].sort(
+                  (a, b) =>
+                    new Date(a.timestamp).getTime() -
+                    new Date(b.timestamp).getTime()
+                );
+
+                const currentIndex = sortedSchedules.findIndex(
+                  (s) => s.judging_schedule_id === scheduleId
+                );
+
+                if (
+                  currentIndex >= 0 &&
+                  currentIndex < sortedSchedules.length - 1
+                ) {
+                  // Navigate to next project
+                  const nextSchedule = sortedSchedules[currentIndex + 1];
+                  router.replace({
+                    pathname: "/(judge)/projectOverview",
+                    params: {
+                      teamId: nextSchedule.team_id,
+                      scheduleId: nextSchedule.judging_schedule_id,
+                    },
+                  });
+                } else {
+                  // Last project, go back to schedule
+                  router.replace("/(admin)/judging");
+                }
+              } else {
+                // Fallback: go back to schedule
+                router.replace("/(admin)/judging");
+              }
             } catch (error: any) {
               Toast.show({
                 type: "error",
@@ -219,7 +253,7 @@ const Scorecard = () => {
                   key={index}
                   className={cn(
                     "px-3 py-1.5 rounded-full",
-                    isDark ? "bg-[#1a1a2e]" : "bg-gray-200"
+                    isDark ? "bg-[#303030]" : "bg-gray-200"
                   )}
                 >
                   <Text

@@ -53,14 +53,15 @@ const Profile = () => {
         </View>
 
         <View className="mt-12 gap-y-6 pb-20">
-          <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
-            <View className="flex-row items-center gap-2 mb-4">
+          {/* Account Information */}
+          <View>
+            <View className="flex-row items-center gap-2 mb-3">
               <User size={20} color={theme.iconColor} />
               <Text
                 className={cn(
-                  "font-bold",
+                  "font-bold text-base",
                   theme.textPrimaryBold,
-                  theme.cardText
+                  theme.primaryText
                 )}
               >
                 Account Information
@@ -68,15 +69,17 @@ const Profile = () => {
             </View>
 
             {profileLoading ? (
-              <CustomSplashScreen />
+              <View className={cn("p-4 rounded-md", theme.lightCardBackground)}>
+                <CustomSplashScreen />
+              </View>
             ) : hacker ? (
-              <View className="space-y-3">
-                <View
-                  className={cn(
-                    "flex-row justify-between",
-                    theme.lightCardBackground
-                  )}
-                >
+              <View
+                className={cn(
+                  "p-4 rounded-md space-y-3",
+                  theme.lightCardBackground
+                )}
+              >
+                <View className="flex-row justify-between">
                   <Text className={cn(theme.textSecondary, theme.cardText)}>
                     First Name:
                   </Text>
@@ -102,13 +105,13 @@ const Profile = () => {
                 </View>
               </View>
             ) : adminData ? (
-              <View className="space-y-3">
-                <View
-                  className={cn(
-                    "flex-row justify-between",
-                    theme.lightCardBackground
-                  )}
-                >
+              <View
+                className={cn(
+                  "p-4 rounded-md space-y-3",
+                  theme.lightCardBackground
+                )}
+              >
+                <View className="flex-row justify-between">
                   <Text className={cn(theme.textSecondary, theme.cardText)}>
                     Username:
                   </Text>
@@ -128,11 +131,11 @@ const Profile = () => {
             ) : (
               <View
                 className={cn(
-                  "my-4 p-2 items-center rounded-md",
-                  theme.errorBackground
+                  "p-4 items-center rounded-md",
+                  theme.lightCardBackground
                 )}
               >
-                <Text className={cn(theme.textSecondary, theme.cardText)}>
+                <Text className={cn("text-base", theme.cardText)}>
                   Unable to load profile data
                 </Text>
               </View>
@@ -140,70 +143,89 @@ const Profile = () => {
           </View>
 
           {/* Notifications Section */}
-          <Pressable
-            className={cn(theme.cardStyle, theme.lightCardBackground)}
-            onPress={openSettings}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <View className="flex-row items-center gap-2">
+          <View>
+            <View className="flex-row items-center gap-2 mb-3">
               <Bell size={20} color={theme.iconColor} />
-              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+              <Text
+                className={cn(
+                  "font-bold text-base",
+                  theme.textPrimaryBold,
+                  theme.primaryText
+                )}
+              >
                 Notifications
               </Text>
             </View>
 
-            <View
+            <Pressable
               className={cn(
-                "my-4 p-2 items-center rounded-md",
-                theme.errorBackground
+                "p-4 items-center rounded-md",
+                theme.lightCardBackground
               )}
+              onPress={openSettings}
+              android_ripple={null}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.8 : 1,
+              })}
             >
-              <Text className={cn(theme.textSecondary, "text-black")}>
+              <Text className={cn("text-base", theme.cardText)}>
                 Manage Notification Preferences
               </Text>
-            </View>
-          </Pressable>
+            </Pressable>
+          </View>
 
           {/* Camera Permissions Section */}
-          <Pressable
-            className={cn(theme.cardStyle, theme.lightCardBackground)}
-            onPress={openSettings}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <View className="flex-row items-center gap-2">
+          <View>
+            <View className="flex-row items-center gap-2 mb-3">
               <Camera size={20} color={theme.iconColor} />
-              <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+              <Text
+                className={cn(
+                  "font-bold text-base",
+                  theme.textPrimaryBold,
+                  theme.primaryText
+                )}
+              >
                 Camera
               </Text>
             </View>
 
-            <View
+            <Pressable
               className={cn(
-                "my-4 p-2 items-center rounded-md",
-                theme.errorBackground
+                "p-4 items-center rounded-md",
+                theme.lightCardBackground
               )}
+              onPress={openSettings}
+              android_ripple={null}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.8 : 1,
+              })}
             >
-              <Text className={cn(theme.textSecondary, "text-black")}>
+              <Text className={cn("text-base", theme.cardText)}>
                 Manage Camera Preferences
               </Text>
-            </View>
-          </Pressable>
+            </Pressable>
+          </View>
 
           {(adminData || hackerData) && (
-            <View className={cn(theme.cardStyle, theme.lightCardBackground)}>
-              <View className="flex-row items-center gap-2">
+            <View>
+              <View className="flex-row items-center gap-2 mb-3">
                 <CalendarCheck2Icon size={20} color={theme.iconColor} />
-                <Text className={cn(theme.cardText, theme.textPrimaryBold)}>
+                <Text
+                  className={cn(
+                    "font-bold text-base",
+                    theme.textPrimaryBold,
+                    theme.primaryText
+                  )}
+                >
                   Last Sign In
                 </Text>
               </View>
-              <View className="flex-row justify-between py-4">
+              <View
+                className={cn(
+                  "flex-row justify-between p-4 rounded-md",
+                  theme.lightCardBackground
+                )}
+              >
                 <Text className={cn(theme.textSecondary, theme.cardText)}>
                   Last Sign In:
                 </Text>
