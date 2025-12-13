@@ -145,7 +145,7 @@ const CustomTabBar = ({
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["60%", "85%"], // Narrower default without labels, wider when expanded
+    outputRange: ["70%", "85%"], // Narrower default without labels, wider when expanded
   });
 
   // Fade in the scan options
@@ -286,9 +286,10 @@ const CustomTabBar = ({
 
           {/* Tab Bar Icons */}
           <Animated.View
-            className="flex-row justify-around items-center w-full"
+            className="flex-row items-center justify-around w-full"
             style={{
-              padding: 15,
+              paddingHorizontal: 16,
+              paddingVertical: 15,
               opacity: tabBarOpacity,
               transform: [
                 {

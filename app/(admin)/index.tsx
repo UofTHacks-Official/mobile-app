@@ -16,7 +16,7 @@ import {
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import { getUserType } from "@/utils/tokens/secureStorage";
+import { getUserType , getJudgeId } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -25,6 +25,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
+import { useAllJudgingSchedules } from "@/queries/judging";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -305,29 +306,94 @@ const UpcomingEvents = ({
   themeStyles: ReturnType<typeof getThemeStyles>;
   userType: string | null;
 }) => {
-  // Fetch all schedules - include all event types (skip for judges - they don't have access)
-  const { data: schedules = [] } = useScheduleData(
+  const isJudge = userType === "judge";
+
+  // Fetch hacker/admin schedules (skip for judges AND when userType is still loading)
+  const { data: hackerSchedules = [] } = useScheduleData(
     ["activity", "networking", "food"],
-    userType !== "judge"
+    userType !== null && !isJudge
   );
+
+  // Fetch judging schedules for judges (only when we know they're a judge)
+  const { data: allJudgingSchedules = [] } = useAllJudgingSchedules(
+    userType !== null && isJudge
+  );
+  const [judgeId, setJudgeId] = useState<number | null>(null);
+
+  // Get judge ID for filtering
+  useEffect(() => {
+    if (isJudge) {
+      const loadJudgeId = async () => {
+        const id = await getJudgeId();
+        setJudgeId(id);
+      };
+      loadJudgeId();
+    }
+  }, [isJudge]);
 
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
 
   // Filter and sort to get 10 upcoming events
   const upcomingEvents = useMemo(() => {
-    return schedules
-      .filter((schedule) => {
-        const startTime = new Date(schedule.startTime);
-        return startTime >= currentTime;
-      })
-      .sort((a, b) => {
-        const aTime = new Date(a.startTime).getTime();
-        const bTime = new Date(b.startTime).getTime();
-        return aTime - bTime;
-      })
-      .slice(0, 10);
-  }, [schedules, currentTime]);
+    if (isJudge) {
+      // For judges: show their judging sessions
+      if (!judgeId) {
+        console.log("[DEBUG] No judge ID yet");
+        return [];
+      }
+
+      const judgeSchedules = allJudgingSchedules
+        .filter((s) => s.judge_id === judgeId)
+        .map((judgeSchedule) => {
+          const startTime = new Date(judgeSchedule.timestamp);
+          const endTime = new Date(
+            startTime.getTime() + judgeSchedule.duration * 60000
+          );
+
+          return {
+            id: `judging-${judgeSchedule.judging_schedule_id}`,
+            title: "Judging Session",
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            type: "activity" as const,
+            location: judgeSchedule.location,
+          };
+        });
+
+      console.log(
+        "[DEBUG] Judge schedules before filtering:",
+        judgeSchedules.length
+      );
+      console.log("[DEBUG] Current time:", currentTime.toISOString());
+      console.log("[DEBUG] First schedule:", judgeSchedules[0]);
+
+      // Show ALL judging sessions (don't filter by time for now - judge data is old)
+      const sorted = judgeSchedules
+        .sort((a, b) => {
+          const aTime = new Date(a.startTime).getTime();
+          const bTime = new Date(b.startTime).getTime();
+          return aTime - bTime;
+        })
+        .slice(0, 10);
+
+      console.log("[DEBUG] Final sorted schedules:", sorted.length);
+      return sorted;
+    } else {
+      // For hackers/admins: show regular schedules
+      return hackerSchedules
+        .filter((schedule) => {
+          const startTime = new Date(schedule.startTime);
+          return startTime >= currentTime;
+        })
+        .sort((a, b) => {
+          const aTime = new Date(a.startTime).getTime();
+          const bTime = new Date(b.startTime).getTime();
+          return aTime - bTime;
+        })
+        .slice(0, 10);
+    }
+  }, [isJudge, judgeId, allJudgingSchedules, hackerSchedules, currentTime]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);

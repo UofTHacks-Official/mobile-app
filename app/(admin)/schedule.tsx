@@ -7,20 +7,36 @@ import { useTheme } from "@/context/themeContext";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
+import { useJudgeScheduleData } from "@/queries/judging";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
-import { cn, getScheduleThemeStyles } from "@/utils/theme";
+import { cn, getScheduleThemeStyles, getThemeStyles } from "@/utils/theme";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useState } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
+import { useState, useEffect } from "react";
+import { Dimensions, ScrollView, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Schedule = () => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
+  const themeStyles = getThemeStyles(isDark);
   const currentTime = useCurrentTime();
   const insets = useSafeAreaInsets();
+
+  const [isJudge, setIsJudge] = useState(false);
+  const [userTypeChecked, setUserTypeChecked] = useState(false);
+
+  // Check if user is a judge
+  useEffect(() => {
+    const checkUserType = async () => {
+      const userType = await getUserType();
+      setIsJudge(userType === "judge");
+      setUserTypeChecked(true);
+    };
+    checkUserType();
+  }, []);
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   // Bottom nav bar scroll control
@@ -36,17 +52,42 @@ const Schedule = () => {
     clearFilters,
   } = useScheduleFilters();
 
-  const { data: schedules = [] } = useScheduleData(selectedEventTypes);
+  // Conditionally fetch schedule data based on user type
+  const { data: hackerSchedules = [] } = useScheduleData(
+    selectedEventTypes,
+    !isJudge && userTypeChecked
+  );
+
+  // For judges, fetch all their judging schedules (no event type filtering)
+  const { data: judgeSchedules = [] } = useJudgeScheduleData(
+    ["activity"], // Pass a default type to satisfy the hook, but it won't be used for filtering
+    isJudge && userTypeChecked
+  );
+
+  // Use the appropriate schedule data based on user type
+  const schedules = isJudge ? judgeSchedules : hackerSchedules;
 
   const hourHeight = 100;
 
-  const allDates = [
-    new Date(2026, 0, 16), // January 16, 2026
-    new Date(2026, 0, 17), // January 17, 2026
-    new Date(2026, 0, 18), // January 18, 2026
-  ];
+  // Use different dates based on user type
+  // Judges: January 1, 2025 (single day - matching their schedule data from DB)
+  // Hackers/Admins: January 16-18, 2026 (hackathon dates)
+  const allDates = isJudge
+    ? [
+        new Date(2025, 0, 1), // January 1, 2025 - judging day (matches DB timestamp)
+      ]
+    : [
+        new Date(2026, 0, 16), // January 16, 2026
+        new Date(2026, 0, 17), // January 17, 2026
+        new Date(2026, 0, 18), // January 18, 2026
+      ];
 
   const getDatesToShow = () => {
+    // Judges always see single day view
+    if (isJudge) {
+      return [allDates[0]];
+    }
+
     if (daysToShow === 1) {
       return [allDates[currentDayIndex]];
     } else {
@@ -58,7 +99,10 @@ const Schedule = () => {
 
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
-  const currentDate = new Date(2026, 0, 17); // January 17, 2026
+  // Use current date based on user type
+  const currentDate = isJudge
+    ? new Date(2025, 0, 1) // January 1, 2025 for judges (matches DB timestamp)
+    : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -142,7 +186,10 @@ const Schedule = () => {
       }
     });
 
-    const now = new Date(2026, 0, 17); // January 17, 2026
+    // Use current date based on user type for "today" indicator
+    const now = isJudge
+      ? new Date(2025, 0, 1) // January 1, 2025 for judges (matches DB timestamp)
+      : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
     const isToday =
       date.getFullYear() === now.getFullYear() &&
       date.getMonth() === now.getMonth() &&
@@ -171,10 +218,14 @@ const Schedule = () => {
         <ScheduleHeader
           dates={dates}
           currentDate={currentDate}
-          onFilterPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            setIsFilterModalVisible(true);
-          }}
+          onFilterPress={
+            isJudge
+              ? undefined
+              : () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  setIsFilterModalVisible(true);
+                }
+          }
         />
 
         <View className="flex-1">
@@ -280,15 +331,17 @@ const Schedule = () => {
           </ScrollView>
         </View>
 
-        <FilterMenu
-          isVisible={isFilterModalVisible}
-          onClose={() => setIsFilterModalVisible(false)}
-          daysToShow={daysToShow}
-          setDaysToShow={saveDaysPreference}
-          selectedEventTypes={selectedEventTypes}
-          onToggleEventType={toggleEventType}
-          onClearFilters={clearFilters}
-        />
+        {!isJudge && (
+          <FilterMenu
+            isVisible={isFilterModalVisible}
+            onClose={() => setIsFilterModalVisible(false)}
+            daysToShow={daysToShow}
+            setDaysToShow={saveDaysPreference}
+            selectedEventTypes={selectedEventTypes}
+            onToggleEventType={toggleEventType}
+            onClearFilters={clearFilters}
+          />
+        )}
       </View>
     </View>
   );

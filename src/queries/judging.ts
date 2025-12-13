@@ -9,6 +9,8 @@ import {
   MOCK_JUDGING_SCHEDULES,
   USE_MOCK_JUDGING_DATA,
 } from "@/utils/mockJudgingData";
+import { Schedule, ScheduleType } from "@/types/schedule";
+import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -163,5 +165,91 @@ export const useGenerateJudgingSchedules = () => {
       await queryClient.refetchQueries({ queryKey: ["judging-schedules"] });
       console.log("[DEBUG] Queries invalidated and refetched");
     },
+  });
+};
+
+/**
+ * TanStack Query hook for fetching judge's schedule data in calendar format
+ * Transforms judging schedules into Schedule format for the calendar view
+ * Note: selectedEventTypes is ignored for judges - all judging sessions are shown
+ * @param selectedEventTypes - Not used, kept for API compatibility
+ * @param enabled - Whether the query should be enabled (default: true)
+ * @returns Query result with judge's schedules formatted as Schedule objects
+ */
+export const useJudgeScheduleData = (
+  selectedEventTypes: ScheduleType[],
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: ["judge-calendar-schedules"], // Removed selectedEventTypes from key since we ignore it
+    queryFn: async () => {
+      try {
+        console.log("[DEBUG] Fetching judge's calendar schedules...");
+
+        // Get the current judge's ID
+        const judgeId = await getJudgeId();
+        if (!judgeId) {
+          throw new Error("Judge ID not found");
+        }
+
+        // Fetch all judging schedules
+        let allSchedules;
+        if (USE_MOCK_JUDGING_DATA) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          allSchedules = MOCK_JUDGING_SCHEDULES;
+        } else {
+          allSchedules = await getAllJudgingSchedules();
+        }
+
+        // Filter to only this judge's schedules
+        const judgeSchedules = allSchedules.filter(
+          (s) => s.judge_id === judgeId
+        );
+
+        // Transform judging schedules to Schedule format
+        const transformedSchedules: Schedule[] = judgeSchedules.map(
+          (judgeSchedule) => {
+            const startTime = new Date(judgeSchedule.timestamp);
+            const endTime = new Date(
+              startTime.getTime() + judgeSchedule.duration * 60000
+            );
+
+            console.log("[DEBUG] Judging schedule item:", {
+              id: judgeSchedule.judging_schedule_id,
+              timestamp: judgeSchedule.timestamp,
+              startTime: startTime.toISOString(),
+              location: judgeSchedule.location,
+            });
+
+            return {
+              id: `judging-${judgeSchedule.judging_schedule_id}`,
+              title: `Judging Session`,
+              description: judgeSchedule.location,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              date: startTime,
+              type: "activity" as ScheduleType,
+              sponsorId: null,
+              isShift: false,
+              shiftType: null,
+            };
+          }
+        );
+
+        console.log(
+          "[DEBUG] Transformed schedules count:",
+          transformedSchedules.length
+        );
+        console.log("[DEBUG] First schedule:", transformedSchedules[0]);
+        return transformedSchedules;
+      } catch (error) {
+        devError("Judge schedule data fetch error:", error);
+        throw error;
+      }
+    },
+    enabled: enabled, // Removed the selectedEventTypes.length check
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };

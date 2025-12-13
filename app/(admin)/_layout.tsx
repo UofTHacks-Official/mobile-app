@@ -2,11 +2,21 @@ import CustomTabBar from "@/components/bottom/bottomNavBar";
 import { AuthContext } from "@/context/authContext";
 import { TimerProvider } from "@/context/timerContext";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import { Redirect, Tabs } from "expo-router";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
+  const [isJudge, setIsJudge] = useState(false);
+
+  useEffect(() => {
+    const checkUserType = async () => {
+      const userType = await getUserType();
+      setIsJudge(userType === "judge");
+    };
+    checkUserType();
+  }, []);
 
   // Show nothing while loading
   if (loading) {

@@ -123,7 +123,8 @@ const SignInJudge = () => {
       setJudges([]);
       setSelectedJudge(null);
     } else {
-      router.back();
+      // Go back to role selection
+      router.replace("/auth/selectRole");
     }
   };
 
@@ -200,12 +201,12 @@ const SignInJudge = () => {
                 key={judge.judge_id}
                 onPress={() => handleJudgeSelect(judge)}
                 className={cn(
-                  "p-4 rounded-xl mb-3 border",
-                  isDark
-                    ? "bg-[#1a1a2e] border-gray-700"
-                    : "bg-white border-gray-200",
+                  "p-4 rounded-xl mb-3",
+                  isDark ? "bg-[#303030]" : "bg-white border border-gray-200",
                   selectedJudge?.judge_id === judge.judge_id &&
-                    "border-2 border-blue-500"
+                    (isDark
+                      ? "border-2 border-[#75EDEF]"
+                      : "border-2 border-blue-500")
                 )}
                 style={{
                   shadowColor: "#000",
