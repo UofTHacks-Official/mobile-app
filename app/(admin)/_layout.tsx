@@ -11,6 +11,7 @@ export default function AdminLayout() {
   const [isJudge, setIsJudge] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isHacker, setIsHacker] = useState(false);
+  const [isVolunteer, setIsVolunteer] = useState(false);
 
   useEffect(() => {
     const checkUserType = async () => {
@@ -18,6 +19,7 @@ export default function AdminLayout() {
       setIsJudge(userType === "judge");
       setIsAdmin(userType === "admin");
       setIsHacker(userType === "hacker");
+      setIsVolunteer(userType === "volunteer");
     };
     checkUserType();
   }, []);
@@ -60,8 +62,8 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide judging for hackers
-            if (route.name === "judging" && isHacker) {
+            // Hide judging for hackers and volunteers
+            if (route.name === "judging" && (isHacker || isVolunteer)) {
               return false;
             }
 
