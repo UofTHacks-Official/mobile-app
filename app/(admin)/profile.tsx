@@ -319,7 +319,10 @@ const Profile = () => {
 
             <View className="flex-row gap-x-4 w-full">
               <Pressable
-                className="flex-1 p-4 rounded-md bg-gray-300"
+                className={cn(
+                  "flex-1 p-4 rounded-md",
+                  isDark ? "bg-[#4a4a4a]" : "bg-gray-300"
+                )}
                 onPress={() => setSignOutModal(false)}
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.8 : 1,
