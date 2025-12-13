@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
-import { Info, X } from "lucide-react-native";
+import { Info } from "lucide-react-native";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { Slider } from "@miblanchard/react-native-slider";

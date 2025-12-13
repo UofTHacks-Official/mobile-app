@@ -8,7 +8,7 @@ import { useContext, useEffect, useState } from "react";
 
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
-  const [isJudge, setIsJudge] = useState(false);
+  const [_isJudge, setIsJudge] = useState(false);
 
   useEffect(() => {
     const checkUserType = async () => {

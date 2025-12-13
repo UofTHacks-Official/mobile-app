@@ -10,18 +10,17 @@ import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
 import { useJudgeScheduleData } from "@/queries/judging";
 import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
-import { cn, getScheduleThemeStyles, getThemeStyles } from "@/utils/theme";
+import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
-import { Dimensions, ScrollView, View, Text } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Schedule = () => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
-  const themeStyles = getThemeStyles(isDark);
   const currentTime = useCurrentTime();
   const insets = useSafeAreaInsets();
 
