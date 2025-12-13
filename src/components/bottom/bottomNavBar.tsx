@@ -11,6 +11,7 @@ import {
   BanknoteArrowUp,
   Calendar,
   Camera,
+  ClipboardList,
   Gavel,
   Home,
   ScanLine,
@@ -142,10 +143,16 @@ const CustomTabBar = ({
     outputRange: [60, 155], // Collapsed and expanded heights
   });
 
+  // Dynamically adjust width based on number of tabs
+  // 4 tabs (hacker/judge) = 70%, 5 tabs = 85%, 6 tabs (admin with judgeSchedule) = 95%
+  const numTabs = state.routes.length;
+  const baseWidth = numTabs <= 4 ? "70%" : numTabs === 5 ? "85%" : "95%";
+  const expandedWidth = numTabs <= 4 ? "85%" : numTabs === 5 ? "90%" : "95%";
+
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["70%", "85%"], // Narrower default without labels, wider when expanded
+    outputRange: [baseWidth, expandedWidth],
   });
 
   // Fade in the scan options

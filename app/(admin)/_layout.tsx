@@ -8,12 +8,14 @@ import { useContext, useEffect, useState } from "react";
 
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
-  const [_isJudge, setIsJudge] = useState(false);
+  const [isJudge, setIsJudge] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
       setIsJudge(userType === "judge");
+      setIsAdmin(userType === "admin");
     };
     checkUserType();
   }, []);
@@ -44,8 +46,15 @@ export default function AdminLayout() {
             if (
               route.name === "hackerbucks" ||
               route.name === "gallery" ||
+              route.name === "judgeSchedule" ||
+              route.name === "judgingTimer" ||
               route.name.startsWith("schedule-detail")
             ) {
+              return false;
+            }
+
+            // Hide schedule for judges
+            if (route.name === "schedule" && isJudge) {
               return false;
             }
 
@@ -148,6 +157,12 @@ export default function AdminLayout() {
         />
         <Tabs.Screen
           name="hackerbucks"
+          options={{
+            href: null, // Hide from tabs
+          }}
+        />
+        <Tabs.Screen
+          name="judgeSchedule"
           options={{
             href: null, // Hide from tabs
           }}

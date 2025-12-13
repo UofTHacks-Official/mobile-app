@@ -491,6 +491,29 @@ const JudgingTimerScreen = () => {
           </Pressable>
         </View>
 
+        {/* No Schedule Selected State */}
+        {!activeScheduleId && (
+          <View className="mt-8 items-center px-6">
+            <Text
+              className={cn(
+                "text-center text-2xl font-onest-bold mb-4",
+                themeStyles.primaryText
+              )}
+            >
+              No Timer Selected
+            </Text>
+            <Text
+              className={cn(
+                "text-center text-base font-pp",
+                themeStyles.secondaryText
+              )}
+            >
+              Navigate to the Judging page to select a judging session and start
+              a timer.
+            </Text>
+          </View>
+        )}
+
         {/* Loading State */}
         {isLoading && activeScheduleId && (
           <View className="mt-8 items-center">
