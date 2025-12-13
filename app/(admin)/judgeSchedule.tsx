@@ -6,7 +6,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { Calendar, ChevronLeft, Clock, MapPin } from "lucide-react-native";
+import { ChevronLeft, Clock, MapPin } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,

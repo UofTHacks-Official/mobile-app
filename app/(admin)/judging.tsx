@@ -1,13 +1,18 @@
+import { JudgingEventCard } from "@/components/JudgingEventCard";
 import { useTheme } from "@/context/themeContext";
 import { useJudgeSchedules } from "@/queries/judge";
-import { useAllJudgingSchedules } from "@/queries/judging";
-import { JudgingScheduleItem, SessionStatus } from "@/types/judging";
+import {
+  useAllJudgingSchedules,
+  useGenerateJudgingSchedules,
+} from "@/queries/judging";
+import { JudgingScheduleItem } from "@/types/judging";
+import { USE_MOCK_JUDGING_DATA } from "@/utils/mockJudgingData";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
-import { Timer } from "lucide-react-native";
+import { RefreshCw } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,11 +22,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 const JudgingLocationScreen = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
+  const queryClient = useQueryClient();
 
   const [isJudge, setIsJudge] = useState(false);
   const [judgeId, setJudgeId] = useState<number | null>(null);
@@ -48,6 +55,7 @@ const JudgingLocationScreen = () => {
   // Only enable the appropriate query based on user type
   const adminSchedules = useAllJudgingSchedules(!isJudge && userTypeChecked);
   const judgeSchedules = useJudgeSchedules(judgeId, isJudge && userTypeChecked);
+  const generateSchedulesMutation = useGenerateJudgingSchedules();
 
   // Use appropriate data source
   const {
@@ -73,183 +81,121 @@ const JudgingLocationScreen = () => {
     console.log("[DEBUG] Judging page - isError:", isError);
   }, [isJudge, judgeId, judgingData, isLoading, isError, userTypeChecked]);
 
-  // Calculate session status based on timestamps
-  const getSessionStatus = (item: JudgingScheduleItem): SessionStatus => {
-    const now = new Date().getTime();
-    const scheduledTime = new Date(item.timestamp).getTime();
-    const durationMs = item.duration * 60 * 1000;
+  const handleGenerateSchedules = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    if (item.actual_timestamp) {
-      const actualStartTime = new Date(item.actual_timestamp).getTime();
-      const elapsedMs = now - actualStartTime;
+      // Clear the current schedules from UI immediately
+      queryClient.setQueryData(["judging-schedules"], []);
 
-      if (elapsedMs >= durationMs) {
-        return "completed";
+      const result = await generateSchedulesMutation.mutateAsync();
+
+      console.log("[DEBUG] Generate result:", result);
+
+      // Try different possible response structures
+      const scheduleCount =
+        result?.schedules_created ||
+        result?.total_schedules_created ||
+        result?.count ||
+        result?.total ||
+        (Array.isArray(result) ? result.length : undefined);
+
+      const message =
+        scheduleCount !== undefined
+          ? `Created ${scheduleCount} judging schedules`
+          : result?.message || "Judging schedules created successfully";
+
+      Toast.show({
+        type: "success",
+        text1: "Schedules Generated",
+        text2: message,
+      });
+    } catch (error: any) {
+      let errorMessage =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to generate schedules";
+
+      // If it's a 500 error with generic message, provide helpful context
+      if (
+        error?.response?.status === 500 &&
+        errorMessage === "Internal Server Error"
+      ) {
+        errorMessage =
+          "Backend error. Check if teams, judges, and sponsors exist in database.";
       }
-      return "in-progress";
-    }
 
-    // Not started yet
-    if (now < scheduledTime) {
-      return "upcoming";
-    }
+      console.error("[Generate Schedules Error]", {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+        fullError: error,
+      });
 
-    // Scheduled time has passed but not started
-    return "overdue";
-  };
-
-  const getStatusColor = (status: SessionStatus) => {
-    switch (status) {
-      case "upcoming":
-        return "text-blue-500";
-      case "in-progress":
-        return "text-green-500";
-      case "completed":
-        return "text-gray-500";
-      case "overdue":
-        return "text-red-500";
-      default:
-        return themeStyles.secondaryText;
+      Toast.show({
+        type: "error",
+        text1: "Generation Failed",
+        text2: errorMessage,
+      });
     }
   };
 
-  const getStatusText = (status: SessionStatus) => {
-    switch (status) {
-      case "upcoming":
-        return "Upcoming";
-      case "in-progress":
-        return "In Progress";
-      case "completed":
-        return "Completed";
-      case "overdue":
-        return "Overdue";
-      default:
-        return "";
-    }
-  };
+  // Sort schedules by timestamp (chronological order)
+  const sortedSchedules = (judgingData as JudgingScheduleItem[] | null)
+    ?.slice()
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, "0");
-    return `${displayHours}:${displayMinutes} ${ampm}`;
-  };
-
-  const renderScheduleCard = (item: JudgingScheduleItem, index: number) => {
-    const status = getSessionStatus(item);
-    const statusColor = getStatusColor(status);
-    const statusText = getStatusText(status);
-
-    return (
-      <Pressable
-        key={item.judging_schedule_id || index}
-        className={cn(
-          "rounded-2xl p-4 mb-3 border",
-          isDark ? "bg-[#1a1a2e] border-gray-700" : "bg-white border-gray-200"
-        )}
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          router.push({
-            pathname: "/(admin)/judgingTimer",
-            params: { scheduleId: item.judging_schedule_id.toString() },
-          });
-        }}
-      >
-        <View className="flex-row justify-between items-start mb-2">
-          <Text
-            className={cn(
-              "text-lg font-onest-bold flex-1",
-              themeStyles.primaryText
-            )}
-          >
-            {item.location}
-          </Text>
-          <View className="flex-row items-center gap-2">
-            <Text className={cn("text-xs font-pp font-bold", statusColor)}>
-              {statusText}
-            </Text>
-            <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-              {item.duration} min
+  // For judges only: show loading/error states
+  if (isJudge) {
+    if (isLoading) {
+      return (
+        <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator
+              size="large"
+              color={isDark ? "#FFFFFF" : "#002A5C"}
+            />
+            <Text
+              className={cn(
+                "mt-4 text-base font-pp",
+                themeStyles.secondaryText
+              )}
+            >
+              Loading your judging schedule...
             </Text>
           </View>
-        </View>
-        <View className="flex-row justify-between items-center">
-          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            Team #{item.team_id} • Judge #{item.judge_id}
-          </Text>
-          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {formatTime(item.timestamp)}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
+        </SafeAreaView>
+      );
+    }
 
-  // Group schedules by location
-  const groupedSchedules: Record<string, JudgingScheduleItem[]> | undefined = (
-    judgingData as JudgingScheduleItem[] | null
-  )?.reduce(
-    (acc: Record<string, JudgingScheduleItem[]>, item: JudgingScheduleItem) => {
-      if (!acc[item.location]) {
-        acc[item.location] = [];
-      }
-      acc[item.location].push(item);
-      return acc;
-    },
-    {} as Record<string, JudgingScheduleItem[]>
-  );
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator
-            size="large"
-            color={isDark ? "#FFFFFF" : "#002A5C"}
-          />
-          <Text
-            className={cn("mt-4 text-base font-pp", themeStyles.secondaryText)}
-          >
-            Loading judging schedule...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (isError || !judgingData) {
-    return (
-      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-        <View className="flex-1 justify-center items-center px-6">
-          <Text
-            className={cn(
-              "text-lg font-onest-bold mb-2",
-              themeStyles.primaryText
-            )}
-          >
-            Unable to load schedule
-          </Text>
-          <Text
-            className={cn(
-              "text-base font-pp text-center",
-              themeStyles.secondaryText
-            )}
-          >
-            Please try again later or contact support if the problem persists.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
+    if (isError) {
+      return (
+        <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+          <View className="flex-1 justify-center items-center px-6">
+            <Text
+              className={cn(
+                "text-lg font-onest-bold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Unable to load schedule
+            </Text>
+            <Text
+              className={cn(
+                "text-base font-pp text-center",
+                themeStyles.secondaryText
+              )}
+            >
+              Please try again later or contact support if the problem persists.
+            </Text>
+          </View>
+        </SafeAreaView>
+      );
+    }
   }
 
   return (
@@ -271,78 +217,127 @@ const JudgingLocationScreen = () => {
           <Text
             className={cn("text-base font-pp mb-4", themeStyles.secondaryText)}
           >
-            Manage judging sessions and timers
+            {isJudge
+              ? "View your judging sessions and timers"
+              : "Manage judging sessions and timers"}
           </Text>
         </View>
 
-        {/* Timer Button */}
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push("/(admin)/judgingTimer");
-          }}
-          className={cn(
-            "rounded-2xl p-6 mb-4 flex-row items-center justify-between",
-            isDark ? "bg-[#1a1a2e]" : "bg-white"
-          )}
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: isDark ? 0.3 : 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-          }}
-        >
-          <View className="flex-row items-center flex-1">
-            <View
-              className="w-12 h-12 rounded-full items-center justify-center mr-4"
-              style={{ backgroundColor: isDark ? "#75EDEF" : "#132B38" }}
-            >
-              <Timer size={24} color={isDark ? "#000" : "#fff"} />
-            </View>
-            <View className="flex-1">
-              <Text
-                className={cn(
-                  "text-xl font-onest-bold mb-1",
-                  themeStyles.primaryText
+        {/* Generate Schedules Button (Admin Only, hidden when using mock data) */}
+        {!isJudge && !USE_MOCK_JUDGING_DATA && (
+          <Pressable
+            onPress={handleGenerateSchedules}
+            disabled={generateSchedulesMutation.isPending}
+            className={cn(
+              "rounded-2xl p-6 mb-4 flex-row items-center justify-between",
+              isDark ? "bg-[#1a1a2e]" : "bg-white"
+            )}
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDark ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              opacity: generateSchedulesMutation.isPending ? 0.6 : 1,
+            }}
+          >
+            <View className="flex-row items-center flex-1">
+              <View
+                className="w-12 h-12 rounded-full items-center justify-center mr-4"
+                style={{ backgroundColor: isDark ? "#75EDEF" : "#132B38" }}
+              >
+                {generateSchedulesMutation.isPending ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={isDark ? "#000" : "#fff"}
+                  />
+                ) : (
+                  <RefreshCw size={24} color={isDark ? "#000" : "#fff"} />
                 )}
-              >
-                Judging Timer
-              </Text>
-              <Text
-                className={cn("text-sm font-pp", themeStyles.secondaryText)}
-              >
-                Start and manage judging session timers
-              </Text>
-            </View>
-          </View>
-        </Pressable>
-
-        {/* Grouped by location */}
-        {groupedSchedules &&
-          Object.entries(groupedSchedules).map(
-            ([location, schedules]: [string, JudgingScheduleItem[]]) => (
-              <View key={location} className="mt-4">
+              </View>
+              <View className="flex-1">
                 <Text
                   className={cn(
-                    "text-xl font-onest-bold mb-3",
+                    "text-xl font-onest-bold mb-1",
                     themeStyles.primaryText
                   )}
                 >
-                  {location}
+                  {generateSchedulesMutation.isPending
+                    ? "Generating..."
+                    : "Generate Schedules"}
                 </Text>
-                {schedules
-                  .sort(
-                    (a: JudgingScheduleItem, b: JudgingScheduleItem) =>
-                      new Date(a.timestamp).getTime() -
-                      new Date(b.timestamp).getTime()
-                  )
-                  .map((schedule: JudgingScheduleItem, index: number) =>
-                    renderScheduleCard(schedule, index)
-                  )}
+                <Text
+                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                >
+                  Create judging schedules from database
+                </Text>
               </View>
-            )
+            </View>
+          </Pressable>
+        )}
+
+        {/* Mock Data Indicator */}
+        {USE_MOCK_JUDGING_DATA && (
+          <View
+            className={cn(
+              "rounded-xl p-4 mb-4 border-2",
+              isDark
+                ? "bg-yellow-900/20 border-yellow-500"
+                : "bg-yellow-100 border-yellow-500"
+            )}
+          >
+            <Text
+              className={cn(
+                "text-sm font-onest-bold text-yellow-600 dark:text-yellow-400"
+              )}
+            >
+              Using Mock Data
+            </Text>
+            <Text
+              className={cn(
+                "text-xs font-pp mt-1 text-yellow-700 dark:text-yellow-300"
+              )}
+            >
+              Temporary test data is enabled. Set USE_MOCK_JUDGING_DATA to false
+              in mockJudgingData.ts to use real backend data.
+            </Text>
+          </View>
+        )}
+
+        {/* Judging Events List */}
+        <View className="mt-4">
+          {sortedSchedules && sortedSchedules.length > 0 && (
+            <Text
+              className={cn(
+                "text-xl font-onest-bold mb-3",
+                themeStyles.primaryText
+              )}
+            >
+              Judging Events
+            </Text>
           )}
+          {sortedSchedules?.map((event) => (
+            <JudgingEventCard key={event.judging_schedule_id} event={event} />
+          ))}
+        </View>
+
+        {/* Loading state for admins */}
+        {!isJudge && isLoading && (
+          <View className="mt-6 items-center">
+            <ActivityIndicator
+              size="large"
+              color={isDark ? "#FFFFFF" : "#002A5C"}
+            />
+            <Text
+              className={cn(
+                "mt-4 text-base font-pp",
+                themeStyles.secondaryText
+              )}
+            >
+              Loading schedules...
+            </Text>
+          </View>
+        )}
 
         {/* Empty state */}
         {(!judgingData ||
@@ -355,7 +350,9 @@ const JudgingLocationScreen = () => {
                   themeStyles.secondaryText
                 )}
               >
-                No judging schedules available at this time.
+                {isJudge
+                  ? "No judging sessions assigned to you yet."
+                  : "No judging schedules have been created yet."}
               </Text>
               <Text
                 className={cn(
@@ -363,7 +360,9 @@ const JudgingLocationScreen = () => {
                   themeStyles.secondaryText
                 )}
               >
-                Schedules will appear here once they are generated.
+                {isJudge
+                  ? "Check back later for your judging assignments."
+                  : "Use the 'Generate Schedules' button above to create them."}
               </Text>
             </View>
           )}

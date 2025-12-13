@@ -1,23 +1,26 @@
 import { useTheme } from "@/context/themeContext";
+import { useTimer } from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
+  useAllJudgingSchedules,
 } from "@/queries/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, Play, Timer } from "lucide-react-native";
+import { ChevronLeft, Pause, Play } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Circle } from "react-native-svg";
 import Toast from "react-native-toast-message";
 
 const JudgingTimerScreen = () => {
@@ -25,24 +28,36 @@ const JudgingTimerScreen = () => {
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
   const params = useLocalSearchParams();
+  const timerContext = useTimer();
 
-  const [scheduleId, setScheduleId] = useState("");
   const [activeScheduleId, setActiveScheduleId] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [milestonesTriggered, setMilestonesTriggered] = useState({
-    fifty: false,
-    eighty: false,
-    hundred: false,
-  });
+  const [currentStage, setCurrentStage] = useState<
+    "pitching" | "qa" | "buffer" | "complete"
+  >("pitching");
 
-  // Auto-load schedule from route params
+  // Note: Pause tracking is now handled in timer context for persistence across screen exits
+
+  // Timer stages configuration (in minutes)
+  // TODO: These should eventually come from backend
+  const stages = {
+    pitching: 4,
+    qa: 2,
+    buffer: 1,
+  };
+
+  // Auto-load schedule from route params and reset state
   useEffect(() => {
     if (params.scheduleId && typeof params.scheduleId === "string") {
       const id = parseInt(params.scheduleId, 10);
       if (!isNaN(id) && id > 0) {
+        // Reset all state when loading a new schedule
         setActiveScheduleId(id);
-        setScheduleId(params.scheduleId);
+        setIsRunning(false);
+        setCurrentStage("pitching");
+        setElapsedTime(0);
+        // Pause tracking is handled in timer context
       }
     }
   }, [params.scheduleId]);
@@ -54,54 +69,128 @@ const JudgingTimerScreen = () => {
   } = useJudgingScheduleById(activeScheduleId || 0);
   const startTimerMutation = useStartJudgingTimer();
 
-  // Timer logic with milestone tracking
+  // Fetch all schedules to calculate round count for this judge
+  const { data: allSchedules } = useAllJudgingSchedules();
+
+  // Restore timer state when returning to screen
+  useEffect(() => {
+    if (scheduleData && activeScheduleId && scheduleData.actual_timestamp) {
+      // Check if this schedule has an active timer in context
+      if (
+        timerContext.isTimerRunning &&
+        timerContext.activeTimerId === activeScheduleId
+      ) {
+        // Restore the running state
+        setIsRunning(true);
+
+        // Calculate current elapsed time to determine stage
+        const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
+          ? scheduleData.actual_timestamp
+          : scheduleData.actual_timestamp + "Z";
+        const startTime = new Date(timestampStr).getTime();
+        const now = Date.now();
+        const realElapsed = Math.floor((now - startTime) / 1000);
+        const totalElapsed = realElapsed - timerContext.totalPausedTime;
+
+        // Determine current stage based on elapsed time
+        const pitchingDuration = stages.pitching * 60;
+        const qaDuration = stages.qa * 60;
+        const bufferDuration = stages.buffer * 60;
+
+        if (totalElapsed < pitchingDuration) {
+          setCurrentStage("pitching");
+        } else if (totalElapsed < pitchingDuration + qaDuration) {
+          setCurrentStage("qa");
+        } else if (
+          totalElapsed <
+          pitchingDuration + qaDuration + bufferDuration
+        ) {
+          setCurrentStage("buffer");
+        } else {
+          setCurrentStage("complete");
+          setIsRunning(false);
+        }
+
+        console.log(
+          "[DEBUG] Restored timer state - running:",
+          !timerContext.isPaused,
+          "paused:",
+          timerContext.isPaused,
+          "stage:",
+          currentStage
+        );
+      }
+    }
+  }, [
+    scheduleData,
+    activeScheduleId,
+    timerContext.isTimerRunning,
+    timerContext.activeTimerId,
+  ]);
+
+  // Get current stage duration
+  const getCurrentStageDuration = () => {
+    if (currentStage === "complete") return 0;
+    return stages[currentStage] * 60; // Convert to seconds
+  };
+
+  // Timer logic with stage transitions
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && scheduleData?.actual_timestamp) {
-      const startTime = new Date(scheduleData.actual_timestamp).getTime();
+      // Add 'Z' suffix if not present to treat as UTC
+      const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
+        ? scheduleData.actual_timestamp
+        : scheduleData.actual_timestamp + "Z";
+      const startTime = new Date(timestampStr).getTime();
 
       interval = setInterval(() => {
-        const now = Date.now();
-        const elapsed = Math.floor((now - startTime) / 1000);
-        setElapsedTime(elapsed);
+        // Only update elapsed time and check transitions if not paused
+        if (!timerContext.isPaused) {
+          const now = Date.now();
+          const realElapsed = Math.floor((now - startTime) / 1000);
+          // Subtract total paused time from context to get actual elapsed time
+          const totalElapsed = realElapsed - timerContext.totalPausedTime;
+          setElapsedTime(totalElapsed);
 
-        // Check milestones
-        if (scheduleData) {
-          const durationSeconds = scheduleData.duration * 60;
-          const progress = (elapsed / durationSeconds) * 100;
+          // Calculate cumulative stage durations
+          const pitchingDuration = stages.pitching * 60;
+          const qaDuration = stages.qa * 60;
+          const bufferDuration = stages.buffer * 60;
 
-          // 50% milestone
-          if (progress >= 50 && !milestonesTriggered.fifty) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          // Auto-transition between stages
+          if (currentStage === "pitching" && totalElapsed >= pitchingDuration) {
+            setCurrentStage("qa");
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             Toast.show({
-              type: "info",
-              text1: "Halfway Through",
-              text2: "50% of session time elapsed",
+              type: "success",
+              text1: "Q&A Time",
+              text2: "Pitching complete, starting Q&A",
             });
-            setMilestonesTriggered((prev) => ({ ...prev, fifty: true }));
-          }
-
-          // 80% milestone
-          if (progress >= 80 && !milestonesTriggered.eighty) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          } else if (
+            currentStage === "qa" &&
+            totalElapsed >= pitchingDuration + qaDuration
+          ) {
+            setCurrentStage("buffer");
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             Toast.show({
-              type: "warning",
-              text1: "Time Running Low",
-              text2: "80% of session time elapsed",
+              type: "success",
+              text1: "Buffer Time",
+              text2: "Q&A complete, starting buffer",
             });
-            setMilestonesTriggered((prev) => ({ ...prev, eighty: true }));
-          }
-
-          // 100% milestone
-          if (progress >= 100 && !milestonesTriggered.hundred) {
+          } else if (
+            currentStage === "buffer" &&
+            totalElapsed >= pitchingDuration + qaDuration + bufferDuration
+          ) {
+            setCurrentStage("complete");
+            setIsRunning(false);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             Toast.show({
-              type: "error",
-              text1: "Time's Up!",
-              text2: "Scheduled session time has elapsed",
+              type: "success",
+              text1: "Session Complete!",
+              text2: "All stages finished",
             });
-            setMilestonesTriggered((prev) => ({ ...prev, hundred: true }));
           }
         }
       }, 100);
@@ -112,9 +201,10 @@ const JudgingTimerScreen = () => {
     };
   }, [
     isRunning,
+    timerContext.isPaused,
     scheduleData?.actual_timestamp,
-    milestonesTriggered,
-    scheduleData,
+    currentStage,
+    timerContext.totalPausedTime,
   ]);
 
   const formatTime = (seconds: number) => {
@@ -123,52 +213,47 @@ const JudgingTimerScreen = () => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Calculate progress percentage and time remaining
+  // Calculate elapsed time within current stage
+  const getStageElapsedTime = () => {
+    const pitchingDuration = stages.pitching * 60;
+    const qaDuration = stages.qa * 60;
+
+    if (currentStage === "pitching") {
+      return elapsedTime;
+    } else if (currentStage === "qa") {
+      return elapsedTime - pitchingDuration;
+    } else if (currentStage === "buffer") {
+      return elapsedTime - pitchingDuration - qaDuration;
+    }
+    return 0;
+  };
+
+  // Calculate progress percentage for current stage (fills up as time progresses)
   const getProgress = () => {
-    if (!scheduleData) return 0;
-    const durationSeconds = scheduleData.duration * 60;
-    return Math.min((elapsedTime / durationSeconds) * 100, 100);
+    const stageElapsed = getStageElapsedTime();
+    const stageDuration = getCurrentStageDuration();
+    if (stageDuration === 0) return 100;
+    // Return elapsed time as percentage (0% at start, 100% at end)
+    return Math.min((stageElapsed / stageDuration) * 100, 100);
   };
 
+  // Get time remaining in current stage
   const getTimeRemaining = () => {
-    if (!scheduleData) return 0;
-    const durationSeconds = scheduleData.duration * 60;
-    const remaining = durationSeconds - elapsedTime;
-    return Math.max(remaining, 0);
-  };
+    const stageElapsed = getStageElapsedTime();
+    const stageDuration = getCurrentStageDuration();
+    const remaining = stageDuration - stageElapsed;
 
-  const getTimerColor = () => {
-    const progress = getProgress();
-    if (progress >= 100) return "#EF4444"; // red-500
-    if (progress >= 80) return "#F59E0B"; // amber-500
-    return "#10B981"; // green-500
-  };
-
-  const formatDateTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, "0");
-    return `${displayHours}:${displayMinutes} ${ampm}`;
-  };
-
-  const handleLoadSchedule = () => {
-    const id = parseInt(scheduleId, 10);
-    if (isNaN(id) || id <= 0) {
-      Toast.show({
-        type: "error",
-        text1: "Invalid ID",
-        text2: "Please enter a valid schedule ID",
-      });
-      return;
+    // Debug logging
+    if (elapsedTime > 0 && elapsedTime % 60 === 0) {
+      console.log("[DEBUG] Timer calculation:");
+      console.log("  Current stage:", currentStage);
+      console.log("  Total elapsed:", elapsedTime, "seconds");
+      console.log("  Stage elapsed:", stageElapsed, "seconds");
+      console.log("  Stage duration:", stageDuration, "seconds");
+      console.log("  Remaining:", remaining, "seconds");
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setActiveScheduleId(id);
-    setIsRunning(false);
-    setElapsedTime(0);
+    return Math.max(remaining, 0);
   };
 
   const handleStartTimer = async () => {
@@ -178,11 +263,16 @@ const JudgingTimerScreen = () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       await startTimerMutation.mutateAsync(activeScheduleId);
       setIsRunning(true);
-      setMilestonesTriggered({ fifty: false, eighty: false, hundred: false });
+      setCurrentStage("pitching"); // Reset to first stage
+      setElapsedTime(0);
+
+      // Update timer context (this also resets pause tracking and sets isPaused to false)
+      timerContext.startTimer(activeScheduleId);
+
       Toast.show({
         type: "success",
         text1: "Timer Started",
-        text2: "Judging session timer has begun",
+        text2: "Starting Pitching stage",
       });
     } catch (error) {
       Toast.show({
@@ -193,14 +283,189 @@ const JudgingTimerScreen = () => {
     }
   };
 
-  const handleStopTimer = () => {
+  const handlePauseTimer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsRunning(false);
+    if (timerContext.isPaused) {
+      // Resuming - calculate how long we were paused and add to total
+      if (timerContext.pauseStartTime !== null) {
+        const now = Date.now();
+        const pauseDuration = Math.floor(
+          (now - timerContext.pauseStartTime) / 1000
+        );
+        timerContext.addPausedTime(pauseDuration);
+        timerContext.setPauseStartTime(null);
+
+        console.log(
+          "[DEBUG] Resume - Pause duration:",
+          pauseDuration,
+          "seconds"
+        );
+        console.log(
+          "[DEBUG] Resume - Total paused time:",
+          timerContext.totalPausedTime + pauseDuration,
+          "seconds"
+        );
+      }
+      timerContext.resumeTimer();
+    } else {
+      // Pausing - record when we paused
+      timerContext.setPauseStartTime(Date.now());
+      timerContext.pauseTimer();
+
+      console.log("[DEBUG] Paused at:", Date.now());
+    }
+  };
+
+  // Get stage display name
+  const getStageDisplayName = () => {
+    if (currentStage === "pitching") return "Pitching";
+    if (currentStage === "qa") return "Q&A";
+    if (currentStage === "buffer") return "Buffer";
+    return "Complete";
+  };
+
+  // Calculate round information for this judge
+  const getRoundInfo = () => {
+    if (!scheduleData || !allSchedules) {
+      return { currentRound: 1, totalRounds: 1 };
+    }
+
+    // Filter schedules for this judge
+    const judgeSchedules = allSchedules.filter(
+      (s) => s.judge_id === scheduleData.judge_id
+    );
+
+    // Sort by timestamp to get chronological order
+    const sortedSchedules = [...judgeSchedules].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    // Find current schedule's position
+    const currentRound =
+      sortedSchedules.findIndex(
+        (s) => s.judging_schedule_id === scheduleData.judging_schedule_id
+      ) + 1;
+
+    return {
+      currentRound: currentRound > 0 ? currentRound : 1,
+      totalRounds: judgeSchedules.length,
+    };
   };
 
   const handleGoBack = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.back();
+    console.log(
+      "[DEBUG] handleGoBack - isTimerRunning:",
+      timerContext.isTimerRunning
+    );
+    console.log("[DEBUG] handleGoBack - isPaused:", timerContext.isPaused);
+    console.log("[DEBUG] handleGoBack - isRunning (local):", isRunning);
+
+    // Check if timer is running (whether paused or not)
+    if (timerContext.isTimerRunning) {
+      // Determine current timer state for message
+      const timerState = timerContext.isPaused ? "paused" : "running";
+
+      // Show warning alert explaining state will persist
+      Alert.alert(
+        "Exit Timer?",
+        `Your timer will remain ${timerState}. You can return to this screen anytime to continue.`,
+        [
+          {
+            text: "Cancel",
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            },
+            style: "cancel",
+          },
+          {
+            text: "Exit",
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              // Don't stop timer - let it persist
+              // Just navigate back
+              router.push("/(admin)/judging");
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } else {
+      // No active timer, just navigate back
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      router.push("/(admin)/judging");
+    }
+  };
+
+  // Circular progress ring component
+  const CircularProgress = ({
+    size = 280,
+    strokeWidth = 20,
+  }: {
+    size?: number;
+    strokeWidth?: number;
+  }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const progress = getProgress();
+    // Calculate offset: at 0% we want full circumference hidden, at 100% we want 0 hidden
+    // So offset should decrease as progress increases
+    const strokeDashoffset = circumference * (1 - progress / 100);
+
+    console.log("[DEBUG] CircularProgress - progress:", progress);
+    console.log("[DEBUG] CircularProgress - circumference:", circumference);
+    console.log(
+      "[DEBUG] CircularProgress - strokeDashoffset:",
+      strokeDashoffset
+    );
+
+    return (
+      <View style={{ width: size, height: size, position: "relative" }}>
+        <Svg width={size} height={size}>
+          {/* Background circle */}
+          <Circle
+            stroke={isDark ? "#1a1a2e" : "#f0f0f0"}
+            fill="none"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+          />
+          {/* Progress circle - starts from 12 o'clock and goes clockwise */}
+          <Circle
+            stroke={isDark ? "#75EDEF" : "#132B38"}
+            fill="none"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            rotation="-90"
+            origin={`${size / 2}, ${size / 2}`}
+          />
+        </Svg>
+        {/* Time display in center */}
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            className={cn("text-7xl font-onest-bold", themeStyles.primaryText)}
+          >
+            {formatTime(getTimeRemaining())}
+          </Text>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -215,62 +480,6 @@ const JudgingTimerScreen = () => {
           <Pressable onPress={handleGoBack} className="mb-4">
             <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
           </Pressable>
-          <Text
-            className={cn(
-              "text-3xl font-onest-bold mb-2",
-              themeStyles.primaryText
-            )}
-          >
-            Judging Timer
-          </Text>
-          <Text className={cn("text-base font-pp", themeStyles.secondaryText)}>
-            Enter a schedule ID to start timing a judging session
-          </Text>
-        </View>
-
-        {/* Schedule ID Input */}
-        <View className="mt-6">
-          <Text
-            className={cn("text-sm font-pp mb-2", themeStyles.secondaryText)}
-          >
-            Schedule ID
-          </Text>
-          <View className="flex-row gap-3">
-            <TextInput
-              className={cn(
-                "flex-1 px-4 rounded-xl text-lg font-pp",
-                themeStyles.lightCardBackground
-              )}
-              placeholder="Enter schedule ID"
-              placeholderTextColor={isDark ? "#888" : "#666"}
-              keyboardType="number-pad"
-              value={scheduleId}
-              onChangeText={setScheduleId}
-              style={{
-                minHeight: 50,
-                textAlignVertical: "center",
-                color: isDark ? "#fff" : "#000",
-              }}
-            />
-            <Pressable
-              onPress={handleLoadSchedule}
-              className={cn(
-                "px-6 rounded-xl justify-center items-center",
-                isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-              )}
-              disabled={!scheduleId.trim()}
-              style={{ opacity: scheduleId.trim() ? 1 : 0.5 }}
-            >
-              <Text
-                className={cn(
-                  "text-base font-onest-bold",
-                  isDark ? "text-black" : "text-white"
-                )}
-              >
-                Load
-              </Text>
-            </Pressable>
-          </View>
         </View>
 
         {/* Loading State */}
@@ -313,216 +522,145 @@ const JudgingTimerScreen = () => {
           </View>
         )}
 
-        {/* Schedule Details & Timer */}
+        {/* Timer UI */}
         {scheduleData && !isLoading && (
-          <View className="mt-8">
-            {/* Schedule Info Card */}
-            <View
+          <View className="flex-1 items-center justify-center">
+            {/* Round indicator - dynamic based on judge's schedules */}
+            <Text
               className={cn(
-                "rounded-2xl p-4 mb-6 border",
-                isDark
-                  ? "bg-[#1a1a2e] border-gray-700"
-                  : "bg-white border-gray-200"
-              )}
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDark ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <Text
-                className={cn(
-                  "text-xl font-onest-bold mb-3",
-                  themeStyles.primaryText
-                )}
-              >
-                Session Details
-              </Text>
-              <View className="space-y-2">
-                <View className="flex-row justify-between">
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                  >
-                    Location:
-                  </Text>
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.primaryText)}
-                  >
-                    {scheduleData.location}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                  >
-                    Team ID:
-                  </Text>
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.primaryText)}
-                  >
-                    #{scheduleData.team_id}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                  >
-                    Judge ID:
-                  </Text>
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.primaryText)}
-                  >
-                    #{scheduleData.judge_id}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                  >
-                    Scheduled Time:
-                  </Text>
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.primaryText)}
-                  >
-                    {formatDateTime(scheduleData.timestamp)}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                  >
-                    Duration:
-                  </Text>
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.primaryText)}
-                  >
-                    {scheduleData.duration} minutes
-                  </Text>
-                </View>
-                {scheduleData.actual_timestamp && (
-                  <View className="flex-row justify-between mt-2 pt-2 border-t border-gray-600">
-                    <Text
-                      className={cn(
-                        "text-sm font-pp",
-                        themeStyles.secondaryText
-                      )}
-                    >
-                      Started At:
-                    </Text>
-                    <Text
-                      className={cn("text-sm font-pp text-green-500 font-bold")}
-                    >
-                      {formatDateTime(scheduleData.actual_timestamp)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Timer Display */}
-            <View
-              className={cn(
-                "rounded-2xl p-8 mb-6 items-center",
-                isDark
-                  ? "bg-[#1a1a2e] border-2 border-gray-700"
-                  : "bg-white border-2 border-gray-200"
+                "text-base font-onest-bold mb-8",
+                themeStyles.secondaryText
               )}
             >
-              <Timer size={48} color={isDark ? "#75EDEF" : "#132B38"} />
+              Round {getRoundInfo().currentRound} ({getRoundInfo().currentRound}
+              /{getRoundInfo().totalRounds})
+            </Text>
 
-              {/* Elapsed Time */}
-              <Text
-                className="text-6xl font-onest-bold mt-4"
-                style={{
-                  color: isRunning ? getTimerColor() : isDark ? "#fff" : "#000",
-                }}
-              >
-                {formatTime(elapsedTime)}
-              </Text>
-
-              {/* Time Remaining */}
-              {isRunning && (
-                <Text
-                  className={cn(
-                    "text-lg font-pp mt-2",
-                    themeStyles.secondaryText
-                  )}
-                >
-                  {formatTime(getTimeRemaining())} remaining
-                </Text>
+            {/* Current Stage Title */}
+            <Text
+              className={cn(
+                "text-2xl font-onest-bold mb-12",
+                themeStyles.primaryText
               )}
+            >
+              {getStageDisplayName()}
+            </Text>
 
-              {/* Progress Bar */}
-              {isRunning && (
-                <View className="w-full mt-4">
-                  <View
-                    className={cn(
-                      "h-2 rounded-full overflow-hidden",
-                      isDark ? "bg-gray-700" : "bg-gray-200"
-                    )}
-                  >
-                    <View
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${getProgress()}%`,
-                        backgroundColor: getTimerColor(),
-                      }}
-                    />
-                  </View>
-                  <Text
-                    className={cn(
-                      "text-xs font-pp mt-2 text-center",
-                      themeStyles.secondaryText
-                    )}
-                  >
-                    {getProgress().toFixed(0)}% complete
-                  </Text>
-                </View>
-              )}
-
-              <Text
-                className={cn(
-                  "text-sm font-pp mt-2",
-                  themeStyles.secondaryText
-                )}
-              >
-                {isRunning ? "Timer Running" : "Timer Stopped"}
-              </Text>
-            </View>
-
-            {/* Control Buttons */}
-            <View className="flex-row gap-3">
-              {!scheduleData.actual_timestamp && (
+            {/* Start Timer Button (shown before timer starts) */}
+            {!scheduleData.actual_timestamp && (
+              <View className="items-center mb-8">
                 <Pressable
                   onPress={handleStartTimer}
-                  className="flex-1 bg-green-500 py-4 rounded-xl flex-row items-center justify-center"
+                  className="bg-green-500 px-12 py-4 rounded-2xl flex-row items-center justify-center"
                   disabled={startTimerMutation.isPending}
                   style={{
                     opacity: startTimerMutation.isPending ? 0.6 : 1,
                   }}
                 >
-                  <Play size={20} color="white" />
-                  <Text className="text-white text-lg font-onest-bold ml-2">
+                  <Play size={24} color="white" />
+                  <Text className="text-white text-xl font-onest-bold ml-2">
                     {startTimerMutation.isPending
                       ? "Starting..."
                       : "Start Timer"}
                   </Text>
                 </Pressable>
-              )}
-
-              {isRunning && (
-                <Pressable
-                  onPress={handleStopTimer}
-                  className="flex-1 bg-red-500 py-4 rounded-xl items-center justify-center"
+                <Text
+                  className={cn(
+                    "mt-4 text-sm font-pp",
+                    themeStyles.secondaryText
+                  )}
                 >
-                  <Text className="text-white text-lg font-onest-bold">
-                    Stop Timer
-                  </Text>
+                  Team #{scheduleData.team_id} • {scheduleData.location}
+                </Text>
+              </View>
+            )}
+
+            {/* Circular Timer (shown after timer starts) */}
+            {scheduleData.actual_timestamp && (
+              <>
+                <CircularProgress />
+
+                {/* Stage Indicators - Only show upcoming stages */}
+                {(currentStage === "pitching" ||
+                  currentStage === "qa" ||
+                  currentStage === "buffer") && (
+                  <View className="flex-row gap-4 mt-12 mb-8">
+                    {/* Q&A Stage - only show during pitching */}
+                    {currentStage === "pitching" && (
+                      <View
+                        className={cn(
+                          "px-8 py-3 rounded-xl",
+                          isDark ? "bg-[#2a2a3e]" : "bg-gray-200"
+                        )}
+                      >
+                        <Text
+                          className={cn(
+                            "text-base font-onest-bold",
+                            themeStyles.primaryText
+                          )}
+                        >
+                          Q&A ({stages.qa}:00)
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Buffer Stage - only show during pitching or qa */}
+                    {(currentStage === "pitching" || currentStage === "qa") && (
+                      <View
+                        className={cn(
+                          "px-8 py-3 rounded-xl",
+                          isDark ? "bg-[#2a2a3e]" : "bg-gray-200"
+                        )}
+                      >
+                        <Text
+                          className={cn(
+                            "text-base font-onest-bold",
+                            themeStyles.primaryText
+                          )}
+                        >
+                          Buffer ({stages.buffer}:00)
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* Pause Button - Horizontal bar */}
+                <Pressable
+                  onPress={handlePauseTimer}
+                  className={cn(
+                    "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
+                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                  )}
+                >
+                  {timerContext.isPaused ? (
+                    <>
+                      <Play size={24} color={isDark ? "#000" : "#fff"} />
+                      <Text
+                        className={cn(
+                          "text-lg font-onest-bold",
+                          isDark ? "text-black" : "text-white"
+                        )}
+                      >
+                        Resume
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                      <Text
+                        className={cn(
+                          "text-lg font-onest-bold",
+                          isDark ? "text-black" : "text-white"
+                        )}
+                      >
+                        Pause
+                      </Text>
+                    </>
+                  )}
                 </Pressable>
-              )}
-            </View>
+              </>
+            )}
           </View>
         )}
 
