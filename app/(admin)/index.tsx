@@ -327,48 +327,44 @@ const UpcomingEvents = ({
   // Filter and sort to get 10 upcoming events
   const upcomingEvents = useMemo(() => {
     if (isJudge) {
-      // For judges: show their judging sessions
+      // For judges: combine all judging sessions into one event
       if (!judgeId) {
         console.log("[DEBUG] No judge ID yet");
         return [];
       }
 
-      const judgeSchedules = allJudgingSchedules
-        .filter((s) => s.judge_id === judgeId)
-        .map((judgeSchedule) => {
-          const startTime = new Date(judgeSchedule.timestamp);
-          const endTime = new Date(
-            startTime.getTime() + judgeSchedule.duration * 60000
-          );
-
-          return {
-            id: `judging-${judgeSchedule.judging_schedule_id}`,
-            title: "Judging Session",
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            type: "activity" as const,
-            location: judgeSchedule.location,
-          };
-        });
-
-      console.log(
-        "[DEBUG] Judge schedules before filtering:",
-        judgeSchedules.length
+      const judgeSchedules = allJudgingSchedules.filter(
+        (s) => s.judge_id === judgeId
       );
-      console.log("[DEBUG] Current time:", currentTime.toISOString());
-      console.log("[DEBUG] First schedule:", judgeSchedules[0]);
 
-      // Show ALL judging sessions (don't filter by time for now - judge data is old)
-      const sorted = judgeSchedules
-        .sort((a, b) => {
-          const aTime = new Date(a.startTime).getTime();
-          const bTime = new Date(b.startTime).getTime();
-          return aTime - bTime;
-        })
-        .slice(0, 10);
+      if (judgeSchedules.length === 0) {
+        return [];
+      }
 
-      console.log("[DEBUG] Final sorted schedules:", sorted.length);
-      return sorted;
+      // Sort by timestamp to get earliest and latest times
+      const sorted = [...judgeSchedules].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+
+      const firstSession = sorted[0];
+      const lastSession = sorted[sorted.length - 1];
+      const lastEndTime = new Date(
+        new Date(lastSession.timestamp).getTime() + lastSession.duration * 60000
+      );
+
+      // Return a single combined event
+      return [
+        {
+          id: "judging-sessions",
+          title: `Judging Sessions (${judgeSchedules.length})`,
+          startTime: firstSession.timestamp,
+          endTime: lastEndTime.toISOString(),
+          type: "activity" as const,
+          location: firstSession.location,
+          sessionCount: judgeSchedules.length,
+        },
+      ];
     } else {
       // For hackers/admins: show regular schedules
       return hackerSchedules
@@ -464,12 +460,18 @@ const UpcomingEvents = ({
             key={event.id}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({
-                pathname: "/schedule-detail/[scheduleID]" as any,
-                params: {
-                  scheduleID: event.id.toString(),
-                },
-              });
+              if (isJudge) {
+                // Navigate to judging schedule page for judges
+                router.push("/(admin)/judging");
+              } else {
+                // Navigate to schedule detail for others
+                router.push({
+                  pathname: "/schedule-detail/[scheduleID]" as any,
+                  params: {
+                    scheduleID: event.id.toString(),
+                  },
+                });
+              }
             }}
             className="flex-row items-center"
             android_ripple={null}
