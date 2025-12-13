@@ -27,6 +27,8 @@ interface DayColumnProps {
   currentMinute?: number;
   hourHeight?: number;
   showTimeLabels?: boolean;
+  startHour?: number;
+  endHour?: number;
 }
 
 const TimeSlot = ({
@@ -185,9 +187,14 @@ export const DayColumn = ({
   onSchedulePress,
   hourHeight = 100,
   showTimeLabels = false,
+  startHour = 0,
+  endHour = 24,
 }: DayColumnProps) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
+
+  // Calculate number of hours to display
+  const hoursToDisplay = endHour - startHour;
 
   return (
     <View
@@ -197,18 +204,23 @@ export const DayColumn = ({
         borderRightColor: scheduleTheme.lineColor,
       }}
     >
-      {Array.from({ length: 24 }, (_, i) => (
-        <TimeSlot
-          key={i}
-          hour={i}
-          isCurrentHour={i === currentHour}
-          schedules={schedules}
-          hourHeight={hourHeight}
-          onSchedulePress={onSchedulePress}
-          showTime={showTimeLabels}
-          allSchedules={schedules}
-        />
-      ))}
+      {Array.from({ length: hoursToDisplay }, (_, i) => {
+        const hour = startHour + i;
+        return (
+          <TimeSlot
+            key={hour}
+            hour={hour}
+            isCurrentHour={hour === currentHour}
+            schedules={schedules}
+            hourHeight={hourHeight}
+            onSchedulePress={onSchedulePress}
+            showTime={showTimeLabels}
+            allSchedules={schedules}
+            startHour={startHour}
+            endHour={endHour}
+          />
+        );
+      })}
     </View>
   );
 };

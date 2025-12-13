@@ -11,6 +11,7 @@ import {
   BanknoteArrowUp,
   Calendar,
   Camera,
+  Gavel,
   Home,
   ScanLine,
   ScanQrCode,
@@ -141,10 +142,16 @@ const CustomTabBar = ({
     outputRange: [60, 155], // Collapsed and expanded heights
   });
 
+  // Dynamically adjust width based on number of tabs
+  // 4 tabs (hacker/judge) = 70%, 5 tabs = 85%, 6 tabs (admin with judgeSchedule) = 95%
+  const numTabs = state.routes.length;
+  const baseWidth = numTabs <= 4 ? "70%" : numTabs === 5 ? "85%" : "95%";
+  const expandedWidth = numTabs <= 4 ? "85%" : numTabs === 5 ? "90%" : "95%";
+
   // Animate the width of the container
   const animatedWidth = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["60%", "85%"], // Narrower default without labels, wider when expanded
+    outputRange: [baseWidth, expandedWidth],
   });
 
   // Fade in the scan options
@@ -285,9 +292,10 @@ const CustomTabBar = ({
 
           {/* Tab Bar Icons */}
           <Animated.View
-            className="flex-row justify-around items-center w-full"
+            className="flex-row items-center justify-around w-full"
             style={{
-              padding: 15,
+              paddingHorizontal: 16,
+              paddingVertical: 15,
               opacity: tabBarOpacity,
               transform: [
                 {
@@ -335,6 +343,18 @@ const CustomTabBar = ({
                   case "schedule":
                     return (
                       <Calendar
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "judging":
+                    return (
+                      <Gavel
                         size={24}
                         strokeWidth={1.5}
                         color={

@@ -1,4 +1,4 @@
-import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
+import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
 
 type EventType = "networking" | "food" | "activity";
 
@@ -33,8 +33,8 @@ const eventTypeColors = {
 
 const Event = ({
   title,
-  startTime: _startTime,
-  endTime: _endTime,
+  startTime,
+  endTime,
   hourHeight: _hourHeight,
   style,
   type,
@@ -47,32 +47,55 @@ const Event = ({
     }
   };
 
+  // Format time to 12-hour format
+  const formatTime = (time: string) => {
+    const date = new Date(time);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, "0");
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+  };
+
+  const timeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
   const colors = eventTypeColors[type];
 
   return (
     <Pressable
       onPress={handlePress}
-      className={`absolute px-2 py-2 border-l-4 ${colors.borderClass} ${colors.backgroundColor}`}
+      className={`absolute border-l-4 ${colors.borderClass} ${colors.backgroundColor}`}
       style={[
         {
           zIndex: 1,
           borderRadius: 4,
-          paddingRight: 8,
+          paddingRight: 4,
           marginRight: 8,
+          justifyContent: "flex-start",
+          paddingTop: 10,
+          paddingBottom: 4,
+          paddingLeft: 5,
         },
         style,
       ]}
     >
-      <Text
-        className={`font-pp text-xs font-semibold ${colors.textClass}`}
-        numberOfLines={2}
-        style={{
-          minHeight: 32,
-          lineHeight: 16,
-        }}
-      >
-        {title}
-      </Text>
+      <View>
+        <Text
+          className={`font-pp text-xs font-semibold ${colors.textClass}`}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {title}
+        </Text>
+        <Text
+          className={`font-pp text-[9px] ${colors.textClass} mt-0.5`}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{ opacity: 0.8 }}
+        >
+          {timeRange}
+        </Text>
+      </View>
     </Pressable>
   );
 };

@@ -1,0 +1,330 @@
+import { useTheme } from "@/context/themeContext";
+import { useProject } from "@/queries/project";
+import { useAllJudgingSchedules } from "@/queries/judging";
+import { cn, getThemeStyles } from "@/utils/theme";
+import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
+import * as Haptics from "expo-haptics";
+import { router, useLocalSearchParams } from "expo-router";
+import { ChevronLeft, ExternalLink } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const ProjectOverview = () => {
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
+  const params = useLocalSearchParams();
+
+  const [pin, setPin] = useState<number | null>(null);
+  const [judgeId, setJudgeId] = useState<number | null>(null);
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [scheduleId, setScheduleId] = useState<number | null>(null);
+
+  // Load PIN, judge ID, and team ID from params/storage
+  useEffect(() => {
+    const loadData = async () => {
+      const storedPin = await getSponsorPin();
+      const storedJudgeId = await getJudgeId();
+      setPin(storedPin);
+      setJudgeId(storedJudgeId);
+
+      if (params.teamId && typeof params.teamId === "string") {
+        setTeamId(parseInt(params.teamId));
+      }
+      if (params.scheduleId && typeof params.scheduleId === "string") {
+        setScheduleId(parseInt(params.scheduleId));
+      }
+    };
+    loadData();
+  }, [params]);
+
+  const { data: project, isLoading, isError } = useProject(pin, teamId);
+  const { data: allSchedules } = useAllJudgingSchedules();
+
+  // Calculate round information
+  const getRoundInfo = () => {
+    if (!allSchedules || !judgeId || !scheduleId) {
+      return { currentRound: 1, totalRounds: 1 };
+    }
+
+    const judgeSchedules = allSchedules.filter((s) => s.judge_id === judgeId);
+    const sortedSchedules = [...judgeSchedules].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    const currentRound =
+      sortedSchedules.findIndex((s) => s.judging_schedule_id === scheduleId) +
+      1;
+
+    return {
+      currentRound: currentRound > 0 ? currentRound : 1,
+      totalRounds: judgeSchedules.length,
+    };
+  };
+
+  const handleOpenLink = (url: string) => {
+    if (url) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Linking.openURL(url);
+    }
+  };
+
+  const handleReady = () => {
+    if (!project || !scheduleId) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: "/(judge)/scorecard",
+      params: {
+        projectId: project.project_id,
+        teamId: project.team_id,
+        scheduleId: scheduleId,
+      },
+    });
+  };
+
+  const handleGoBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.back();
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator
+            size="large"
+            color={isDark ? "#FFFFFF" : "#002A5C"}
+          />
+          <Text
+            className={cn("mt-4 text-base font-pp", themeStyles.secondaryText)}
+          >
+            Loading project details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isError || !project) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Project Not Found
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            Unable to load project details. Please try again.
+          </Text>
+          <Pressable
+            onPress={handleGoBack}
+            className={cn(
+              "mt-6 px-6 py-3 rounded-xl",
+              isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+            )}
+          >
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                isDark ? "text-black" : "text-white"
+              )}
+            >
+              Go Back
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const roundInfo = getRoundInfo();
+
+  return (
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+      <ScrollView className="flex-1 px-6">
+        {/* Header with Back Button */}
+        <View className="mt-6 mb-4">
+          <Pressable
+            onPress={handleGoBack}
+            className="w-10 h-10 items-center justify-center"
+          >
+            <ChevronLeft size={28} color={isDark ? "#fff" : "#000"} />
+          </Pressable>
+        </View>
+
+        {/* Project Name and Round */}
+        <View className="flex-row justify-between items-start mb-4">
+          <Text
+            className={cn(
+              "text-2xl font-onest-bold flex-1",
+              themeStyles.primaryText
+            )}
+          >
+            {project.project_name}
+          </Text>
+          <Text
+            className={cn("text-sm font-pp ml-2", themeStyles.secondaryText)}
+          >
+            Round {roundInfo.currentRound} ({roundInfo.currentRound}/
+            {roundInfo.totalRounds})
+          </Text>
+        </View>
+
+        {/* Categories/Tags */}
+        {project.categories && project.categories.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mb-6">
+            {project.categories.slice(0, 3).map((category, index) => (
+              <View
+                key={index}
+                className={cn(
+                  "px-3 py-1.5 rounded-full",
+                  isDark ? "bg-[#303030]" : "bg-gray-200"
+                )}
+              >
+                <Text
+                  className={cn("text-sm font-pp", themeStyles.primaryText)}
+                >
+                  {category}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Description */}
+        <View className="mb-6">
+          <Text
+            className={cn(
+              "text-base font-pp leading-6",
+              themeStyles.primaryText
+            )}
+          >
+            {project.project_description}
+          </Text>
+        </View>
+
+        {/* Links */}
+        <View className="mb-6 gap-3">
+          {project.devpost_link && (
+            <Pressable
+              onPress={() => handleOpenLink(project.devpost_link)}
+              className={cn(
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
+              )}
+            >
+              <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />
+              <Text
+                className={cn(
+                  "text-base font-pp",
+                  isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                )}
+              >
+                View Devpost
+              </Text>
+            </Pressable>
+          )}
+          {project.github_link && (
+            <Pressable
+              onPress={() => handleOpenLink(project.github_link)}
+              className={cn(
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
+              )}
+            >
+              <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />
+              <Text
+                className={cn(
+                  "text-base font-pp",
+                  isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                )}
+              >
+                View GitHub
+              </Text>
+            </Pressable>
+          )}
+          {project.demo_link && (
+            <Pressable
+              onPress={() => handleOpenLink(project.demo_link)}
+              className={cn(
+                "flex-row items-center gap-2 py-3 px-4 rounded-xl",
+                isDark ? "bg-[#303030]" : "bg-white border border-gray-300"
+              )}
+            >
+              <ExternalLink size={18} color={isDark ? "#75EDEF" : "#132B38"} />
+              <Text
+                className={cn(
+                  "text-base font-pp",
+                  isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                )}
+              >
+                View Demo
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
+        {/* Members */}
+        <View className="mb-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-3",
+              themeStyles.primaryText
+            )}
+          >
+            Members
+          </Text>
+          <View className="flex-row flex-wrap gap-x-4 gap-y-2">
+            {project.team_members.map((member, index) => (
+              <Text
+                key={index}
+                className={cn("text-base font-pp", themeStyles.primaryText)}
+                style={{ width: "48%" }}
+              >
+                {member}
+              </Text>
+            ))}
+          </View>
+        </View>
+
+        {/* Ready Button */}
+        <Pressable
+          onPress={handleReady}
+          className={cn(
+            "py-4 rounded-xl mb-8",
+            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+          )}
+        >
+          <Text
+            className={cn(
+              "text-center text-lg font-onest-bold",
+              isDark ? "text-black" : "text-white"
+            )}
+          >
+            Ready
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default ProjectOverview;

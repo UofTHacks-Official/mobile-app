@@ -127,6 +127,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const fetchUserProfile = useCallback(
     async (token: string, fetchId: number) => {
       if (!token) return;
+
+      // Skip profile fetch for judges (they don't have a profile endpoint)
+      if (userType === "judge") {
+        setProfileLoading(false);
+        return;
+      }
+
       setProfileLoading(true);
       try {
         // Fetch profile based on user type

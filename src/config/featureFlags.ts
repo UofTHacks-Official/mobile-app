@@ -19,6 +19,9 @@ export const FEATURE_FLAGS = {
   // Google OAuth
   ENABLE_GOOGLE_LOGIN: false,
 
+  // Judging features
+  ENABLE_JUDGING: true,
+
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,
   ENABLE_SCHEDULE: false,
@@ -27,7 +30,7 @@ export const FEATURE_FLAGS = {
   ENABLE_NOTIFICATION_EXAMPLE: false,
   ENABLE_404_TEST: false,
   ENABLE_MODAL_TEST_WIDGET: false,
-  ENABLE_ONBOARDING_TEST: true,
+  ENABLE_ONBOARDING_TEST: false,
 } as const;
 
 // Helper function to check if a feature is enabled

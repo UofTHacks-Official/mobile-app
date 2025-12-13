@@ -17,9 +17,8 @@ const ENDPOINTS_WITHOUT_AUTH = [
   "/api/v13/admins/refresh",
   "/api/v13/hackers/login",
   "/api/v13/hackers/refresh",
-
-  // Testing: Backend docs say public, but we need to verify
-  "/api/v13/hackers/schedules/",
+  "/api/v13/judges/sponsor-by-pin",
+  "/api/v13/judges/login",
 ] as const;
 
 export const axiosInstance: AxiosInstance = axios.create({
@@ -135,7 +134,9 @@ axiosInstance.interceptors.response.use(
       originalRequest.url?.includes("/api/v13/hackers/refresh");
     const isLoginEndpoint =
       originalRequest.url?.includes("/api/v13/admins/login") ||
-      originalRequest.url?.includes("/api/v13/hackers/login");
+      originalRequest.url?.includes("/api/v13/hackers/login") ||
+      originalRequest.url?.includes("/api/v13/judges/login") ||
+      originalRequest.url?.includes("/api/v13/judges/sponsor-by-pin");
 
     if (
       isAuthError &&
@@ -171,6 +172,11 @@ axiosInstance.interceptors.response.use(
           // Get the refresh token and user type
           const tokens = await getAuthTokens();
           const userType = await getUserType();
+
+          // Judges don't have a refresh token endpoint, so fail early
+          if (userType === "judge") {
+            throw new Error("Judges do not support token refresh");
+          }
 
           if (!tokens?.refresh_token) {
             throw new Error("No refresh token available");

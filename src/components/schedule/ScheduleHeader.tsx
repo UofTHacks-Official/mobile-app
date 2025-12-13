@@ -7,7 +7,7 @@ import { Pressable, Text, View } from "react-native";
 interface ScheduleHeaderProps {
   dates: Date[];
   currentDate: Date;
-  onFilterPress: () => void;
+  onFilterPress?: () => void;
 }
 
 export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
@@ -28,9 +28,11 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         )}
       >
         <View className="flex-row items-center">
-          <Pressable onPress={onFilterPress} className="ml-2 mr-4">
-            <ListFilter size={24} color={scheduleTheme.iconColor} />
-          </Pressable>
+          {onFilterPress && (
+            <Pressable onPress={onFilterPress} className="ml-2 mr-4">
+              <ListFilter size={24} color={scheduleTheme.iconColor} />
+            </Pressable>
+          )}
           <Text className={cn("text-3xl font-bold", scheduleTheme.headerText)}>
             {dates[0].toLocaleDateString("en-US", { month: "long" })}
           </Text>
