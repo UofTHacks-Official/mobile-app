@@ -118,6 +118,7 @@ const SelectRole = () => {
         break;
       case "Judge":
         setUserType("judge");
+        router.navigate(`/auth/signInJudge`);
         break;
       case "Hacker":
         setUserType("hacker");
@@ -146,7 +147,7 @@ const SelectRole = () => {
       name: "Judge",
       icon: GoatIcon,
       color: "bg-uoft__orange",
-      available: false,
+      available: true,
       description: "Evaluate and score hackathon projects",
     },
     {

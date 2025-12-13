@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
-import { BlurView } from "expo-blur";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 
@@ -42,26 +41,48 @@ export default function CompositePhotoView({
     <View style={{ alignItems: "center", width: "96%" }}>
       {/* Username and Prompt Above Photo */}
       {prompt && (
-        <View style={{ alignSelf: "flex-start", marginBottom: 8 }}>
-          <Text
-            style={{
-              color: isDark ? "#FFFFFF" : "#1F2937",
-              fontSize: 14,
-              fontWeight: "700",
-              marginBottom: 2,
-            }}
-          >
-            {username}
-          </Text>
-          <Text
-            style={{
-              color: isDark ? "#E5E7EB" : "#4B5563",
-              fontSize: 14,
-              fontWeight: "400",
-            }}
-          >
-            {prompt}
-          </Text>
+        <View
+          style={{
+            alignSelf: "stretch",
+            marginBottom: 8,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: isDark ? "#FFFFFF" : "#1F2937",
+                fontSize: 14,
+                fontWeight: "700",
+                marginBottom: 2,
+              }}
+            >
+              {username}
+            </Text>
+            <Text
+              style={{
+                color: isDark ? "#E5E7EB" : "#4B5563",
+                fontSize: 14,
+                fontWeight: "400",
+              }}
+            >
+              {prompt}
+            </Text>
+          </View>
+          {formattedTime && (
+            <Text
+              style={{
+                color: isDark ? "#A0A0A0" : "#6B7280",
+                fontSize: 12,
+                fontWeight: "400",
+                marginLeft: 12,
+              }}
+            >
+              {formattedTime}
+            </Text>
+          )}
         </View>
       )}
 
@@ -103,44 +124,6 @@ export default function CompositePhotoView({
           }}
           resizeMode="cover"
         />
-
-        {/* Timestamp - Blur Effect (Top Right) */}
-        {formattedTime && (
-          <View
-            style={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              borderRadius: 20,
-              overflow: "hidden",
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
-              borderWidth: 1,
-              borderColor: "rgba(255, 255, 255, 0.3)",
-            }}
-          >
-            <BlurView
-              intensity={100}
-              tint="light"
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 7,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: "400",
-                  color: "#FFF",
-                  textShadowColor: "rgba(0, 0, 0, 0.5)",
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 3,
-                }}
-              >
-                {formattedTime}
-              </Text>
-            </BlurView>
-          </View>
-        )}
 
         {/* Small Overlay Photo (Top Left) - Clickable */}
         <TouchableOpacity

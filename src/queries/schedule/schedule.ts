@@ -1,4 +1,4 @@
-import { fetchAllSchedules, fetchScheduleById } from "@/requests/schedule";
+import { fetchAllSchedules } from "@/requests/schedule";
 import { Schedule, ScheduleType } from "@/types/schedule";
 import { devError, devLog } from "@/utils/logger";
 import { useQuery } from "@tanstack/react-query";
@@ -67,8 +67,9 @@ export const useScheduleData = (
 
 /**
  * TanStack Query hook for fetching a single schedule by ID
- * @param scheduleId - The schedule ID or Schedule object
- * @param enabled - Whether the query should be enabled (default: true)
+ * Since the backend doesn't have a get-by-id endpoint, we fetch all schedules
+ * and filter client-side for the one we need
+ * @param scheduleId - The schedule ID
  * @returns Query result with the specific schedule data
  */
 export const useScheduleById = (scheduleId: number) => {
@@ -76,8 +77,19 @@ export const useScheduleById = (scheduleId: number) => {
     queryKey: ["schedule", scheduleId],
     queryFn: async () => {
       try {
-        const data = await fetchScheduleById(scheduleId);
-        return mapApiToSchedule(data);
+        // Fetch all schedules since there's no get-by-id endpoint
+        const allSchedules = await fetchAllSchedules();
+
+        // Find the schedule with matching ID
+        const schedule = allSchedules.find(
+          (s: any) => s.schedule_id === scheduleId
+        );
+
+        if (!schedule) {
+          throw new Error(`Schedule with ID ${scheduleId} not found`);
+        }
+
+        return mapApiToSchedule(schedule);
       } catch (error) {
         devLog("Schedule by ID fetch error:", error);
         throw error;
@@ -89,7 +101,7 @@ export const useScheduleById = (scheduleId: number) => {
     retry: (failureCount, error) => {
       if (failureCount >= 3) return false;
 
-      if (error instanceof Error && error.message.includes("404")) {
+      if (error instanceof Error && error.message.includes("not found")) {
         return false;
       }
 

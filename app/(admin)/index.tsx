@@ -12,18 +12,20 @@ import {
   ScanQrCode,
   AlertTriangle,
   Presentation,
+  MapPin,
+  Clock,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
+import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
+import { useJudgeSchedules } from "@/queries/judging";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -185,11 +187,16 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
 
 const RecentAnnouncement = ({
   themeStyles,
+  userType,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
+  userType: string | null;
 }) => {
-  // Fetch all announcements
-  const { data: announcements = [] } = useAnnouncementsData();
+  // Fetch announcements filtered by user type
+  // Only enable when userType is resolved
+  const { data: announcements = [] } = useAnnouncementsData(
+    userType as "admin" | "hacker" | "judge" | null
+  );
   const { isDark } = useTheme();
 
   // Get the most recent announcement (API returns them sorted newest first)
@@ -229,65 +236,53 @@ const RecentAnnouncement = ({
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           // Could navigate to announcements page or show full announcement
         }}
-        className="rounded-2xl overflow-hidden"
+        className={cn("rounded-2xl p-4", isDark ? "bg-[#303030]" : "bg-white")}
         android_ripple={null}
         style={({ pressed }) => ({
           opacity: pressed ? 0.8 : 1,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         })}
       >
-        <LinearGradient
-          colors={
-            isDark
-              ? ["#1a1a2e", "#16213e", "#0f0f1e"]
-              : ["#EAF5FF", "#F6E6DC", "#FFE9EE"]
-          }
-          locations={isDark ? [0, 0.5, 1] : [0.1443, 0.4882, 0.7784]}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 0.77, y: 0.36 }}
-          className="rounded-2xl"
-        >
-          <BlurView
-            intensity={100}
-            tint={isDark ? "dark" : "light"}
-            className="p-4"
-          >
-            <View className="flex-row items-start gap-3">
-              <Image
-                source={AppIcon}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 12,
-                }}
-                resizeMode="cover"
-              />
-              <View className="flex-1">
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text
-                    className={cn(
-                      "text-lg font-['PPObjectSans-Bold'] flex-1",
-                      themeStyles.primaryText
-                    )}
-                    numberOfLines={1}
-                  >
-                    {recentAnnouncement.title}
-                  </Text>
-                  <Text
-                    className={cn("text-xs ml-2", themeStyles.secondaryText)}
-                  >
-                    {formatTimestamp(recentAnnouncement.created_at)}
-                  </Text>
-                </View>
-                <Text
-                  className={cn("text-sm mb-2", themeStyles.secondaryText)}
-                  numberOfLines={2}
-                >
-                  {recentAnnouncement.content}
-                </Text>
-              </View>
+        <View className="flex-row items-start gap-3">
+          <Image
+            source={AppIcon}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+            }}
+            resizeMode="cover"
+          />
+          <View className="flex-1">
+            <View className="flex-row items-start justify-between mb-2">
+              <Text
+                className={cn(
+                  "text-lg font-onest-bold flex-1",
+                  themeStyles.primaryText
+                )}
+                numberOfLines={2}
+              >
+                {recentAnnouncement.title}
+              </Text>
+              <Text
+                className={cn("text-xs ml-3", themeStyles.secondaryText)}
+                style={{ opacity: 0.7 }}
+              >
+                {formatTimestamp(recentAnnouncement.created_at)}
+              </Text>
             </View>
-          </BlurView>
-        </LinearGradient>
+            <Text
+              className={cn("text-sm leading-5", themeStyles.secondaryText)}
+              numberOfLines={3}
+            >
+              {recentAnnouncement.content}
+            </Text>
+          </View>
+        </View>
       </Pressable>
     </View>
   );
@@ -295,33 +290,87 @@ const RecentAnnouncement = ({
 
 const UpcomingEvents = ({
   themeStyles,
+  userType,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
+  userType: string | null;
 }) => {
-  // Fetch all schedules - include all event types
-  const { data: schedules = [] } = useScheduleData([
-    "activity",
-    "networking",
-    "food",
-  ]);
+  const isJudge = userType === "judge";
+  const [judgeId, setJudgeId] = useState<number | null>(null);
+
+  // Get judge ID for filtering
+  useEffect(() => {
+    if (isJudge) {
+      const loadJudgeId = async () => {
+        const id = await getJudgeId();
+        setJudgeId(id);
+      };
+      loadJudgeId();
+    }
+  }, [isJudge]);
+
+  // Fetch hacker/admin schedules (skip for judges AND when userType is still loading)
+  const { data: hackerSchedules = [] } = useScheduleData(
+    ["activity", "networking", "food"],
+    userType !== null && !isJudge
+  );
+
+  // Fetch judging schedules for judges using judge-specific endpoint
+  const { data: judgeSchedules = [] } = useJudgeSchedules(
+    judgeId,
+    userType !== null && isJudge
+  );
 
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
 
   // Filter and sort to get 10 upcoming events
   const upcomingEvents = useMemo(() => {
-    return schedules
-      .filter((schedule) => {
-        const startTime = new Date(schedule.startTime);
-        return startTime >= currentTime;
-      })
-      .sort((a, b) => {
-        const aTime = new Date(a.startTime).getTime();
-        const bTime = new Date(b.startTime).getTime();
-        return aTime - bTime;
-      })
-      .slice(0, 10);
-  }, [schedules, currentTime]);
+    if (isJudge) {
+      // For judges: combine all judging sessions into one event
+      if (!judgeSchedules || judgeSchedules.length === 0) {
+        return [];
+      }
+
+      // Sort by timestamp to get earliest and latest times
+      const sorted = [...judgeSchedules].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+
+      const firstSession = sorted[0];
+      const lastSession = sorted[sorted.length - 1];
+      const lastEndTime = new Date(
+        new Date(lastSession.timestamp).getTime() + lastSession.duration * 60000
+      );
+
+      // Return a single combined event
+      return [
+        {
+          id: "judging-sessions",
+          title: `Judging Sessions (${judgeSchedules.length})`,
+          startTime: firstSession.timestamp,
+          endTime: lastEndTime.toISOString(),
+          type: "activity" as const,
+          location: firstSession.location,
+          sessionCount: judgeSchedules.length,
+        },
+      ];
+    } else {
+      // For hackers/admins: show regular schedules
+      return hackerSchedules
+        .filter((schedule) => {
+          const startTime = new Date(schedule.startTime);
+          return startTime >= currentTime;
+        })
+        .sort((a, b) => {
+          const aTime = new Date(a.startTime).getTime();
+          const bTime = new Date(b.startTime).getTime();
+          return aTime - bTime;
+        })
+        .slice(0, 10);
+    }
+  }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
@@ -402,12 +451,18 @@ const UpcomingEvents = ({
             key={event.id}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({
-                pathname: "/schedule-detail/[scheduleID]" as any,
-                params: {
-                  scheduleID: event.id.toString(),
-                },
-              });
+              if (isJudge) {
+                // Navigate to judging schedule page for judges
+                router.push("/(admin)/judging");
+              } else {
+                // Navigate to schedule detail for others
+                router.push({
+                  pathname: "/schedule-detail/[scheduleID]" as any,
+                  params: {
+                    scheduleID: event.id.toString(),
+                  },
+                });
+              }
             }}
             className="flex-row items-center"
             android_ripple={null}
@@ -431,22 +486,47 @@ const UpcomingEvents = ({
             <View className="flex-1">
               <Text
                 className={cn(
-                  "text-base font-['PPObjectSans-Bold']",
+                  "text-lg font-onest-bold mb-1",
                   themeStyles.primaryText
                 )}
+                numberOfLines={1}
               >
                 {event.title}
               </Text>
-              <Text
-                className={cn("text-sm font-pp", themeStyles.secondaryText)}
-              >
-                {formatEventDate(event.startTime)}
-              </Text>
-              <Text
-                className={cn("text-sm font-pp", themeStyles.secondaryText)}
-              >
-                {formatEventTime(event.startTime, event.endTime)}
-              </Text>
+              <View className="flex-row items-center gap-1 mb-0.5">
+                <Clock
+                  size={14}
+                  color={
+                    themeStyles.secondaryText === "text-gray-600"
+                      ? "#666"
+                      : "#A0A0A0"
+                  }
+                />
+                <Text
+                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                >
+                  {formatEventDate(event.startTime)} •{" "}
+                  {formatEventTime(event.startTime, event.endTime)}
+                </Text>
+              </View>
+              {"location" in event && event.location && (
+                <View className="flex-row items-center gap-1">
+                  <MapPin
+                    size={14}
+                    color={
+                      themeStyles.secondaryText === "text-gray-600"
+                        ? "#666"
+                        : "#A0A0A0"
+                    }
+                  />
+                  <Text
+                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                    numberOfLines={1}
+                  >
+                    {event.location}
+                  </Text>
+                </View>
+              )}
             </View>
           </Pressable>
         ))}
@@ -497,6 +577,16 @@ const AdminDashboard = () => {
   const themeStyles = getThemeStyles(isDark);
   const { hackerData } = useAuth();
   const { handleScroll } = useScrollNavBar();
+  const [userType, setUserType] = useState<string | null>(null);
+
+  // Get user type for conditional rendering
+  useEffect(() => {
+    const loadUserType = async () => {
+      const type = await getUserType();
+      setUserType(type);
+    };
+    loadUserType();
+  }, []);
 
   // Filter dashboard items - hide onboarding test for hackers
   const dashboardItems = DASHBOARD_ITEMS.filter((item) => {
@@ -515,8 +605,8 @@ const AdminDashboard = () => {
       >
         <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
         <DashboardGrid items={dashboardItems} />
-        <RecentAnnouncement themeStyles={themeStyles} />
-        <UpcomingEvents themeStyles={themeStyles} />
+        <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
+        <UpcomingEvents themeStyles={themeStyles} userType={userType} />
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
         <View className="h-8" />
       </ScrollView>

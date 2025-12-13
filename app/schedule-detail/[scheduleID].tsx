@@ -3,7 +3,7 @@ import { useScheduleById } from "@/queries/schedule/schedule";
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { formatTimeTo12Hour } from "@/utils/time";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Clock, Globe, Info, Tag, UserCog } from "lucide-react-native";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,16 +27,74 @@ export default function ScheduleDetail() {
     error,
   } = useScheduleById(Number(scheduleID));
 
+  console.log("[DEBUG] Schedule Detail - scheduleID:", scheduleID);
+  console.log("[DEBUG] Schedule Detail - isLoading:", isLoading);
+  console.log("[DEBUG] Schedule Detail - error:", error);
+  console.log("[DEBUG] Schedule Detail - selectedSchedule:", selectedSchedule);
+
   // Handle error case
   if (error) {
     devError("Failed to fetch schedule data:", error);
-    router.back();
-    return null;
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Unable to load event
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            Please try again later or contact support if the problem persists.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   // Handle loading state
-  if (isLoading || !selectedSchedule) {
-    return null;
+  if (isLoading) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center">
+          <Text className={cn("text-base font-pp", themeStyles.secondaryText)}>
+            Loading event details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!selectedSchedule) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Event not found
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            The event you&apos;re looking for doesn&apos;t exist.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   const getEventIconColor = (eventType: string) => {

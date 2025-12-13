@@ -1,3 +1,5 @@
+export type UserType = "admin" | "hacker" | "judge";
+
 export interface Announcement {
   announcement_id: number;
   admin_id: number;
@@ -5,4 +7,5 @@ export interface Announcement {
   content: string;
   created_at: string;
   updated_at: string;
+  user_types?: UserType[]; // Optional to maintain backwards compatibility
 }

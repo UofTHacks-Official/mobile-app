@@ -36,6 +36,8 @@ module.exports = {
         "blue-500": "#6FB4F0",
         "teal-500": "#7DD3D8",
         "teal-300": "#B8E6EA",
+        "cyan-light": "#BFF6FF", // Timer progress ring - dark mode
+        "blue-dark": "#21516B", // Timer progress ring - light mode
 
         // Feedback Colors
         "red-600": "#8B3A3A",
