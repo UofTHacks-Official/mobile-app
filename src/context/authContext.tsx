@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsFirstSignIn(false);
       setAdminData(null);
       setHackerData(null);
+      setJudgeData(null);
       clearUserType();
     } catch (error) {
       devError("Error during sign out:", error);

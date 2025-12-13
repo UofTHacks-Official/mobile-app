@@ -48,6 +48,8 @@ export const removeAuthTokens = async (): Promise<void | null> => {
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN);
     await SecureStore.deleteItemAsync(USER_TYPE_KEY);
+    await SecureStore.deleteItemAsync(JUDGE_ID_KEY);
+    await SecureStore.deleteItemAsync(SPONSOR_PIN_KEY);
     devLog("Successfully Removed Auth Tokens");
   } catch (error) {
     devError("Error removing auth tokens:", error);
