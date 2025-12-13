@@ -433,7 +433,7 @@ const JudgingTimerScreen = () => {
         <Svg width={size} height={size}>
           {/* Background circle */}
           <Circle
-            stroke={isDark ? "#1a1a2e" : "#f0f0f0"}
+            stroke={isDark ? "#303030" : "#f0f0f0"}
             fill="none"
             cx={size / 2}
             cy={size / 2}
@@ -583,14 +583,22 @@ const JudgingTimerScreen = () => {
               <View className="items-center mb-8">
                 <Pressable
                   onPress={handleStartTimer}
-                  className="bg-green-500 px-12 py-4 rounded-2xl flex-row items-center justify-center"
+                  className={cn(
+                    "px-12 py-4 rounded-2xl flex-row items-center justify-center",
+                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                  )}
                   disabled={startTimerMutation.isPending}
                   style={{
                     opacity: startTimerMutation.isPending ? 0.6 : 1,
                   }}
                 >
-                  <Play size={24} color="white" />
-                  <Text className="text-white text-xl font-onest-bold ml-2">
+                  <Play size={24} color={isDark ? "#000" : "#fff"} />
+                  <Text
+                    className={cn(
+                      "text-xl font-onest-bold ml-2",
+                      isDark ? "text-black" : "text-white"
+                    )}
+                  >
                     {startTimerMutation.isPending
                       ? "Starting..."
                       : "Start Timer"}
@@ -622,7 +630,7 @@ const JudgingTimerScreen = () => {
                       <View
                         className={cn(
                           "px-8 py-3 rounded-xl",
-                          isDark ? "bg-[#2a2a3e]" : "bg-gray-200"
+                          isDark ? "bg-[#303030]" : "bg-gray-200"
                         )}
                       >
                         <Text
@@ -641,7 +649,7 @@ const JudgingTimerScreen = () => {
                       <View
                         className={cn(
                           "px-8 py-3 rounded-xl",
-                          isDark ? "bg-[#2a2a3e]" : "bg-gray-200"
+                          isDark ? "bg-[#303030]" : "bg-gray-200"
                         )}
                       >
                         <Text

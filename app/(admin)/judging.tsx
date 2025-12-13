@@ -35,6 +35,9 @@ const JudgingLocationScreen = () => {
   const [judgeId, setJudgeId] = useState<number | null>(null);
 
   const [userTypeChecked, setUserTypeChecked] = useState(false);
+  const [filter, setFilter] = useState<
+    "all" | "not-started" | "in-progress" | "completed"
+  >("all");
 
   // Check if user is a judge
   useEffect(() => {
@@ -150,6 +153,30 @@ const JudgingLocationScreen = () => {
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
+  // Get event status helper
+  const getEventStatus = (event: JudgingScheduleItem) => {
+    if (!event.actual_timestamp) {
+      return "not-started";
+    }
+
+    const startTime = new Date(event.actual_timestamp).getTime();
+    const now = Date.now();
+    const elapsed = Math.floor((now - startTime) / 1000);
+    const durationSeconds = event.duration * 60;
+
+    if (elapsed < durationSeconds) {
+      return "in-progress";
+    }
+
+    return "completed";
+  };
+
+  // Filter schedules based on selected filter
+  const filteredSchedules = sortedSchedules?.filter((event) => {
+    if (filter === "all") return true;
+    return getEventStatus(event) === filter;
+  });
+
   // For judges only: show loading/error states
   if (isJudge) {
     if (isLoading) {
@@ -235,7 +262,7 @@ const JudgingLocationScreen = () => {
             disabled={generateSchedulesMutation.isPending}
             className={cn(
               "rounded-2xl p-6 mb-4 flex-row items-center justify-between",
-              isDark ? "bg-[#1a1a2e]" : "bg-white"
+              isDark ? "bg-[#303030]" : "bg-white"
             )}
             style={{
               shadowColor: "#000",
@@ -309,6 +336,116 @@ const JudgingLocationScreen = () => {
           </View>
         )}
 
+        {/* Filter Buttons */}
+        {!isJudge && sortedSchedules && sortedSchedules.length > 0 && (
+          <View className="flex-row gap-2 mb-4 flex-wrap">
+            <Pressable
+              onPress={() => setFilter("all")}
+              className={cn(
+                "px-4 py-2 rounded-xl",
+                filter === "all"
+                  ? isDark
+                    ? "bg-[#75EDEF]"
+                    : "bg-[#132B38]"
+                  : isDark
+                    ? "bg-[#303030]"
+                    : "bg-gray-200"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-sm font-onest-bold",
+                  filter === "all"
+                    ? isDark
+                      ? "text-black"
+                      : "text-white"
+                    : themeStyles.primaryText
+                )}
+              >
+                All
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFilter("not-started")}
+              className={cn(
+                "px-4 py-2 rounded-xl",
+                filter === "not-started"
+                  ? isDark
+                    ? "bg-[#75EDEF]"
+                    : "bg-[#132B38]"
+                  : isDark
+                    ? "bg-[#303030]"
+                    : "bg-gray-200"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-sm font-onest-bold",
+                  filter === "not-started"
+                    ? isDark
+                      ? "text-black"
+                      : "text-white"
+                    : themeStyles.primaryText
+                )}
+              >
+                Not Started
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFilter("in-progress")}
+              className={cn(
+                "px-4 py-2 rounded-xl",
+                filter === "in-progress"
+                  ? isDark
+                    ? "bg-[#75EDEF]"
+                    : "bg-[#132B38]"
+                  : isDark
+                    ? "bg-[#303030]"
+                    : "bg-gray-200"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-sm font-onest-bold",
+                  filter === "in-progress"
+                    ? isDark
+                      ? "text-black"
+                      : "text-white"
+                    : themeStyles.primaryText
+                )}
+              >
+                In Progress
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFilter("completed")}
+              className={cn(
+                "px-4 py-2 rounded-xl",
+                filter === "completed"
+                  ? isDark
+                    ? "bg-[#75EDEF]"
+                    : "bg-[#132B38]"
+                  : isDark
+                    ? "bg-[#303030]"
+                    : "bg-gray-200"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-sm font-onest-bold",
+                  filter === "completed"
+                    ? isDark
+                      ? "text-black"
+                      : "text-white"
+                    : themeStyles.primaryText
+                )}
+              >
+                Completed
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
         {/* Judging Events List - Different view for judges */}
         {isJudge ? (
           <View className="mt-6">
@@ -318,7 +455,7 @@ const JudgingLocationScreen = () => {
           </View>
         ) : (
           <View className="mt-4">
-            {sortedSchedules && sortedSchedules.length > 0 && (
+            {filteredSchedules && filteredSchedules.length > 0 && (
               <Text
                 className={cn(
                   "text-xl font-onest-bold mb-3",
@@ -328,7 +465,7 @@ const JudgingLocationScreen = () => {
                 Judging Events
               </Text>
             )}
-            {sortedSchedules?.map((event) => (
+            {filteredSchedules?.map((event) => (
               <JudgingEventCard key={event.judging_schedule_id} event={event} />
             ))}
           </View>

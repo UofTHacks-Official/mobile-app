@@ -105,7 +105,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
       onPress={handleStartTimer}
       className={cn(
         "rounded-2xl p-4 mb-4 border",
-        isDark ? "bg-[#1a1a2e] border-gray-700" : "bg-white border-gray-200"
+        isDark ? "bg-[#303030] border-gray-700" : "bg-white border-gray-200"
       )}
       style={{
         shadowColor: "#000",
@@ -122,14 +122,16 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         >
           Event #{event.judging_schedule_id}
         </Text>
-        <View className="flex-row items-center gap-1">
-          <Text className={cn("text-sm font-pp", status.color)}>
-            {status.icon}
-          </Text>
-          <Text className={cn("text-sm font-pp", status.color)}>
-            {status.label}
-          </Text>
-        </View>
+        {status.label !== "Completed" && (
+          <View className="flex-row items-center gap-1">
+            <Text className={cn("text-sm font-pp", status.color)}>
+              {status.icon}
+            </Text>
+            <Text className={cn("text-sm font-pp", status.color)}>
+              {status.label}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Event Details */}
@@ -181,21 +183,27 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         className={cn(
           "py-3 px-4 rounded-xl flex-row items-center justify-center gap-2",
           status.label === "Completed"
-            ? "bg-gray-400"
+            ? "bg-gray-500"
             : activeTimerId === event.judging_schedule_id &&
                 isTimerRunning &&
                 !isJudge
-              ? "bg-green-500"
+              ? isDark
+                ? "bg-[#75EDEF]"
+                : "bg-[#132B38]"
               : isDark
                 ? "bg-[#75EDEF]"
                 : "bg-[#132B38]"
         )}
         disabled={status.label === "Completed"}
-        style={{
-          opacity: status.label === "Completed" ? 0.5 : 1,
-        }}
       >
-        {isJudge ? (
+        {status.label === "Completed" ? (
+          <>
+            <CheckCircle size={20} color="white" />
+            <Text className="text-white text-base font-onest-bold">
+              Completed
+            </Text>
+          </>
+        ) : isJudge ? (
           <>
             <Play size={20} color={isDark ? "#000" : "#fff"} />
             <Text
@@ -209,8 +217,13 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
           </>
         ) : activeTimerId === event.judging_schedule_id && isTimerRunning ? (
           <>
-            <CheckCircle size={20} color="white" />
-            <Text className="text-white text-base font-onest-bold">
+            <CheckCircle size={20} color={isDark ? "#000" : "#fff"} />
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                isDark ? "text-black" : "text-white"
+              )}
+            >
               Timer Running
             </Text>
           </>
