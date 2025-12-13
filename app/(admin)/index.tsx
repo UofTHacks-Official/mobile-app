@@ -192,9 +192,10 @@ const RecentAnnouncement = ({
   themeStyles: ReturnType<typeof getThemeStyles>;
   userType: string | null;
 }) => {
-  // Fetch all announcements (skip for judges - they don't have access)
+  // Fetch announcements filtered by user type
+  // Only enable when userType is resolved
   const { data: announcements = [] } = useAnnouncementsData(
-    userType !== "judge"
+    userType as "admin" | "hacker" | "judge" | null
   );
   const { isDark } = useTheme();
 
