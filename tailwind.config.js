@@ -57,6 +57,7 @@ module.exports = {
 
         uoft_black: "#181818",
         uoft_white: "#F6F6F6",
+        light_bg: "#F6F5F8",
 
         uoft_dark_bg_black: "#1A1A1A",
         uoft_dark_mode_bg_light_black: "#262626",

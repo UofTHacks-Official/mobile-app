@@ -11,7 +11,7 @@ export const FEATURE_FLAGS = {
   ENABLE_EVENT_CHECKIN: false,
 
   // HackerBucks features
-  ENABLE_HACKERBUCKS: false,
+  ENABLE_HACKERBUCKS: true,
 
   // Photobooth features
   ENABLE_PHOTOBOOTH: true,

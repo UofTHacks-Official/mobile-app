@@ -49,6 +49,8 @@ export default function Success() {
   const { recipient, amount, orderType } = currentTransaction;
   const statusStyles = getStatusStyles("completed");
 
+  const { apiResponse } = currentTransaction;
+
   const transactionDetails = [
     {
       icon: <User size={20} color={themeStyles.iconColor} />,
@@ -62,13 +64,31 @@ export default function Success() {
     },
     {
       icon: <DollarSign size={20} color={themeStyles.iconColor} />,
-      label: "Amount",
+      label: "Amount Changed",
       value: `${amount} HB`,
     },
+    ...(apiResponse?.previousBucks !== undefined
+      ? [
+          {
+            icon: <DollarSign size={20} color={themeStyles.iconColor} />,
+            label: "Previous Balance",
+            value: `${apiResponse.previousBucks} HB`,
+          },
+        ]
+      : []),
+    ...(apiResponse?.newBucks !== undefined
+      ? [
+          {
+            icon: <DollarSign size={20} color={themeStyles.iconColor} />,
+            label: "New Balance",
+            value: `${apiResponse.newBucks} HB`,
+          },
+        ]
+      : []),
     {
       icon: <ArrowLeftRight size={20} color={themeStyles.iconColor} />,
       label: "Order Type",
-      value: orderType?.toUpperCase(),
+      value: orderType === "deduct" ? "DEDUCT" : "ADD",
     },
     {
       icon: <CircleDashed size={20} color={themeStyles.iconColor} />,

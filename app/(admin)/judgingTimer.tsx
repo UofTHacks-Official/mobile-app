@@ -474,10 +474,15 @@ const JudgingTimerScreen = () => {
             bottom: 0,
             justifyContent: "center",
             alignItems: "center",
+            paddingTop: 8,
           }}
         >
           <Text
             className={cn("text-7xl font-onest-bold", themeStyles.primaryText)}
+            style={{
+              includeFontPadding: false,
+              lineHeight: 84,
+            }}
           >
             {formatTime(getTimeRemaining())}
           </Text>
@@ -674,40 +679,42 @@ const JudgingTimerScreen = () => {
                   </View>
                 )}
 
-                {/* Pause Button - Horizontal bar */}
-                <Pressable
-                  onPress={handlePauseTimer}
-                  className={cn(
-                    "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
-                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-                  )}
-                >
-                  {timerContext.isPaused ? (
-                    <>
-                      <Play size={24} color={isDark ? "#000" : "#fff"} />
-                      <Text
-                        className={cn(
-                          "text-lg font-onest-bold",
-                          isDark ? "text-black" : "text-white"
-                        )}
-                      >
-                        Resume
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <Pause size={24} color={isDark ? "#000" : "#fff"} />
-                      <Text
-                        className={cn(
-                          "text-lg font-onest-bold",
-                          isDark ? "text-black" : "text-white"
-                        )}
-                      >
-                        Pause
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
+                {/* Pause Button - Horizontal bar (disabled when complete) */}
+                {currentStage !== "complete" && (
+                  <Pressable
+                    onPress={handlePauseTimer}
+                    className={cn(
+                      "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
+                      isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                    )}
+                  >
+                    {timerContext.isPaused ? (
+                      <>
+                        <Play size={24} color={isDark ? "#000" : "#fff"} />
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-bold",
+                            isDark ? "text-black" : "text-white"
+                          )}
+                        >
+                          Resume
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-bold",
+                            isDark ? "text-black" : "text-white"
+                          )}
+                        >
+                          Pause
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                )}
               </>
             )}
           </View>

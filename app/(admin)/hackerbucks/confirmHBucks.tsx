@@ -1,5 +1,9 @@
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import {
+  addHackerBucksByQR,
+  deductHackerBucksByQR,
+} from "@/requests/hackerBucks";
 import { devError } from "@/utils/logger";
 import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
@@ -12,18 +16,30 @@ import {
   Fingerprint,
   User,
 } from "lucide-react-native";
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ConfirmHBucks() {
   const router = useRouter();
-  const { currentTransaction } = useHackerBucksStore();
+  const {
+    currentTransaction,
+    updateTransactionWithAPIResponse,
+    updateTransactionStatus,
+    setError,
+  } = useHackerBucksStore();
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!currentTransaction) return null;
-  const { recipient, orderType, amount, status } = currentTransaction;
+  const { recipient, orderType, amount, status, qrCode } = currentTransaction;
   const statusStyles = getStatusStyles(status);
 
   const transactionDetails = [
@@ -40,7 +56,7 @@ export default function ConfirmHBucks() {
     {
       icon: <ArrowLeftRight size={20} color={themeStyles.iconColor} />,
       label: "Order Type",
-      value: orderType?.toUpperCase(),
+      value: orderType === "deduct" ? "DEDUCT" : "ADD",
     },
     {
       icon: <CircleDashed size={20} color={themeStyles.iconColor} />,
@@ -51,22 +67,53 @@ export default function ConfirmHBucks() {
   ];
 
   const handleConfirm = async () => {
+    if (!qrCode || !amount) {
+      Alert.alert("Error", "Missing QR code or amount");
+      return;
+    }
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // const hackerBucksObject = {
-    //   hacker_id: Number(recipient.id),
-    //   amount: Number(amount),
-    // };
-    // ====
-    // NOT ACTUALLY SENDING ANYTHING YET
-    // ====
+    setIsLoading(true);
+
     try {
+      const request = {
+        qr_code: qrCode,
+        amount: parseFloat(amount),
+      };
+
+      const response =
+        orderType === "deduct"
+          ? await deductHackerBucksByQR(request)
+          : await addHackerBucksByQR(request);
+
+      // Update transaction with API response
+      updateTransactionWithAPIResponse({
+        message: response.message,
+        previousBucks: response.previous_bucks,
+        newBucks: response.new_bucks,
+        amountChanged: response.amount_changed,
+      });
+
+      updateTransactionStatus("completed");
       router.replace("/hackerbucks/success");
-      // orderType === "send"
-      //   ? await sendHackerBucks(hackerBucksObject)
-      //   : await deductHackerBucks(hackerBucksObject);
-      // router.replace("/hackerbucks/success");
-    } catch (error) {
+    } catch (error: any) {
       devError("Transaction error:", error);
+      updateTransactionStatus("failed");
+
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Failed to process transaction";
+
+      setError(errorMessage);
+      Alert.alert("Transaction Failed", errorMessage, [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -153,10 +200,18 @@ export default function ConfirmHBucks() {
 
       <View className="px-6 mb-20">
         <TouchableOpacity
-          className="bg-uoft_primary_blue py-4 rounded-lg items-center"
+          className={cn(
+            "py-4 rounded-lg items-center",
+            isLoading ? "bg-gray-400" : "bg-uoft_primary_blue"
+          )}
           onPress={handleConfirm}
+          disabled={isLoading}
         >
-          <Text className="text-black text-lg font-medium">Confirm</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text className="text-black text-lg font-medium">Confirm</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

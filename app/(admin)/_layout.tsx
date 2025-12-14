@@ -46,12 +46,16 @@ export default function AdminLayout() {
           const filteredRoutes = props.state.routes.filter((route) => {
             // Always hide these routes
             if (
-              route.name === "hackerbucks" ||
               route.name === "gallery" ||
               route.name === "judgeSchedule" ||
               route.name === "judgingTimer" ||
               route.name.startsWith("schedule-detail")
             ) {
+              return false;
+            }
+
+            // Always hide hackerbucks from nav bar
+            if (route.name === "hackerbucks") {
               return false;
             }
 
@@ -165,7 +169,7 @@ export default function AdminLayout() {
         <Tabs.Screen
           name="hackerbucks"
           options={{
-            href: null, // Hide from tabs
+            href: null, // Always hide from tabs
           }}
         />
         <Tabs.Screen

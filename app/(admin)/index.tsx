@@ -14,6 +14,9 @@ import {
   Presentation,
   MapPin,
   Clock,
+  BanknoteArrowUp,
+  BanknoteArrowDown,
+  UserCheck,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
@@ -22,6 +25,7 @@ import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
+import GoatIcon from "../../assets/images/icons/Goat.svg";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
@@ -68,15 +72,6 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     backgroundColor: "bg-uoft_yellow",
     enabled: FEATURE_FLAGS.ENABLE_SCHEDULE,
     route: "/(admin)/schedule",
-  },
-  {
-    id: "hacker-bucks",
-    title: "Hacker Bucks",
-    description: "Manage hacker bucks",
-    icon: MoneyWavy,
-    backgroundColor: "bg-uoft_accent_purple",
-    enabled: FEATURE_FLAGS.ENABLE_HACKERBUCKS,
-    route: "/hackerbucks",
   },
   {
     id: "notification",
@@ -185,6 +180,100 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
   );
 };
 
+const AdminActionButtons = ({
+  themeStyles,
+  isDark,
+}: {
+  themeStyles: ReturnType<typeof getThemeStyles>;
+  isDark: boolean;
+}) => {
+  const handleCheckIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/hackerbucks/scan?mode=checkin");
+  };
+
+  const handleAddBucks = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/hackerbucks/scan?mode=add");
+  };
+
+  const handleDeductBucks = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/hackerbucks/scan?mode=deduct");
+  };
+
+  return (
+    <View className="mt-6">
+      <View className="flex-row gap-3">
+        <Pressable
+          onPress={handleCheckIn}
+          className="flex-1"
+          android_ripple={null}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <View
+            className="rounded-xl p-4 items-center justify-center"
+            style={{ backgroundColor: "#75EDEF" }}
+          >
+            <UserCheck size={24} color="#000" style={{ marginBottom: 6 }} />
+            <Text className="text-sm font-semibold text-center text-black">
+              Check In Hacker
+            </Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={handleAddBucks}
+          className="flex-1"
+          android_ripple={null}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <View
+            className="rounded-xl p-4 items-center justify-center"
+            style={{ backgroundColor: "#F17AAD" }}
+          >
+            <BanknoteArrowUp
+              size={24}
+              color="#000"
+              style={{ marginBottom: 6 }}
+            />
+            <Text className="text-sm font-semibold text-center text-black">
+              Add HackerBux
+            </Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={handleDeductBucks}
+          className="flex-1"
+          android_ripple={null}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <View
+            className="rounded-xl p-4 items-center justify-center"
+            style={{ backgroundColor: "#FFDD80" }}
+          >
+            <BanknoteArrowDown
+              size={24}
+              color="#000"
+              style={{ marginBottom: 6 }}
+            />
+            <Text className="text-sm font-semibold text-center text-black">
+              Deduct HackerBux
+            </Text>
+          </View>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
 const RecentAnnouncement = ({
   themeStyles,
   userType,
@@ -225,7 +314,7 @@ const RecentAnnouncement = ({
   }
 
   return (
-    <View className="mt-4">
+    <View className="mt-6">
       <Text
         className={cn("text-2xl font-onest-bold mb-4", themeStyles.primaryText)}
       >
@@ -236,27 +325,17 @@ const RecentAnnouncement = ({
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           // Could navigate to announcements page or show full announcement
         }}
-        className={cn("rounded-2xl p-4", isDark ? "bg-[#303030]" : "bg-white")}
+        className={cn(
+          "rounded-2xl p-4 border",
+          isDark ? "bg-[#303030] border-gray-700" : "border-gray-200"
+        )}
         android_ripple={null}
         style={({ pressed }) => ({
           opacity: pressed ? 0.8 : 1,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-          elevation: 3,
         })}
       >
         <View className="flex-row items-start gap-3">
-          <Image
-            source={AppIcon}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 12,
-            }}
-            resizeMode="cover"
-          />
+          <GoatIcon width={48} height={48} />
           <View className="flex-1">
             <View className="flex-row items-start justify-between mb-2">
               <Text
@@ -464,7 +543,7 @@ const UpcomingEvents = ({
                 });
               }
             }}
-            className="flex-row items-center"
+            className="flex-row items-start"
             android_ripple={null}
             style={({ pressed }) => ({
               opacity: pressed ? 0.7 : 1,
@@ -605,8 +684,15 @@ const AdminDashboard = () => {
       >
         <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
         <DashboardGrid items={dashboardItems} />
-        <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
-        <UpcomingEvents themeStyles={themeStyles} userType={userType} />
+        {userType && (
+          <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
+        )}
+        {FEATURE_FLAGS.ENABLE_HACKERBUCKS && userType === "admin" && (
+          <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
+        )}
+        {userType && (
+          <UpcomingEvents themeStyles={themeStyles} userType={userType} />
+        )}
         {FEATURE_FLAGS.ENABLE_MODAL_TEST_WIDGET && <ModalTestWidget />}
         <View className="h-8" />
       </ScrollView>

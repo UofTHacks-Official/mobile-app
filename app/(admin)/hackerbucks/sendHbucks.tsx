@@ -5,26 +5,33 @@ import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ArrowDown, ArrowUp } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Feather";
 
-// Validation functions
-
-export default function SwapScreen() {
+export default function SendHBucksScreen() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const { mode } = useLocalSearchParams<{ mode?: "add" | "deduct" }>();
+
   const [amount, setAmount] = useState("0");
-  const [isDeducting, setIsDeducting] = useState(false);
+  const [isDeducting, setIsDeducting] = useState(mode === "deduct");
 
   const hackerBucksTransaction = useHackerBucksStore();
 
   const currentRecipient = hackerBucksTransaction.currentTransaction?.recipient;
 
   const isAmountValid = isValidAmount(amount);
+
+  // Update deducting state when mode changes
+  useEffect(() => {
+    if (mode) {
+      setIsDeducting(mode === "deduct");
+    }
+  }, [mode]);
 
   const handleDirectionToggle = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -101,7 +108,7 @@ export default function SwapScreen() {
               themeStyles.primaryText
             )}
           >
-            {isDeducting ? "Deduct Order" : "Send Order"}
+            {isDeducting ? "Deduct Hacker Bucks" : "Add Hacker Bucks"}
           </Text>
         </View>
 
@@ -115,7 +122,7 @@ export default function SwapScreen() {
             <Text
               className={cn("text-xl pt-2 font-pp", themeStyles.primaryText)}
             >
-              {isDeducting ? "Deducting" : "Sending"}
+              {isDeducting ? "Deducting" : "Adding"}
             </Text>
             <TextInput
               className={cn(
@@ -158,7 +165,7 @@ export default function SwapScreen() {
                 <Text
                   className={cn("text-xl font-pp", themeStyles.primaryText)}
                 >
-                  {isDeducting ? "Taking" : "Receiving"}
+                  {isDeducting ? "Deducting From" : "Adding To"}
                 </Text>
                 {currentRecipient?.firstName ? (
                   <>
