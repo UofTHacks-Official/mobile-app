@@ -314,7 +314,7 @@ const RecentAnnouncement = ({
   }
 
   return (
-    <View className="mt-6">
+    <View className="3">
       <Text
         className={cn("text-2xl font-onest-bold mb-4", themeStyles.primaryText)}
       >
