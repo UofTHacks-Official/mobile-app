@@ -2,7 +2,7 @@ export const getThemeStyles = (isDark: boolean) => ({
   // Background colors
   background: isDark ? "bg-[#212121]" : "bg-light_bg",
   cardBackground: isDark ? "bg-[#303030]" : "bg-white",
-  lightCardBackground: isDark ? "bg-[#303030]" : "bg-gray-100",
+  lightCardBackground: isDark ? "bg-[#303030]" : "bg-gray-200",
   errorBackground: isDark ? "bg-uoft_grey_light" : "bg-uoft_grey_light",
 
   // Text colors
@@ -18,7 +18,7 @@ export const getThemeStyles = (isDark: boolean) => ({
   iconColor: isDark ? "#FFF" : "#000",
 
   // Theme toggle specific styles
-  toggleButtonBackground: isDark ? "bg-[#303030]" : "bg-gray-100",
+  toggleButtonBackground: isDark ? "bg-[#303030]" : "bg-gray-200",
 
   toggleButtonSelected: isDark ? "bg-[#75EDEF]" : "bg-uoft_primary_blue",
   toggleButtonText: isDark ? "text-uoft_black" : "text-black",
