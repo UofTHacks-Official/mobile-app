@@ -3,7 +3,7 @@ import { useTimer } from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
-  useJudgeSchedules,
+  useAllJudgingSchedules,
 } from "@/queries/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
@@ -69,11 +69,12 @@ const JudgingTimerScreen = () => {
   } = useJudgingScheduleById(activeScheduleId || 0);
   const startTimerMutation = useStartJudgingTimer();
 
-  // Fetch judge's schedules to calculate round count
-  // Only enabled when we have schedule data to get the judge_id
-  const { data: judgeSchedules } = useJudgeSchedules(
-    scheduleData?.judge_id ?? null,
-    !!scheduleData?.judge_id
+  // Fetch all schedules (admin endpoint) to calculate round count
+  // Filter locally by judge_id
+  const { data: allSchedules } = useAllJudgingSchedules(true);
+
+  const judgeSchedules = allSchedules?.filter(
+    (schedule) => schedule.judge_id === scheduleData?.judge_id
   );
 
   // Restore timer state when returning to screen or context resets
