@@ -7,7 +7,11 @@ import {
 } from "@/queries/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import {
+  haptics,
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+} from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Pause, Play } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -182,7 +186,7 @@ const JudgingTimerScreen = () => {
           // Auto-transition between stages
           if (currentStage === "pitching" && totalElapsed >= pitchingDuration) {
             setCurrentStage("qa");
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            haptics.notificationAsync(NotificationFeedbackType.Success);
             Toast.show({
               type: "success",
               text1: "Q&A Time",
@@ -193,7 +197,7 @@ const JudgingTimerScreen = () => {
             totalElapsed >= pitchingDuration + qaDuration
           ) {
             setCurrentStage("buffer");
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            haptics.notificationAsync(NotificationFeedbackType.Success);
             Toast.show({
               type: "success",
               text1: "Buffer Time",
@@ -205,7 +209,7 @@ const JudgingTimerScreen = () => {
           ) {
             setCurrentStage("complete");
             setIsRunning(false);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            haptics.notificationAsync(NotificationFeedbackType.Error);
             Toast.show({
               type: "success",
               text1: "Session Complete!",
@@ -283,7 +287,7 @@ const JudgingTimerScreen = () => {
     if (!activeScheduleId) return;
 
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      haptics.impactAsync(ImpactFeedbackStyle.Heavy);
       await startTimerMutation.mutateAsync(activeScheduleId);
       setIsRunning(true);
       setCurrentStage("pitching"); // Reset to first stage
@@ -307,7 +311,7 @@ const JudgingTimerScreen = () => {
   };
 
   const handlePauseTimer = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     if (timerContext.isPaused) {
       // Resuming - calculate how long we were paused and add to total
       if (timerContext.pauseStartTime !== null) {
@@ -392,14 +396,14 @@ const JudgingTimerScreen = () => {
           {
             text: "Cancel",
             onPress: () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              haptics.impactAsync(ImpactFeedbackStyle.Light);
             },
             style: "cancel",
           },
           {
             text: "Exit",
             onPress: () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              haptics.impactAsync(ImpactFeedbackStyle.Medium);
               // Don't stop timer - let it persist
               // Just navigate back
               router.push("/(admin)/judging");
@@ -410,7 +414,7 @@ const JudgingTimerScreen = () => {
       );
     } else {
       // No active timer, just navigate back
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.impactAsync(ImpactFeedbackStyle.Light);
       router.push("/(admin)/judging");
     }
   };

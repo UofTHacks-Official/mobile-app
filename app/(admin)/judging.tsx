@@ -12,7 +12,7 @@ import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
 import { useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { RefreshCw } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -87,7 +87,7 @@ const JudgingLocationScreen = () => {
 
   const handleGenerateSchedules = async () => {
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
       // Clear the current schedules from UI immediately
       queryClient.setQueryData(["judging-schedules"], []);

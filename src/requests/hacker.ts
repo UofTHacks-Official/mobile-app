@@ -6,6 +6,8 @@ export const hackerEndpoints = {
   HACKER_TOKEN_REFRESH: "/api/v13/hackers/refresh",
   HACKER_PROFILE: "/api/v13/hackers/profile",
   HACKER_AVATAR: "/api/v13/hackers/avatar/",
+  HACKERS_GET: "/api/v13/hackers/get",
+  HACKER_BY_ID: "/api/v13/hackers",
 };
 
 export interface Hacker {
@@ -27,6 +29,25 @@ export interface Hacker {
   dietary_condition?: string;
   team_id?: number;
   last_login?: string | null;
+}
+
+export interface HackerProfile extends Hacker {
+  skills?: string[];
+  interest?: string[];
+  github_url?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  bio?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HackerQueryParams {
+  skills?: string[];
+  interests?: string[];
+  school?: string;
+  major?: string;
+  search?: string;
 }
 
 /**
@@ -107,6 +128,31 @@ export const getHackerAvatar = async (bearerToken: string) => {
   } catch (error) {
     return { error };
   }
+};
+
+/**
+ * Fetch all hackers with optional filtering
+ */
+export const fetchHackers = async (
+  queryParams: HackerQueryParams = {}
+): Promise<HackerProfile[]> => {
+  const response = await axiosInstance.post<HackerProfile[]>(
+    hackerEndpoints.HACKERS_GET,
+    queryParams
+  );
+  return response.data;
+};
+
+/**
+ * Fetch a single hacker profile by ID
+ */
+export const fetchHackerById = async (
+  hackerId: number
+): Promise<HackerProfile> => {
+  const response = await axiosInstance.get<HackerProfile>(
+    `${hackerEndpoints.HACKER_BY_ID}/${hackerId}`
+  );
+  return response.data;
 };
 
 export default hackerEndpoints;

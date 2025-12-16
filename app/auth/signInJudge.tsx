@@ -103,9 +103,9 @@ const SignInJudge = () => {
         text2: `Signed in as ${judge.judge_name}`,
       });
 
-      // Navigate to judging screen (works for both admin and judge)
+      // Navigate to home screen
       router.dismissAll();
-      router.replace("/(admin)/judging");
+      router.replace("/(admin)");
     } catch (error) {
       devError("Error logging in as judge", error);
       Toast.show({
