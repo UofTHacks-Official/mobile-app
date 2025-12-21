@@ -1,0 +1,18 @@
+# Cloudflare Pages Redirects for UofTHacks Judging
+# Only judge-related pages are accessible, everything else redirects to judge login
+
+# Redirect root to judge login
+/ /auth/signInJudge 302
+
+# Allow judge login page (must come before /auth/* rule)
+/auth/signInJudge /index.html 200
+
+# Redirect all other auth pages to judge login
+/auth/* /auth/signInJudge 302
+
+# Allow judge scoring pages to load the SPA
+/scorecard /index.html 200
+/projectOverview /index.html 200
+
+# Redirect all other pages (admin, landing, etc.) to judge login
+/* /auth/signInJudge 302
