@@ -1,6 +1,9 @@
 # Cloudflare Pages Redirects for UofTHacks Judging
 # Only judge-related pages are accessible, everything else redirects to judge login
 
+# Redirect root to judge login
+/ /auth/signInJudge 302
+
 # Redirect non-judge auth pages to judge login
 /auth/camera /auth/signInJudge 302
 /auth/congrats /auth/signInJudge 302
