@@ -196,7 +196,7 @@ export default function Success() {
         </View>
       </View>
 
-      <View className="px-6 space-y-3 pb-6">
+      <View className="px-6 pb-24">
         <TouchableOpacity
           className={cn(
             "py-4 rounded-lg items-center",

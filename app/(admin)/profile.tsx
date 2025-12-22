@@ -10,6 +10,7 @@ import {
   Bell,
   CalendarCheck2Icon,
   Camera,
+  Coins,
   LogOut,
   User,
   X,
@@ -101,6 +102,20 @@ const Profile = () => {
                   </Text>
                   <Text className={cn(theme.textPrimary, theme.cardText)}>
                     {hacker.hacker_email}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    HackerBucks:
+                  </Text>
+                  <Text
+                    className={cn(
+                      theme.textPrimary,
+                      theme.cardText,
+                      "font-bold"
+                    )}
+                  >
+                    {hacker.hacker_bucks ?? 0} HB
                   </Text>
                 </View>
               </View>

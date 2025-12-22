@@ -18,6 +18,7 @@ import {
   BanknoteArrowUp,
   BanknoteArrowDown,
   UserCheck,
+  Coins,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
@@ -107,23 +108,45 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
 const DashboardHeader = ({
   themeStyles,
   isDark,
+  hackerData,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
   isDark: boolean;
+  hackerData: any;
 }) => {
   return (
     <View className="mt-6">
-      <View className="flex-row items-center gap-x-3">
-        {isDark ? (
-          <UoftDeerWhite width={40} height={40} />
-        ) : (
-          <UoftDeerBlack width={40} height={40} />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-x-3 flex-1">
+          {isDark ? (
+            <UoftDeerWhite width={40} height={40} />
+          ) : (
+            <UoftDeerBlack width={40} height={40} />
+          )}
+          <Text
+            className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
+          >
+            Dashboard
+          </Text>
+        </View>
+        {hackerData && (
+          <View
+            className={cn(
+              "flex-row items-center gap-x-2 px-3 py-2 rounded-full",
+              isDark ? "bg-[#303030]" : "bg-gray-100"
+            )}
+          >
+            <Coins size={18} color={isDark ? "#FFD700" : "#D4AF37"} />
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                themeStyles.primaryText
+              )}
+            >
+              {hackerData.hacker_bucks ?? 0}
+            </Text>
+          </View>
         )}
-        <Text
-          className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
-        >
-          Dashboard
-        </Text>
       </View>
     </View>
   );
@@ -766,7 +789,11 @@ const AdminDashboard = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
+        <DashboardHeader
+          themeStyles={themeStyles}
+          isDark={isDark}
+          hackerData={hackerData}
+        />
         <DashboardGrid items={dashboardItems} />
         {userType && (
           <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
