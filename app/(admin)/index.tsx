@@ -18,6 +18,7 @@ import {
   BanknoteArrowUp,
   BanknoteArrowDown,
   UserCheck,
+  Coins,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
@@ -107,23 +108,45 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
 const DashboardHeader = ({
   themeStyles,
   isDark,
+  hackerData,
 }: {
   themeStyles: ReturnType<typeof getThemeStyles>;
   isDark: boolean;
+  hackerData: any;
 }) => {
   return (
     <View className="mt-6">
-      <View className="flex-row items-center gap-x-3">
-        {isDark ? (
-          <UoftDeerWhite width={40} height={40} />
-        ) : (
-          <UoftDeerBlack width={40} height={40} />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-x-3 flex-1">
+          {isDark ? (
+            <UoftDeerWhite width={40} height={40} />
+          ) : (
+            <UoftDeerBlack width={40} height={40} />
+          )}
+          <Text
+            className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
+          >
+            Dashboard
+          </Text>
+        </View>
+        {hackerData && (
+          <View
+            className={cn(
+              "flex-row items-center gap-x-2 px-3 py-2 rounded-full",
+              isDark ? "bg-[#303030]" : "bg-gray-100"
+            )}
+          >
+            <Coins size={18} color={isDark ? "#FFD700" : "#D4AF37"} />
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                themeStyles.primaryText
+              )}
+            >
+              {hackerData.hacker_bucks ?? 0}
+            </Text>
+          </View>
         )}
-        <Text
-          className={cn("text-3xl font-onest-bold", themeStyles.primaryText)}
-        >
-          Dashboard
-        </Text>
       </View>
     </View>
   );
@@ -295,64 +318,6 @@ const AdminActionButtons = ({
             </Text>
           </View>
         </Pressable>
-      </View>
-
-      <View
-        className={cn(
-          "mt-4 rounded-xl p-4 gap-3",
-          isDark ? "bg-[#2d2d2d]" : "bg-gray-100"
-        )}
-      >
-        <Text
-          className={cn(
-            "text-sm font-semibold",
-            isDark ? "text-gray-200" : "text-gray-700"
-          )}
-        >
-          [TEST] HackerBucks Result Screens
-        </Text>
-        <View className="flex-row gap-3">
-          <Pressable
-            onPress={() => handlePreviewResult("completed")}
-            className={cn(
-              "flex-1 py-3 rounded-xl items-center",
-              isDark ? "bg-green-800/60" : "bg-green-100"
-            )}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Text
-              className={cn(
-                "font-semibold",
-                isDark ? "text-green-200" : "text-green-700"
-              )}
-            >
-              Show Success
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => handlePreviewResult("failed")}
-            className={cn(
-              "flex-1 py-3 rounded-xl items-center",
-              isDark ? "bg-red-800/60" : "bg-red-100"
-            )}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Text
-              className={cn(
-                "font-semibold",
-                isDark ? "text-red-200" : "text-red-700"
-              )}
-            >
-              Show Failed
-            </Text>
-          </Pressable>
-        </View>
       </View>
     </View>
   );
@@ -766,7 +731,11 @@ const AdminDashboard = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <DashboardHeader themeStyles={themeStyles} isDark={isDark} />
+        <DashboardHeader
+          themeStyles={themeStyles}
+          isDark={isDark}
+          hackerData={hackerData}
+        />
         <DashboardGrid items={dashboardItems} />
         {userType && (
           <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
@@ -775,7 +744,7 @@ const AdminDashboard = () => {
           <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
         )}
         {FEATURE_FLAGS.ENABLE_TEST_QR_GENERATOR && userType === "admin" && (
-          <View className="mt-4 gap-3">
+          <View className="mt-4">
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -793,25 +762,6 @@ const AdminDashboard = () => {
                 )}
               >
                 [TEST] Generate Test QR Code
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                router.push("/hackerbucks/sendHbucks?mode=add&test=true");
-              }}
-              className={cn(
-                "py-3 px-4 rounded-xl",
-                isDark ? "bg-[#303030]" : "bg-gray-200"
-              )}
-            >
-              <Text
-                className={cn(
-                  "text-center text-sm font-pp",
-                  themeStyles.primaryText
-                )}
-              >
-                [TEST] Send HackerBux Screen
               </Text>
             </Pressable>
           </View>

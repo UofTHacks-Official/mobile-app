@@ -1,4 +1,4 @@
-import axios from "axios";
+import { axiosInstance } from "./axiosConfig";
 
 const hackerBucksEndpoints = {
   SEND: "/api/v13/admins/hacker-bucks/add",
@@ -6,6 +6,7 @@ const hackerBucksEndpoints = {
   ADD_QR: "/api/v13/qr/add-hackerbux",
   DEDUCT_QR: "/api/v13/qr/deduct-hackerbux",
   CHECKIN: "/api/v13/qr/checkin",
+  GET_QR: "/api/v13/qr/get-qr",
 };
 
 // Endpoints to add/deduct hacker bucks from a hacker
@@ -39,10 +40,18 @@ export interface CheckInResponse {
   message: string;
 }
 
+export interface GetQRRequest {
+  userid: number;
+}
+
+export interface GetQRResponse {
+  qr_code: string;
+}
+
 export async function sendHackerBucks(
   HackerBucksObject: hackerBucksObject
 ): Promise<null> {
-  const response = await axios.post(
+  const response = await axiosInstance.post(
     hackerBucksEndpoints.SEND,
     HackerBucksObject
   );
@@ -52,7 +61,7 @@ export async function sendHackerBucks(
 export async function deductHackerBucks(
   HackerBucksObject: hackerBucksObject
 ): Promise<null> {
-  const response = await axios.post(
+  const response = await axiosInstance.post(
     hackerBucksEndpoints.DEDUCT,
     HackerBucksObject
   );
@@ -62,7 +71,7 @@ export async function deductHackerBucks(
 export async function addHackerBucksByQR(
   request: QRHackerBucksRequest
 ): Promise<QRHackerBucksResponse> {
-  const response = await axios.post<QRHackerBucksResponse>(
+  const response = await axiosInstance.post<QRHackerBucksResponse>(
     hackerBucksEndpoints.ADD_QR,
     request
   );
@@ -72,7 +81,7 @@ export async function addHackerBucksByQR(
 export async function deductHackerBucksByQR(
   request: QRHackerBucksRequest
 ): Promise<QRHackerBucksResponse> {
-  const response = await axios.post<QRHackerBucksResponse>(
+  const response = await axiosInstance.post<QRHackerBucksResponse>(
     hackerBucksEndpoints.DEDUCT_QR,
     request
   );
@@ -82,9 +91,17 @@ export async function deductHackerBucksByQR(
 export async function checkInHacker(
   request: CheckInRequest
 ): Promise<CheckInResponse> {
-  const response = await axios.post<CheckInResponse>(
+  const response = await axiosInstance.post<CheckInResponse>(
     hackerBucksEndpoints.CHECKIN,
     request
   );
   return response.data;
+}
+
+export async function getHackerQRCode(userId: number): Promise<string> {
+  const response = await axiosInstance.post<GetQRResponse>(
+    hackerBucksEndpoints.GET_QR,
+    { userid: userId }
+  );
+  return response.data.qr_code;
 }
