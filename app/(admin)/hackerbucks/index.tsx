@@ -1,4 +1,5 @@
 import { useTheme } from "@/context/themeContext";
+import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
@@ -9,6 +10,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function HackerBucksLanding() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const {
+    startTransaction,
+    updateTransactionAmount,
+    updateTransactionStatus,
+    clearTransaction,
+  } = useHackerBucksStore();
 
   const handleAddPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -23,6 +30,24 @@ export default function HackerBucksLanding() {
   const handleCheckInPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=checkin");
+  };
+
+  const handlePreviewResult = (status: "completed" | "failed") => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    clearTransaction();
+    startTransaction(
+      {
+        firstName: "Alex",
+        lastName: "Hacker",
+        id: "TEST123",
+        email: "alex@uofthacks.com",
+      },
+      "250",
+      "TEST123"
+    );
+    updateTransactionAmount("250", "send");
+    updateTransactionStatus(status);
+    router.push("/hackerbucks/success");
   };
 
   return (
@@ -139,6 +164,56 @@ export default function HackerBucksLanding() {
             </View>
             <ArrowDownCircle size={32} color={isDark ? "#f87171" : "#dc2626"} />
           </TouchableOpacity>
+
+          <View
+            className={cn(
+              "rounded-2xl p-4 gap-3",
+              isDark ? "bg-[#2d2d2d]" : "bg-gray-100"
+            )}
+          >
+            <Text
+              className={cn(
+                "text-sm font-semibold",
+                isDark ? "text-gray-200" : "text-gray-700"
+              )}
+            >
+              UI Previews
+            </Text>
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => handlePreviewResult("completed")}
+                className={cn(
+                  "flex-1 py-3 rounded-xl items-center",
+                  isDark ? "bg-green-800/60" : "bg-green-100"
+                )}
+              >
+                <Text
+                  className={cn(
+                    "font-semibold",
+                    isDark ? "text-green-200" : "text-green-700"
+                  )}
+                >
+                  Show Success
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handlePreviewResult("failed")}
+                className={cn(
+                  "flex-1 py-3 rounded-xl items-center",
+                  isDark ? "bg-red-800/60" : "bg-red-100"
+                )}
+              >
+                <Text
+                  className={cn(
+                    "font-semibold",
+                    isDark ? "text-red-200" : "text-red-700"
+                  )}
+                >
+                  Show Failed
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
     </SafeAreaView>

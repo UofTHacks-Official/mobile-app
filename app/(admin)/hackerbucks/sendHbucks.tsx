@@ -1,30 +1,34 @@
-import NumericKeypad from "@/components/hacker_bucks/keyboard";
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { shortenString } from "@/utils/tokens/format/shorten";
+import NumericKeypad from "@/components/hacker_bucks/keyboard";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowDown, ArrowUp } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Icon from "react-native-vector-icons/Feather";
 
 export default function SendHBucksScreen() {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { mode } = useLocalSearchParams<{ mode?: "add" | "deduct" }>();
 
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState("");
   const [isDeducting, setIsDeducting] = useState(mode === "deduct");
 
   const hackerBucksTransaction = useHackerBucksStore();
 
   const currentRecipient = hackerBucksTransaction.currentTransaction?.recipient;
 
-  const isAmountValid = isValidAmount(amount);
+  const isAmountValid = isValidAmount(amount) && parseFloat(amount) > 0;
 
   // Update deducting state when mode changes
   useEffect(() => {
@@ -33,54 +37,23 @@ export default function SendHBucksScreen() {
     }
   }, [mode]);
 
-  const handleDirectionToggle = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsDeducting(!isDeducting);
-  };
+  const handleKeypadPress = (key: string) => {
+    const next = `${amount}${key}`;
+    const formatted = formatAmount(next);
+    const normalized = formatted.startsWith(".") ? `0${formatted}` : formatted;
 
-  const handleKeyPress = (key: string) => {
-    // Prevent multiple decimal points
-    if (key === "." && amount.includes(".")) return;
-
-    // If current value is "0", replace it with the new key
-    if (amount === "0" && key !== ".") {
-      const newAmount = key;
-      // Check if the new amount would exceed 1000
-      if (parseFloat(newAmount) <= 1000) {
-        setAmount(newAmount);
-      }
-    } else {
-      const newAmount = amount + key;
-      // Format the amount to ensure it's valid
-      const formattedAmount = formatAmount(newAmount);
-      // Check if the formatted amount would exceed 1000
-      if (parseFloat(formattedAmount) <= 1000) {
-        setAmount(formattedAmount);
-      }
+    if (normalized === "") {
+      setAmount("");
+      return;
     }
+
+    const trimmed =
+      normalized.length > 1 ? normalized.replace(/^0+(?=\d)/, "") : normalized;
+    setAmount(trimmed);
   };
 
   const handleDelete = () => {
-    if (amount.length > 1) {
-      setAmount(amount.slice(0, -1));
-    } else {
-      setAmount("0");
-    }
-  };
-
-  const handlePresetAmount = (presetAmount: string) => {
-    if (isValidAmount(presetAmount)) {
-      setAmount(presetAmount);
-    }
-  };
-
-  const handleTextInputChange = (text: string) => {
-    const formattedText = formatAmount(text);
-    const numValue = parseFloat(formattedText);
-
-    if (!isNaN(numValue) && numValue <= 1000) {
-      setAmount(formattedText);
-    }
+    setAmount((prev) => prev.slice(0, -1));
   };
 
   const handleSendPress = () => {
@@ -95,140 +68,123 @@ export default function SendHBucksScreen() {
     router.push("/hackerbucks/confirmHBucks");
   };
 
-  return (
-    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <View className="flex-1 px-4">
-        <View className="flex flex-row items-center px-4 pt-4 pb-12">
-          <Pressable onPress={() => router.back()}>
-            <Icon name="chevron-left" size={28} color={themeStyles.iconColor} />
-          </Pressable>
-          <Text
-            className={cn(
-              "text-lg font-bold flex-1 text-center",
-              themeStyles.primaryText
-            )}
-          >
-            {isDeducting ? "Deduct Hacker Bucks" : "Add Hacker Bucks"}
-          </Text>
-        </View>
+  const handleClose = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.back();
+  };
 
-        <View
-          className={cn(
-            "flex-row items-center px-6 py-4 min-h-[100px] rounded-lg",
-            themeStyles.cardBackground
-          )}
-        >
-          <View className="flex-1">
-            <Text
-              className={cn("text-xl pt-2 font-pp", themeStyles.primaryText)}
-            >
-              {isDeducting ? "Deducting" : "Adding"}
+  return (
+    <SafeAreaView
+      className={cn("flex-1", themeStyles.background)}
+      edges={["top"]}
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View className="flex-1 px-6 pt-4 pb-10">
+          <View className="flex-row items-start justify-between mb-10">
+            <View className="flex-1">
+              <Text
+                className={cn(
+                  "text-2xl font-onest-bold",
+                  themeStyles.primaryText
+                )}
+              >
+                Hacker Bucks
+              </Text>
+              <Text
+                className={cn(
+                  "text-lg font-onest-bold mt-1",
+                  themeStyles.secondaryText
+                )}
+              >
+                {isDeducting ? "Deducting" : "Adding"}
+              </Text>
+            </View>
+            <Pressable onPress={handleClose} className="p-2 -mr-2">
+              <X size={28} color={themeStyles.iconColor} />
+            </Pressable>
+          </View>
+
+          <View className="flex-1 items-center justify-center gap-7">
+            <Text className={cn("text-sm", themeStyles.secondaryText)}>
+              Enter amount
             </Text>
-            <TextInput
+            <View className="flex-row items-end justify-center pt-2">
+              <Text
+                className={cn(
+                  "text-4xl font-onest-bold mr-2",
+                  themeStyles.secondaryText
+                )}
+              >
+                $
+              </Text>
+              <Text
+                className={cn(
+                  "text-7xl font-onest-bold text-center min-w-[160px] leading-none",
+                  themeStyles.primaryText
+                )}
+                style={{ lineHeight: 80 }}
+              >
+                {amount || "0"}
+              </Text>
+              <Text
+                className={cn(
+                  "text-xl font-onest-bold ml-2",
+                  themeStyles.secondaryText
+                )}
+              >
+                HB
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={handleSendPress}
+              disabled={!isAmountValid}
               className={cn(
-                "flex-1 font-pp text-4xl border-0 p-0",
-                themeStyles.primaryText
+                "w-full py-4 rounded-2xl",
+                isAmountValid
+                  ? isDark
+                    ? "bg-[#75EDEF]"
+                    : "bg-[#132B38]"
+                  : isDark
+                    ? "bg-gray-700"
+                    : "bg-gray-300"
               )}
-              placeholderTextColor={isDark ? "#888" : "#ffff"}
-              keyboardType="numeric"
-              autoCorrect={false}
-              autoFocus={true}
-              onChangeText={handleTextInputChange}
-              value={amount}
-              showSoftInputOnFocus={false}
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.15,
+                shadowRadius: 10,
+                elevation: 6,
+              }}
+            >
+              <Text
+                className={cn(
+                  "text-center text-lg font-onest-bold",
+                  isAmountValid
+                    ? isDark
+                      ? "text-black"
+                      : "text-white"
+                    : isDark
+                      ? "text-gray-500"
+                      : "text-gray-500"
+                )}
+              >
+                {isDeducting ? "Deduct" : "Send"}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View className="pb-20">
+            <NumericKeypad
+              onKeyPress={handleKeypadPress}
+              onDelete={handleDelete}
             />
           </View>
         </View>
-
-        <Pressable
-          className="absolute left-0 right-0 top-[165px] items-center z-10"
-          onPress={handleDirectionToggle}
-        >
-          <View className={cn("p-1 rounded-lg", themeStyles.background)}>
-            {isDeducting ? (
-              <ArrowUp size={36} color={themeStyles.iconColor} />
-            ) : (
-              <ArrowDown size={36} color={themeStyles.iconColor} />
-            )}
-          </View>
-        </Pressable>
-
-        <View
-          className={cn(
-            "flex-row items-center rounded-lg px-6 py-4 min-h-[100px] mt-2",
-            themeStyles.cardBackground
-          )}
-        >
-          <View className="flex-1">
-            <View className="flex-row justify-between items-center">
-              <View className="flex-1 ml-2">
-                <Text
-                  className={cn("text-xl font-pp", themeStyles.primaryText)}
-                >
-                  {isDeducting ? "Deducting From" : "Adding To"}
-                </Text>
-                {currentRecipient?.firstName ? (
-                  <>
-                    <Text className={cn("text-2xl", themeStyles.primaryText)}>
-                      {currentRecipient?.firstName} {currentRecipient?.lastName}
-                    </Text>
-                    <Text className={cn("text-sm", themeStyles.secondaryText)}>
-                      {shortenString(
-                        hackerBucksTransaction.currentTransaction?.recipient.id!
-                      )}
-                    </Text>
-                  </>
-                ) : null}
-              </View>
-              <Pressable
-                className={cn(
-                  "text-sm text-center px-4 py-3 rounded-lg",
-                  themeStyles.lightCardBackground
-                )}
-                onPress={() => {
-                  router.back();
-                }}
-              >
-                <Text className={cn("text-sm", themeStyles.iconColor)}>
-                  Change
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-        <View className="mt-auto">
-          <NumericKeypad
-            onKeyPress={handleKeyPress}
-            onDelete={handleDelete}
-            onPresetAmount={handlePresetAmount}
-          />
-        </View>
-        <Pressable onPress={handleSendPress} disabled={!isAmountValid}>
-          <View
-            className={cn(
-              "rounded-md items-center py-4 mt-4 mb-20",
-              isAmountValid
-                ? "bg-uoft_primary_blue"
-                : isDark
-                  ? "bg-gray-600"
-                  : "bg-gray-300"
-            )}
-          >
-            <Text
-              className={cn(
-                "text-center text-lg font-pp",
-                isAmountValid
-                  ? "text-black"
-                  : isDark
-                    ? "text-white"
-                    : "text-gray-500"
-              )}
-            >
-              Send
-            </Text>
-          </View>
-        </Pressable>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

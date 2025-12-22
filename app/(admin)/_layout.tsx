@@ -49,6 +49,7 @@ export default function AdminLayout() {
               route.name === "gallery" ||
               route.name === "judgeSchedule" ||
               route.name === "judgingTimer" ||
+              route.name === "test-qr" ||
               route.name.startsWith("schedule-detail")
             ) {
               return false;
@@ -152,6 +153,12 @@ export default function AdminLayout() {
           name="profile"
           options={{
             title: "Profile",
+          }}
+        />
+        <Tabs.Screen
+          name="test-qr"
+          options={{
+            href: null, // Hide test QR generator from tabs/nav
           }}
         />
         <Tabs.Screen

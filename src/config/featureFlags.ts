@@ -31,6 +31,7 @@ export const FEATURE_FLAGS = {
   ENABLE_404_TEST: false,
   ENABLE_MODAL_TEST_WIDGET: false,
   ENABLE_ONBOARDING_TEST: false,
+  ENABLE_TEST_QR_GENERATOR: true,
 } as const;
 
 // Helper function to check if a feature is enabled
