@@ -2,6 +2,7 @@ import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
+import { useUserTypeStore } from "@/reducers/userType";
 import { openSettings } from "@/utils/camera/permissions";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
@@ -21,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
   const { signOut, adminData, hackerData, profileLoading } = useAuth();
+  const { userType } = useUserTypeStore();
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   const [signOutModal, setSignOutModal] = useState(false);
@@ -140,6 +142,22 @@ const Profile = () => {
                   </Text>
                   <Text className={cn(theme.textPrimary, theme.cardText)}>
                     {admin.admin_role}
+                  </Text>
+                </View>
+              </View>
+            ) : userType === "judge" ? (
+              <View
+                className={cn(
+                  "p-4 rounded-md space-y-3",
+                  theme.lightCardBackground
+                )}
+              >
+                <View className="flex-row justify-between">
+                  <Text className={cn(theme.textSecondary, theme.cardText)}>
+                    Role:
+                  </Text>
+                  <Text className={cn(theme.textPrimary, theme.cardText)}>
+                    Judge
                   </Text>
                 </View>
               </View>
