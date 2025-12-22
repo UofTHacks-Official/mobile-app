@@ -9,6 +9,7 @@ import * as Haptics from "expo-haptics";
 import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
+  BanknoteArrowDown,
   Calendar,
   Camera,
   Gavel,
@@ -16,6 +17,7 @@ import {
   ScanLine,
   ScanQrCode,
   User,
+  UserCheck,
   X,
 } from "lucide-react-native";
 import { useEffect, useRef, useMemo } from "react";
@@ -84,10 +86,12 @@ const CustomTabBar = ({
   // Animate the selected tab
   useEffect(() => {
     state.routes.forEach((route, index) => {
-      const isSelected =
-        state.index === index ||
-        (route.name === "qr" && isOnHackerBucksRoute) ||
-        (route.name === "photobooth" && isOnPhotoboothRoute);
+      // When on hackerbucks or photobooth routes, override the selection to those tabs
+      const isSelected = isOnHackerBucksRoute
+        ? route.name === "qr"
+        : isOnPhotoboothRoute
+          ? route.name === "photobooth"
+          : state.index === index;
 
       Animated.spring(animatedValues[index], {
         toValue: isSelected ? 1 : 0,
@@ -117,7 +121,9 @@ const CustomTabBar = ({
     setIsExpanded(!isExpanded);
   };
 
-  const handleScanOption = (option: "qr" | "hackerbucks") => {
+  const handleScanOption = (
+    option: "checkin" | "add" | "deduct" | "qr" | "hackerbucks"
+  ) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Collapse the expansion immediately
@@ -133,13 +139,28 @@ const CustomTabBar = ({
       navigation.navigate("qr");
     } else if (option === "hackerbucks") {
       navigation.navigate("hackerbucks");
+    } else if (option === "checkin") {
+      navigation.navigate("hackerbucks", {
+        screen: "scan",
+        params: { mode: "checkin" },
+      });
+    } else if (option === "add") {
+      navigation.navigate("hackerbucks", {
+        screen: "scan",
+        params: { mode: "add" },
+      });
+    } else if (option === "deduct") {
+      navigation.navigate("hackerbucks", {
+        screen: "scan",
+        params: { mode: "deduct" },
+      });
     }
   };
 
   // Animate the height of the container
   const animatedHeight = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [60, 155], // Collapsed and expanded heights
+    outputRange: [60, 220], // Collapsed and expanded heights (increased for 3 items)
   });
 
   // Dynamically adjust width based on number of tabs
@@ -221,60 +242,74 @@ const CustomTabBar = ({
             pointerEvents={isExpanded ? "auto" : "none"}
           >
             <View className="space-y-2">
-              {(FEATURE_FLAGS.ENABLE_QR_SCANNER ||
-                FEATURE_FLAGS.ENABLE_EVENT_CHECKIN) && (
-                <TouchableOpacity
-                  onPress={() => handleScanOption("qr")}
-                  className="rounded-xl p-2 flex-row items-center justify-between"
-                >
-                  <Text
-                    className={cn(
-                      "text-lg font-onest-extralight",
-                      themeStyles.navBarText
-                    )}
+              {FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => handleScanOption("checkin")}
+                    className="rounded-xl p-2 flex-row items-center justify-between"
                   >
-                    Event Check-in
-                  </Text>
-                  <ScanLine
-                    size={28}
-                    strokeWidth={1.5}
-                    color={themeStyles.navBarIconActive}
-                  />
-                </TouchableOpacity>
+                    <Text
+                      className={cn(
+                        "text-lg font-onest-extralight",
+                        isDark ? "text-white" : "text-black"
+                      )}
+                    >
+                      Check In Hacker
+                    </Text>
+                    <UserCheck
+                      size={28}
+                      strokeWidth={1.5}
+                      color={isDark ? "#FFFFFF" : "#000000"}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleScanOption("add")}
+                    className="rounded-xl p-2 flex-row items-center justify-between"
+                  >
+                    <Text
+                      className={cn(
+                        "text-lg font-onest-extralight",
+                        isDark ? "text-white" : "text-black"
+                      )}
+                    >
+                      Add HackerBux
+                    </Text>
+                    <BanknoteArrowUp
+                      size={28}
+                      strokeWidth={1.5}
+                      color={isDark ? "#FFFFFF" : "#000000"}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleScanOption("deduct")}
+                    className="rounded-xl p-2 flex-row items-center justify-between"
+                  >
+                    <Text
+                      className={cn(
+                        "text-lg font-onest-extralight",
+                        isDark ? "text-white" : "text-black"
+                      )}
+                    >
+                      Deduct HackerBux
+                    </Text>
+                    <BanknoteArrowDown
+                      size={28}
+                      strokeWidth={1.5}
+                      color={isDark ? "#FFFFFF" : "#000000"}
+                    />
+                  </TouchableOpacity>
+                </>
               )}
-              {(FEATURE_FLAGS.ENABLE_QR_SCANNER ||
-                FEATURE_FLAGS.ENABLE_HACKERBUCKS) && (
-                <TouchableOpacity
-                  onPress={() => handleScanOption("hackerbucks")}
-                  className="rounded-xl p-2 flex-row items-center justify-between"
+              {!FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
+                <Text
+                  className={cn(
+                    "text-center text-sm py-4",
+                    isDark ? "text-white" : "text-black"
+                  )}
                 >
-                  <Text
-                    className={cn(
-                      "text-lg font-onest-extralight",
-                      themeStyles.navBarText
-                    )}
-                  >
-                    Send Hacker Bucks
-                  </Text>
-                  <BanknoteArrowUp
-                    size={28}
-                    strokeWidth={1.5}
-                    color={themeStyles.navBarIconActive}
-                  />
-                </TouchableOpacity>
+                  Scanner features coming soon!
+                </Text>
               )}
-              {!FEATURE_FLAGS.ENABLE_QR_SCANNER &&
-                !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
-                !FEATURE_FLAGS.ENABLE_HACKERBUCKS && (
-                  <Text
-                    className={cn(
-                      "text-center text-sm py-4",
-                      themeStyles.navBarText
-                    )}
-                  >
-                    Scanner features coming soon!
-                  </Text>
-                )}
             </View>
             <View className="flex-row justify-end">
               <TouchableOpacity
@@ -321,10 +356,12 @@ const CustomTabBar = ({
                 label = photoboothViewMode === "gallery" ? "Gallery" : "Photo";
               }
 
-              const isFocused =
-                state.index === index ||
-                (route.name === "qr" && isOnHackerBucksRoute) ||
-                (route.name === "photobooth" && isOnPhotoboothRoute);
+              // When on hackerbucks or photobooth routes, override the focus to those tabs
+              const isFocused = isOnHackerBucksRoute
+                ? route.name === "qr"
+                : isOnPhotoboothRoute
+                  ? route.name === "photobooth"
+                  : state.index === index;
 
               const iconComponent = () => {
                 switch (route.name) {
@@ -415,14 +452,29 @@ const CustomTabBar = ({
                   canPreventDefault: true,
                 });
 
+                // Check if this tab is actually selected (not just visually focused)
+                const isActuallySelected = state.index === index;
+
                 if (route.name === "qr") {
-                  if (isFocused) {
+                  if (isActuallySelected || isOnHackerBucksRoute) {
                     toggleExpansion();
                   } else if (!event.defaultPrevented) {
                     toggleExpansion();
                   }
-                } else if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
+                } else {
+                  // Allow navigation if not actually selected OR if we're on hackerbucks/photobooth and clicking home
+                  const shouldNavigate =
+                    !isActuallySelected ||
+                    (isOnHackerBucksRoute && route.name === "index") ||
+                    (isOnPhotoboothRoute && route.name === "index");
+
+                  if (shouldNavigate && !event.defaultPrevented) {
+                    // Close expansion when navigating to other tabs
+                    if (isExpanded) {
+                      closeNavBar();
+                    }
+                    navigation.navigate(route.name);
+                  }
                 }
               };
 

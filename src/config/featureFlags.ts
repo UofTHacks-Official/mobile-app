@@ -11,7 +11,7 @@ export const FEATURE_FLAGS = {
   ENABLE_EVENT_CHECKIN: false,
 
   // HackerBucks features
-  ENABLE_HACKERBUCKS: false,
+  ENABLE_HACKERBUCKS: true,
 
   // Photobooth features
   ENABLE_PHOTOBOOTH: true,
@@ -31,6 +31,7 @@ export const FEATURE_FLAGS = {
   ENABLE_404_TEST: false,
   ENABLE_MODAL_TEST_WIDGET: false,
   ENABLE_ONBOARDING_TEST: false,
+  ENABLE_TEST_QR_GENERATOR: true,
 } as const;
 
 // Helper function to check if a feature is enabled

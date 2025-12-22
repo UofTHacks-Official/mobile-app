@@ -3,7 +3,7 @@ import { useTimer } from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
-  useJudgeSchedules,
+  useAllJudgingSchedules,
 } from "@/queries/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
@@ -69,11 +69,12 @@ const JudgingTimerScreen = () => {
   } = useJudgingScheduleById(activeScheduleId || 0);
   const startTimerMutation = useStartJudgingTimer();
 
-  // Fetch judge's schedules to calculate round count
-  // Only enabled when we have schedule data to get the judge_id
-  const { data: judgeSchedules } = useJudgeSchedules(
-    scheduleData?.judge_id ?? null,
-    !!scheduleData?.judge_id
+  // Fetch all schedules (admin endpoint) to calculate round count
+  // Filter locally by judge_id
+  const { data: allSchedules } = useAllJudgingSchedules(true);
+
+  const judgeSchedules = allSchedules?.filter(
+    (schedule) => schedule.judge_id === scheduleData?.judge_id
   );
 
   // Restore timer state when returning to screen or context resets
@@ -474,10 +475,15 @@ const JudgingTimerScreen = () => {
             bottom: 0,
             justifyContent: "center",
             alignItems: "center",
+            paddingTop: 8,
           }}
         >
           <Text
             className={cn("text-7xl font-onest-bold", themeStyles.primaryText)}
+            style={{
+              includeFontPadding: false,
+              lineHeight: 84,
+            }}
           >
             {formatTime(getTimeRemaining())}
           </Text>
@@ -674,40 +680,42 @@ const JudgingTimerScreen = () => {
                   </View>
                 )}
 
-                {/* Pause Button - Horizontal bar */}
-                <Pressable
-                  onPress={handlePauseTimer}
-                  className={cn(
-                    "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
-                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-                  )}
-                >
-                  {timerContext.isPaused ? (
-                    <>
-                      <Play size={24} color={isDark ? "#000" : "#fff"} />
-                      <Text
-                        className={cn(
-                          "text-lg font-onest-bold",
-                          isDark ? "text-black" : "text-white"
-                        )}
-                      >
-                        Resume
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <Pause size={24} color={isDark ? "#000" : "#fff"} />
-                      <Text
-                        className={cn(
-                          "text-lg font-onest-bold",
-                          isDark ? "text-black" : "text-white"
-                        )}
-                      >
-                        Pause
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
+                {/* Pause Button - Horizontal bar (disabled when complete) */}
+                {currentStage !== "complete" && (
+                  <Pressable
+                    onPress={handlePauseTimer}
+                    className={cn(
+                      "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
+                      isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                    )}
+                  >
+                    {timerContext.isPaused ? (
+                      <>
+                        <Play size={24} color={isDark ? "#000" : "#fff"} />
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-bold",
+                            isDark ? "text-black" : "text-white"
+                          )}
+                        >
+                          Resume
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-bold",
+                            isDark ? "text-black" : "text-white"
+                          )}
+                        >
+                          Pause
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                )}
               </>
             )}
           </View>

@@ -103,6 +103,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
   return (
     <Pressable
       onPress={handleStartTimer}
+      disabled={status.label === "Completed"}
       className={cn(
         "rounded-2xl p-4 mb-4 border",
         isDark ? "bg-[#303030] border-gray-700" : "bg-white border-gray-200"
@@ -113,6 +114,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         shadowOpacity: isDark ? 0.3 : 0.1,
         shadowRadius: 4,
         elevation: 3,
+        opacity: status.label === "Completed" ? 0.6 : 1,
       }}
     >
       {/* Header */}

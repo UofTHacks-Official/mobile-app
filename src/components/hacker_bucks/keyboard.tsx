@@ -8,16 +8,15 @@ import { Pressable, Text, View } from "react-native";
 interface NumericKeypadProps {
   onKeyPress: (key: string) => void;
   onDelete: () => void;
-  onPresetAmount: (amount: string) => void;
 }
 
 const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onKeyPress,
   onDelete,
-  onPresetAmount,
 }) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+
   const handleKeyPress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     onKeyPress(key);
@@ -32,51 +31,19 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
     <Pressable
       onPress={() => handleKeyPress(key)}
       className={cn(
-        "flex-1 items-center justify-center rounded-lg m-1",
-        themeStyles.hackerBucksKeyboard
+        "flex-1 items-center justify-center rounded-2xl m-1",
+        isDark ? "bg-[#2E2E2E]" : "bg-[#F1F1F1]"
       )}
-      style={{ minHeight: 60 }}
+      style={{ minHeight: 58 }}
     >
-      <Text className={cn("text-2xl font-pp", themeStyles.primaryText)}>
+      <Text className={cn("text-2xl font-onest-bold", themeStyles.primaryText)}>
         {key}
       </Text>
     </Pressable>
   );
 
-  const renderPresetKey = (amount: string) => (
-    <Pressable
-      onPress={() => onPresetAmount(amount)}
-      className={cn(
-        "flex-1 items-center justify-center rounded-lg m-1",
-        themeStyles.lightCardBackground
-      )}
-      style={{ minHeight: 40 }}
-    >
-      <Text
-        className={cn(
-          "text-xl font-pp",
-          isDark ? "text-white" : "text-orange-600"
-        )}
-      >
-        {amount}
-      </Text>
-    </Pressable>
-  );
-
   return (
-    <View>
-      <View className="flex-row">
-        {renderPresetKey("10")}
-        {renderPresetKey("25")}
-        {renderPresetKey("50")}
-        {renderPresetKey("100")}
-      </View>
-      <View
-        className="h-[1px] my-1"
-        style={{
-          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-        }}
-      />
+    <View className="mt-2">
       <View className="flex-row">
         {renderKey("1")}
         {renderKey("2")}
@@ -98,10 +65,10 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <Pressable
           onPress={handleDelete}
           className={cn(
-            "flex-1 items-center justify-center rounded-lg m-1",
-            themeStyles.lightCardBackground
+            "flex-1 items-center justify-center rounded-2xl m-1",
+            isDark ? "bg-[#2E2E2E]" : "bg-[#F1F1F1]"
           )}
-          style={{ minHeight: 60 }}
+          style={{ minHeight: 58 }}
         >
           <Feather
             name="chevron-left"

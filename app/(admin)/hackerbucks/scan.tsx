@@ -1,72 +1,57 @@
-import { useIsFocused } from "@react-navigation/native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Haptics from "expo-haptics";
-import { useFocusEffect, useNavigation } from "expo-router";
-import { Camera, Settings } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
-
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { useHackerBucksStore } from "@/reducers/hackerbucks";
+import { checkInHacker } from "@/requests/hackerBucks";
 import { openSettings } from "@/utils/camera/permissions";
+import { devError } from "@/utils/logger";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import {
-  Button,
-  Dimensions,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as Haptics from "expo-haptics";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { Camera, Settings } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, Dimensions, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
 
 const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
-export default function App() {
+export default function QRScanner() {
   const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
-  const [hasScanned, setHasScanned] = useState(false);
-  const [popupMessage, setPopupMessage] = useState<string | null>(null);
-  const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
+  const { mode } = useLocalSearchParams<{
+    mode: "add" | "deduct" | "checkin";
+  }>();
+
+  const { startTransaction, clearTransaction } = useHackerBucksStore();
+  const [isProcessingCheckIn, setIsProcessingCheckIn] = useState(false);
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
 
+  const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
+
+  // A ref to control whether a scan is currently being processed
   const isProcessingScan = useRef(false);
 
   const isFocused = useIsFocused();
 
-  const scanAreaTop = (height - SCAN_SIZE) / 2;
-  const scanAreaLeft = (width - SCAN_SIZE) / 2;
-
-  // Bounding box for the scanned QR code
-  const [scannedBounds, setScannedBounds] = useState<{
-    origin: { x: number; y: number };
-    size: { width: number; height: number };
-  } | null>(null);
-
   useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: { display: "none" },
-    });
-    return () => {
-      navigation.setOptions({
-        tabBarStyle: { display: "flex" },
-      });
-    };
-  }, [navigation]);
+    clearTransaction();
+    isProcessingScan.current = false;
+  }, [clearTransaction]);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       // Reset the processing flag when the screen is focused
       isProcessingScan.current = false;
-      // Reset the hasScanned state to allow new scans
-      setHasScanned(false);
       // Optionally clear transaction or any other state here
+      clearTransaction();
       return () => {};
-    }, [])
+    }, [clearTransaction])
   );
 
-  const handleQRCodeScanned = ({
+  const handleQRCodeScanned = async ({
     data,
     bounds,
   }: {
@@ -76,12 +61,14 @@ export default function App() {
       size: { width: number; height: number };
     };
   }) => {
-    // If a scan is already being processed or has already scanned, immediately exit.
-    if (isProcessingScan.current || hasScanned) {
+    // If a scan is already being processed, immediately exit.
+    if (isProcessingScan.current || isProcessingCheckIn) {
       return;
     }
 
-    // Check if the QR code is within our scan area
+    const scanAreaTop = (height - SCAN_SIZE) / 2;
+    const scanAreaLeft = (width - SCAN_SIZE) / 2;
+
     const isInScanArea =
       bounds.origin.x >= scanAreaLeft &&
       bounds.origin.y >= scanAreaTop &&
@@ -97,16 +84,78 @@ export default function App() {
     isProcessingScan.current = true;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    setHasScanned(true);
     setIsExpanded(false);
-    setPopupMessage("QR Code scanned: " + data);
-    setScannedBounds(bounds);
 
-    // Clear bounding box after 3 seconds
-    setTimeout(() => {
-      setScannedBounds(null);
-    }, 3000);
+    // Handle check-in mode differently
+    if (mode === "checkin") {
+      setIsProcessingCheckIn(true);
+      try {
+        // Parse user_id from QR code data
+        const userId = parseInt(data, 10);
+        if (isNaN(userId)) {
+          Alert.alert("Error", "Invalid QR code format");
+          isProcessingScan.current = false;
+          setIsProcessingCheckIn(false);
+          return;
+        }
+
+        const response = await checkInHacker({ user_id: userId });
+
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Check-In Successful", response.message, [
+          {
+            text: "OK",
+            onPress: () => {
+              isProcessingScan.current = false;
+              setIsProcessingCheckIn(false);
+              router.back();
+            },
+          },
+        ]);
+      } catch (error: any) {
+        devError("Check-in error:", error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          "Failed to check in hacker";
+
+        Alert.alert("Check-In Failed", errorMessage, [
+          {
+            text: "Try Again",
+            onPress: () => {
+              isProcessingScan.current = false;
+              setIsProcessingCheckIn(false);
+            },
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => {
+              isProcessingScan.current = false;
+              setIsProcessingCheckIn(false);
+              router.back();
+            },
+          },
+        ]);
+      }
+      return;
+    }
+
+    // For add/deduct modes, continue with existing flow
+    startTransaction(
+      {
+        firstName: "Hacker", // Will be updated after API call
+        lastName: "",
+        id: data,
+      },
+      null,
+      data // Store QR code
+    );
+
+    // Navigate to amount input screen with mode parameter
+    router.push(`/hackerbucks/sendHbucks?mode=${mode}`);
   };
 
   if (!permission) {
@@ -164,10 +213,7 @@ export default function App() {
             )}
 
             <TouchableOpacity
-              className={cn(
-                "w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center",
-                isDark ? "bg-gray-700" : "bg-gray-600"
-              )}
+              className="bg-gray-600 w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
               onPress={openSettings}
             >
               <Settings size={20} color="white" style={{ marginRight: 8 }} />
@@ -190,6 +236,9 @@ export default function App() {
       </View>
     );
   }
+
+  const scanAreaTop = (height - SCAN_SIZE) / 2;
+  const scanAreaLeft = (width - SCAN_SIZE) / 2;
 
   return (
     <View className="flex-1 justify-center">
@@ -234,24 +283,13 @@ export default function App() {
               stroke="#fff"
               strokeWidth={3}
             />
-            {scannedBounds && (
-              <Rect
-                x={scannedBounds.origin.x}
-                y={scannedBounds.origin.y}
-                width={scannedBounds.size.width}
-                height={scannedBounds.size.height}
-                fill="none"
-                stroke="#00FF00"
-                strokeWidth={2}
-                strokeDasharray="5,5"
-              />
-            )}
           </Svg>
 
           {/* <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                isProcessingScan.current = false;
                 navigation.goBack();
               }}
               className="bg-white/20 p-3 rounded-full"
@@ -261,46 +299,6 @@ export default function App() {
           </View> */}
         </CameraView>
       )}
-
-      <Modal
-        visible={!!popupMessage}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          setPopupMessage(null);
-          setHasScanned(false);
-          setScannedBounds(null);
-          isProcessingScan.current = false;
-        }}
-      >
-        <View className="flex-1 bg-black/50 items-center justify-end">
-          <View
-            className={cn(
-              "rounded-t-xl p-6 w-full items-center",
-              themeStyles.cardBackground
-            )}
-          >
-            <Text
-              className={cn(
-                "text-base text-center font-semibold mb-4",
-                themeStyles.primaryText
-              )}
-            >
-              {popupMessage}
-            </Text>
-            <Button
-              title="Close"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                setPopupMessage(null);
-                setHasScanned(false);
-                setScannedBounds(null);
-                isProcessingScan.current = false;
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }

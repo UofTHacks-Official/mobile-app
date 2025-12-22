@@ -106,6 +106,28 @@ const Scorecard = () => {
   const handleSubmit = () => {
     if (!project || !projectId) return;
 
+    // Validate required fields (design, technicality, pitching must be at least 1)
+    const missingFields = [];
+    if (scores.design === 0) missingFields.push("Design");
+    if (scores.technology === 0) missingFields.push("Technicality");
+    if (scores.pitching === 0) missingFields.push("Pitching");
+
+    if (missingFields.length > 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        "Missing Required Scores",
+        `Please provide scores for the following required fields:\n\n${missingFields.join(", ")}\n\nThese fields must have a minimum score of 1.`,
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+          },
+        ]
+      );
+      return;
+    }
+
     // Show confirmation alert
     Alert.alert(
       "Submit Scores?",
@@ -122,13 +144,25 @@ const Scorecard = () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
             try {
-              await submitScoreMutation.mutateAsync({
+              // Backend validation: design, technicality, and pitching require minimum of 1
+              // completion, theme_relevance, idea_innovation, and time allow 0
+              const submissionData = {
                 project_id: projectId,
-                score: totalScore,
-                max_score: maxScore,
-                category: project.categories[0] || "General",
-                feedback: notes,
-              });
+                design: Math.max(1, scores.design),
+                completion: scores.completion,
+                theme_relevance: scores.theme_relevance,
+                idea_innovation: scores.idea_innovation,
+                technicality: Math.max(1, scores.technology),
+                pitching: Math.max(1, scores.pitching),
+                time: scores.time_management,
+              };
+
+              console.log(
+                "[DEBUG] Submitting score with data:",
+                submissionData
+              );
+
+              await submitScoreMutation.mutateAsync(submissionData);
 
               Toast.show({
                 type: "success",
@@ -170,12 +204,38 @@ const Scorecard = () => {
                 router.replace("/(admin)/judging");
               }
             } catch (error: any) {
+              console.error("[ERROR] Score submission failed:", {
+                message: error?.message,
+                response: error?.response?.data,
+                detail: JSON.stringify(error?.response?.data?.detail, null, 2),
+                status: error?.response?.status,
+                fullError: error,
+              });
+
+              let errorMessage = "Unable to submit scores. Please try again.";
+
+              // Handle validation errors (422)
+              if (error?.response?.data?.detail) {
+                const detail = error.response.data.detail;
+                if (Array.isArray(detail) && detail.length > 0) {
+                  // Extract first validation error message
+                  errorMessage =
+                    detail[0]?.msg ||
+                    detail[0]?.message ||
+                    JSON.stringify(detail[0]);
+                } else if (typeof detail === "string") {
+                  errorMessage = detail;
+                }
+              } else if (error?.response?.data?.message) {
+                errorMessage = error.response.data.message;
+              } else if (error?.message) {
+                errorMessage = error.message;
+              }
+
               Toast.show({
                 type: "error",
                 text1: "Submission Failed",
-                text2:
-                  error?.message ||
-                  "Unable to submit scores. Please try again.",
+                text2: errorMessage,
               });
             }
           },
@@ -297,10 +357,11 @@ const Scorecard = () => {
         {/* Scoring Sliders */}
         <View className="mb-6">
           <ScoringSlider
-            label="Design"
+            label="Design *"
             value={scores.design}
             onChange={(val) => handleScoreChange("design", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.design}
+            min={0}
             max={3}
           />
           <ScoringSlider
@@ -308,6 +369,7 @@ const Scorecard = () => {
             value={scores.completion}
             onChange={(val) => handleScoreChange("completion", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.completion}
+            min={0}
             max={4}
           />
           <ScoringSlider
@@ -315,6 +377,7 @@ const Scorecard = () => {
             value={scores.theme_relevance}
             onChange={(val) => handleScoreChange("theme_relevance", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.theme_relevance}
+            min={0}
             max={3}
           />
           <ScoringSlider
@@ -322,20 +385,23 @@ const Scorecard = () => {
             value={scores.idea_innovation}
             onChange={(val) => handleScoreChange("idea_innovation", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.idea_innovation}
+            min={0}
             max={5}
           />
           <ScoringSlider
-            label="Technicality"
+            label="Technicality *"
             value={scores.technology}
             onChange={(val) => handleScoreChange("technology", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.technology}
+            min={0}
             max={5}
           />
           <ScoringSlider
-            label="Pitching"
+            label="Pitching *"
             value={scores.pitching}
             onChange={(val) => handleScoreChange("pitching", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.pitching}
+            min={0}
             max={5}
           />
           <ScoringSlider
@@ -343,6 +409,7 @@ const Scorecard = () => {
             value={scores.time_management}
             onChange={(val) => handleScoreChange("time_management", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.time_management}
+            min={0}
             max={2}
           />
         </View>
