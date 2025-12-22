@@ -21,7 +21,7 @@ const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
 export default function App() {
-  const [permission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
@@ -30,6 +30,14 @@ export default function App() {
   const isProcessingScan = useRef(false);
 
   const isFocused = useIsFocused();
+
+  // Debug: Log permission state whenever it changes
+  useEffect(() => {
+    console.log(
+      "QR Scanner - Permission object:",
+      JSON.stringify(permission, null, 2)
+    );
+  }, [permission]);
 
   const scanAreaTop = (height - SCAN_SIZE) / 2;
   const scanAreaLeft = (width - SCAN_SIZE) / 2;
@@ -105,7 +113,13 @@ export default function App() {
     }, 3000);
   };
 
-  if (!permission) return <View />;
+  if (!permission) {
+    return (
+      <View className="flex-1 justify-center items-center bg-uoft_white">
+        <Text className="text-black">Loading camera permissions...</Text>
+      </View>
+    );
+  }
 
   if (!permission.granted) {
     return (
@@ -119,17 +133,33 @@ export default function App() {
             <Text className="text-xl font-bold text-center text-lg mb-4">
               Camera Permission Required
             </Text>
-            <Text className="text-black text-center mb-8">
+            <Text className="text-black text-center mb-2">
               We need camera access to scan QR codes. Grant permission to
               continue.
             </Text>
+            <Text className="text-xs text-gray-500 text-center mb-8">
+              Debug: granted={String(permission.granted)}, canAskAgain=
+              {String(permission.canAskAgain)}
+            </Text>
+
+            {permission.canAskAgain && (
+              <TouchableOpacity
+                className="bg-uoft_primary_blue w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+                onPress={requestPermission}
+              >
+                <Camera size={20} color="black" style={{ marginRight: 8 }} />
+                <Text className="text-center text-black font-semibold">
+                  Grant Camera Permission
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
-              className="bg-uoft_primary_blue w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+              className="bg-gray-600 w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
               onPress={openSettings}
             >
-              <Settings size={20} color="black" style={{ marginRight: 8 }} />
-              <Text className="text-center">Open Settings</Text>
+              <Settings size={20} color="white" style={{ marginRight: 8 }} />
+              <Text className="text-center text-white">Open Settings</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

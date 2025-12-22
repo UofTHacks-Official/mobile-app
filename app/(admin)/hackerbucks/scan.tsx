@@ -3,6 +3,8 @@ import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { checkInHacker } from "@/requests/hackerBucks";
 import { openSettings } from "@/utils/camera/permissions";
 import { devError } from "@/utils/logger";
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
@@ -16,7 +18,7 @@ const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
 export default function QRScanner() {
-  const [permission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
   const { mode } = useLocalSearchParams<{
     mode: "add" | "deduct" | "checkin";
@@ -24,6 +26,8 @@ export default function QRScanner() {
 
   const { startTransaction, clearTransaction } = useHackerBucksStore();
   const [isProcessingCheckIn, setIsProcessingCheckIn] = useState(false);
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
 
   const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
 
@@ -31,6 +35,15 @@ export default function QRScanner() {
   const isProcessingScan = useRef(false);
 
   const isFocused = useIsFocused();
+
+  // Debug: Log permission state whenever it changes
+  useEffect(() => {
+    console.log(
+      "HackerBucks Scanner - Permission object:",
+      JSON.stringify(permission, null, 2)
+    );
+    console.log("HackerBucks Scanner - Mode:", mode);
+  }, [permission, mode]);
 
   useEffect(() => {
     clearTransaction();
@@ -155,39 +168,81 @@ export default function QRScanner() {
   };
 
   if (!permission) {
-    return <View />;
+    return (
+      <View
+        className={cn(
+          "flex-1 justify-center items-center",
+          themeStyles.background
+        )}
+      >
+        <Text className={themeStyles.primaryText}>
+          Loading camera permissions...
+        </Text>
+      </View>
+    );
   }
 
   if (!permission.granted) {
     return (
-      <View className="flex-1 justify-center items-center bg-uoft_white">
+      <View
+        className={cn(
+          "flex-1 justify-center items-center",
+          themeStyles.background
+        )}
+      >
         <View className="px-6">
           <View className="flex-1 justify-center items-center">
             <View className="mb-4">
-              <Camera color="black" size={32} />
+              <Camera color={themeStyles.iconColor} size={32} />
             </View>
 
-            <Text className="text-xl font-bold text-center text-lg mb-4">
+            <Text
+              className={cn(
+                "text-xl font-bold text-center text-lg mb-4",
+                themeStyles.primaryText
+              )}
+            >
               Camera Permission Required
             </Text>
-            <Text className="text-black text-center mb-8">
+            <Text className={cn("text-center mb-2", themeStyles.secondaryText)}>
               We need camera access to scan QR codes. Grant permission to
               continue.
             </Text>
+            <Text className="text-xs text-gray-500 text-center mb-8">
+              Debug: granted={String(permission.granted)}, canAskAgain=
+              {String(permission.canAskAgain)}, mode={mode}
+            </Text>
+
+            {permission.canAskAgain && (
+              <TouchableOpacity
+                className="bg-uoft_primary_blue w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+                onPress={requestPermission}
+              >
+                <Camera size={20} color="black" style={{ marginRight: 8 }} />
+                <Text className="text-center text-black font-semibold">
+                  Grant Camera Permission
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
-              className="bg-uoft_primary_blue w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+              className="bg-gray-600 w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
               onPress={openSettings}
             >
-              <Settings size={20} color="black" style={{ marginRight: 8 }} />
-              <Text className="text-center">Open Settings</Text>
+              <Settings size={20} color="white" style={{ marginRight: 8 }} />
+              <Text className="text-center text-white">Open Settings</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="px-6 py-3 rounded-lg w-full bg-uoft_grey"
+              className={cn(
+                "px-6 py-3 rounded-lg w-full",
+                isDark ? "bg-gray-700" : "bg-uoft_grey"
+              )}
               onPress={() => navigation.goBack()}
             >
-              <Text className="text-center">Go Back</Text>
+              <Text className={cn("text-center", themeStyles.primaryText)}>
+                Go Back
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
