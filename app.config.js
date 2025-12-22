@@ -5,7 +5,7 @@ export default ({ config }) => {
     ...config,
     name: "uoft-hacks",
     slug: "uoft-hacks",
-    version: "1.0.1",
+    version: "1.0.2",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "native",
@@ -20,7 +20,7 @@ export default ({ config }) => {
       icon: "./assets/images/icon.png",
       supportsTablet: true,
       bundleIdentifier: "com.uofthacks.uoft-hacks",
-      buildNumber: "3",
+      buildNumber: "4",
       infoPlist: {
         NSCameraUsageDescription:
           "This app uses the camera to take photobooth pictures and capture memories during your hackathon experience.",
