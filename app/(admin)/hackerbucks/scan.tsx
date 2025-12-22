@@ -36,15 +36,6 @@ export default function QRScanner() {
 
   const isFocused = useIsFocused();
 
-  // Debug: Log permission state whenever it changes
-  useEffect(() => {
-    console.log(
-      "HackerBucks Scanner - Permission object:",
-      JSON.stringify(permission, null, 2)
-    );
-    console.log("HackerBucks Scanner - Mode:", mode);
-  }, [permission, mode]);
-
   useEffect(() => {
     clearTransaction();
     isProcessingScan.current = false;
@@ -204,13 +195,9 @@ export default function QRScanner() {
             >
               Camera Permission Required
             </Text>
-            <Text className={cn("text-center mb-2", themeStyles.secondaryText)}>
+            <Text className={cn("text-center mb-8", themeStyles.secondaryText)}>
               We need camera access to scan QR codes. Grant permission to
               continue.
-            </Text>
-            <Text className="text-xs text-gray-500 text-center mb-8">
-              Debug: granted={String(permission.granted)}, canAskAgain=
-              {String(permission.canAskAgain)}, mode={mode}
             </Text>
 
             {permission.canAskAgain && (

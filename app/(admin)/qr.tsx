@@ -7,6 +7,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { openSettings } from "@/utils/camera/permissions";
+import { useTheme } from "@/context/themeContext";
+import { cn, getThemeStyles } from "@/utils/theme";
 import {
   Button,
   Dimensions,
@@ -26,18 +28,12 @@ export default function App() {
   const [hasScanned, setHasScanned] = useState(false);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
   const setIsExpanded = useBottomNavBarStore((s) => s.setIsExpanded);
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
 
   const isProcessingScan = useRef(false);
 
   const isFocused = useIsFocused();
-
-  // Debug: Log permission state whenever it changes
-  useEffect(() => {
-    console.log(
-      "QR Scanner - Permission object:",
-      JSON.stringify(permission, null, 2)
-    );
-  }, [permission]);
 
   const scanAreaTop = (height - SCAN_SIZE) / 2;
   const scanAreaLeft = (width - SCAN_SIZE) / 2;
@@ -115,31 +111,44 @@ export default function App() {
 
   if (!permission) {
     return (
-      <View className="flex-1 justify-center items-center bg-uoft_white">
-        <Text className="text-black">Loading camera permissions...</Text>
+      <View
+        className={cn(
+          "flex-1 justify-center items-center",
+          themeStyles.background
+        )}
+      >
+        <Text className={themeStyles.primaryText}>
+          Loading camera permissions...
+        </Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View className="flex-1 justify-center items-center bg-uoft_white">
+      <View
+        className={cn(
+          "flex-1 justify-center items-center",
+          themeStyles.background
+        )}
+      >
         <View className="px-6">
           <View className="flex-1 justify-center items-center">
             <View className="mb-4">
-              <Camera color="black" size={32} />
+              <Camera color={themeStyles.iconColor} size={32} />
             </View>
 
-            <Text className="text-xl font-bold text-center text-lg mb-4">
+            <Text
+              className={cn(
+                "text-xl font-bold text-center text-lg mb-4",
+                themeStyles.primaryText
+              )}
+            >
               Camera Permission Required
             </Text>
-            <Text className="text-black text-center mb-2">
+            <Text className={cn("text-center mb-8", themeStyles.secondaryText)}>
               We need camera access to scan QR codes. Grant permission to
               continue.
-            </Text>
-            <Text className="text-xs text-gray-500 text-center mb-8">
-              Debug: granted={String(permission.granted)}, canAskAgain=
-              {String(permission.canAskAgain)}
             </Text>
 
             {permission.canAskAgain && (
@@ -155,7 +164,10 @@ export default function App() {
             )}
 
             <TouchableOpacity
-              className="bg-gray-600 w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center"
+              className={cn(
+                "w-full px-6 py-3 rounded-lg mb-4 flex-row items-center justify-center",
+                isDark ? "bg-gray-700" : "bg-gray-600"
+              )}
               onPress={openSettings}
             >
               <Settings size={20} color="white" style={{ marginRight: 8 }} />
@@ -163,10 +175,15 @@ export default function App() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="px-6 py-3 rounded-lg w-full bg-uoft_grey"
+              className={cn(
+                "px-6 py-3 rounded-lg w-full",
+                isDark ? "bg-gray-700" : "bg-uoft_grey"
+              )}
               onPress={() => navigation.goBack()}
             >
-              <Text className="text-center">Go Back</Text>
+              <Text className={cn("text-center", themeStyles.primaryText)}>
+                Go Back
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -257,8 +274,18 @@ export default function App() {
         }}
       >
         <View className="flex-1 bg-black/50 items-center justify-end">
-          <View className="bg-white rounded-t-xl p-6 w-full items-center">
-            <Text className="text-black text-base text-center font-semibold mb-4">
+          <View
+            className={cn(
+              "rounded-t-xl p-6 w-full items-center",
+              themeStyles.cardBackground
+            )}
+          >
+            <Text
+              className={cn(
+                "text-base text-center font-semibold mb-4",
+                themeStyles.primaryText
+              )}
+            >
               {popupMessage}
             </Text>
             <Button
