@@ -319,64 +319,6 @@ const AdminActionButtons = ({
           </View>
         </Pressable>
       </View>
-
-      <View
-        className={cn(
-          "mt-4 rounded-xl p-4 gap-3",
-          isDark ? "bg-[#2d2d2d]" : "bg-gray-100"
-        )}
-      >
-        <Text
-          className={cn(
-            "text-sm font-semibold",
-            isDark ? "text-gray-200" : "text-gray-700"
-          )}
-        >
-          [TEST] HackerBucks Result Screens
-        </Text>
-        <View className="flex-row gap-3">
-          <Pressable
-            onPress={() => handlePreviewResult("completed")}
-            className={cn(
-              "flex-1 py-3 rounded-xl items-center",
-              isDark ? "bg-green-800/60" : "bg-green-100"
-            )}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Text
-              className={cn(
-                "font-semibold",
-                isDark ? "text-green-200" : "text-green-700"
-              )}
-            >
-              Show Success
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => handlePreviewResult("failed")}
-            className={cn(
-              "flex-1 py-3 rounded-xl items-center",
-              isDark ? "bg-red-800/60" : "bg-red-100"
-            )}
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Text
-              className={cn(
-                "font-semibold",
-                isDark ? "text-red-200" : "text-red-700"
-              )}
-            >
-              Show Failed
-            </Text>
-          </Pressable>
-        </View>
-      </View>
     </View>
   );
 };
@@ -802,7 +744,7 @@ const AdminDashboard = () => {
           <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
         )}
         {FEATURE_FLAGS.ENABLE_TEST_QR_GENERATOR && userType === "admin" && (
-          <View className="mt-4 gap-3">
+          <View className="mt-4">
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -820,25 +762,6 @@ const AdminDashboard = () => {
                 )}
               >
                 [TEST] Generate Test QR Code
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                router.push("/hackerbucks/sendHbucks?mode=add&test=true");
-              }}
-              className={cn(
-                "py-3 px-4 rounded-xl",
-                isDark ? "bg-[#303030]" : "bg-gray-200"
-              )}
-            >
-              <Text
-                className={cn(
-                  "text-center text-sm font-pp",
-                  themeStyles.primaryText
-                )}
-              >
-                [TEST] Send HackerBux Screen
               </Text>
             </Pressable>
           </View>
