@@ -13,7 +13,7 @@ import {
   User,
 } from "lucide-react-native";
 import { CircleDashed } from "phosphor-react-native";
-import React, { useEffect } from "react";
+import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -25,17 +25,16 @@ export default function Success() {
   const { currentTransaction, updateTransactionStatus, clearTransaction } =
     useHackerBucksStore();
 
-  useEffect(() => {
-    if (currentTransaction && currentTransaction.status !== "completed") {
-      updateTransactionStatus("completed");
-    }
-  }, [currentTransaction, updateTransactionStatus]);
-
   const handleDone = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     clearTransaction();
     router.dismissAll();
     router.replace("/(admin)");
+  };
+
+  const handleRetry = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.back();
   };
 
   if (!currentTransaction) {
@@ -46,8 +45,12 @@ export default function Success() {
     );
   }
 
-  const { recipient, amount, orderType } = currentTransaction;
-  const statusStyles = getStatusStyles("completed");
+  const { recipient, amount, orderType, status } = currentTransaction;
+  const statusStyles = getStatusStyles(status);
+
+  const { apiResponse } = currentTransaction;
+  const isSuccess = status === "completed";
+  const isFailed = status === "failed";
 
   const transactionDetails = [
     {
@@ -62,18 +65,36 @@ export default function Success() {
     },
     {
       icon: <DollarSign size={20} color={themeStyles.iconColor} />,
-      label: "Amount",
+      label: "Amount Changed",
       value: `${amount} HB`,
     },
+    ...(apiResponse?.previousBucks !== undefined
+      ? [
+          {
+            icon: <DollarSign size={20} color={themeStyles.iconColor} />,
+            label: "Previous Balance",
+            value: `${apiResponse.previousBucks} HB`,
+          },
+        ]
+      : []),
+    ...(apiResponse?.newBucks !== undefined
+      ? [
+          {
+            icon: <DollarSign size={20} color={themeStyles.iconColor} />,
+            label: "New Balance",
+            value: `${apiResponse.newBucks} HB`,
+          },
+        ]
+      : []),
     {
       icon: <ArrowLeftRight size={20} color={themeStyles.iconColor} />,
       label: "Order Type",
-      value: orderType?.toUpperCase(),
+      value: orderType === "deduct" ? "DEDUCT" : "ADD",
     },
     {
       icon: <CircleDashed size={20} color={themeStyles.iconColor} />,
       label: "Status",
-      value: "Completed",
+      value: status.charAt(0).toUpperCase() + status.slice(1),
       isStatus: true,
     },
   ];
@@ -84,11 +105,21 @@ export default function Success() {
         <View className="flex-1 justify-center items-center">
           <View
             className={cn(
-              "w-20 h-20 rounded-full justify-center items-center mb-6 border border-[#22c55e]",
-              isDark ? "bg-green-900" : "bg-green-100"
+              "w-20 h-20 rounded-full justify-center items-center mb-6 border",
+              isSuccess
+                ? isDark
+                  ? "bg-green-900 border-[#22c55e]"
+                  : "bg-green-100 border-[#22c55e]"
+                : isDark
+                  ? "bg-red-900 border-[#ef4444]"
+                  : "bg-red-100 border-[#ef4444]"
             )}
           >
-            <MaterialCommunityIcons name="check" size={40} color="#22c55e" />
+            <MaterialCommunityIcons
+              name={isSuccess ? "check" : "close"}
+              size={40}
+              color={isSuccess ? "#22c55e" : "#ef4444"}
+            />
           </View>
 
           <Text
@@ -97,13 +128,18 @@ export default function Success() {
               themeStyles.primaryText
             )}
           >
-            Transaction Successful!
+            {isSuccess ? "Transaction Successful" : "Transaction Failed"}
           </Text>
 
-          <Text className="text-lg font-pp font-semibold text-green-600 mb-8">
+          <Text
+            className={cn(
+              "text-lg font-pp font-semibold mb-8",
+              isSuccess ? "text-green-600" : "text-red-600"
+            )}
+          >
             {orderType === "deduct"
-              ? `${amount} HB Deducted`
-              : `${amount} HB Sent`}
+              ? `${amount} HB ${isSuccess ? "deducted" : "failed to deduct"}`
+              : `${amount} HB ${isSuccess ? "sent" : "failed to send"}`}
           </Text>
 
           <View
@@ -160,12 +196,22 @@ export default function Success() {
         </View>
       </View>
 
-      <View className="px-6 space-y-3">
+      <View className="px-6 pb-24">
         <TouchableOpacity
-          className="bg-uoft_primary_blue py-4 rounded-lg items-center mb-20"
-          onPress={handleDone}
+          className={cn(
+            "py-4 rounded-lg items-center",
+            isSuccess ? "bg-uoft_primary_blue" : "bg-red-500"
+          )}
+          onPress={isSuccess ? handleDone : handleRetry}
         >
-          <Text className="text-black text-lg">Done</Text>
+          <Text
+            className={cn(
+              "text-lg font-semibold",
+              isSuccess ? "text-black" : "text-white"
+            )}
+          >
+            {isSuccess ? "Done" : "Retry"}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

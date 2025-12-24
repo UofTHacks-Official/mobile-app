@@ -57,11 +57,14 @@ module.exports = {
 
         uoft_black: "#181818",
         uoft_white: "#F6F6F6",
+        light_bg: "#F6F5F8",
 
         uoft_dark_bg_black: "#1A1A1A",
         uoft_dark_mode_bg_light_black: "#262626",
+        uoft_dark_mode_card: "#303030",
         uoft_dark_mode_text: "#808080",
         uoft_dark_bg: "#212121",
+        uoft_light_mode_card: "#EBEBEA",
 
         uoft_stark_white: "#FFFFFF",
         uoft_grey_light: "#C6C6C6",
