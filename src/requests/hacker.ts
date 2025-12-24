@@ -47,7 +47,7 @@ export interface HackerQueryParams {
   interests?: string[];
   school?: string;
   major?: string;
-  search?: string;
+  search_query?: string;
 }
 
 /**
