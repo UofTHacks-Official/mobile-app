@@ -31,6 +31,21 @@ export interface Hacker {
   last_login?: string | null;
 }
 
+export interface HackerJob {
+  role: string;
+  company: string;
+  start_date: string;
+  end_date?: string;
+  description?: string;
+}
+
+export interface HackerEducation {
+  institution: string;
+  program?: string | null;
+  start_date: string;
+  end_date?: string;
+}
+
 export interface HackerProfile extends Hacker {
   skills?: string[];
   interest?: string[];
@@ -40,6 +55,13 @@ export interface HackerProfile extends Hacker {
   bio?: string;
   created_at?: string;
   updated_at?: string;
+  preferred_name?: string;
+  instagram_url?: string;
+  x_url?: string;
+  hacker_jobs?: HackerJob[];
+  hacker_educations?: HackerEducation[];
+  personalities?: any[];
+  pronouns?: string | null;
 }
 
 export interface HackerQueryParams {
@@ -150,7 +172,7 @@ export const fetchHackerById = async (
   hackerId: number
 ): Promise<HackerProfile> => {
   const response = await axiosInstance.get<HackerProfile>(
-    `${hackerEndpoints.HACKER_BY_ID}/${hackerId}`
+    `${hackerEndpoints.HACKER_BY_ID}/${hackerId}/profile`
   );
   return response.data;
 };

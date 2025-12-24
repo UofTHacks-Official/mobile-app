@@ -160,6 +160,17 @@ export default function RootLayout() {
                   animationTypeForReplace: "push",
                 }}
               />
+
+              <Stack.Screen
+                name="profile/[id]"
+                options={{
+                  headerShown: false,
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  gestureDirection: "vertical",
+                  animationTypeForReplace: "push",
+                }}
+              />
             </Stack>
 
             <Toast config={toastConfig} />
