@@ -160,6 +160,8 @@ export const HackerTable = ({
   const [searchInput, setSearchInput] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [companyInput, setCompanyInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [educationStartYear, setEducationStartYear] = useState<string>("");
   const [educationEndYear, setEducationEndYear] = useState<string>("");
@@ -179,6 +181,7 @@ export const HackerTable = ({
   } = useFetchHackers({
     skills: selectedSkills.length > 0 ? selectedSkills : undefined,
     interests: selectedInterests.length > 0 ? selectedInterests : undefined,
+    companies: selectedCompanies.length > 0 ? selectedCompanies : undefined,
     search_query: debouncedSearch || undefined,
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
@@ -371,6 +374,92 @@ export const HackerTable = ({
               )}
             </View>
           </View>
+        </View>
+
+        {/* Company Filter */}
+        <View className="mt-4">
+          <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
+            Filter by Company
+          </Text>
+          <View className="flex-row gap-2">
+            <TextInput
+              value={companyInput}
+              onChangeText={setCompanyInput}
+              placeholder="Enter company name..."
+              placeholderTextColor={isDark ? "#888" : "#666"}
+              onSubmitEditing={() => {
+                if (
+                  companyInput.trim() &&
+                  !selectedCompanies.includes(companyInput.trim())
+                ) {
+                  setSelectedCompanies([
+                    ...selectedCompanies,
+                    companyInput.trim(),
+                  ]);
+                  setCompanyInput("");
+                }
+              }}
+              className={cn(
+                "flex-1 px-3 py-2 rounded-md border",
+                isDark
+                  ? "bg-neutral-800 border-neutral-700 text-white"
+                  : "bg-white border-neutral-300 text-black"
+              )}
+            />
+            <Pressable
+              onPress={() => {
+                if (
+                  companyInput.trim() &&
+                  !selectedCompanies.includes(companyInput.trim())
+                ) {
+                  setSelectedCompanies([
+                    ...selectedCompanies,
+                    companyInput.trim(),
+                  ]);
+                  setCompanyInput("");
+                }
+              }}
+              className={cn(
+                "px-4 py-2 rounded-md",
+                isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+              )}
+            >
+              <Text
+                className={cn(
+                  "font-semibold",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                Add
+              </Text>
+            </Pressable>
+          </View>
+          {selectedCompanies.length > 0 && (
+            <View className="flex-row flex-wrap gap-2 mt-2">
+              {selectedCompanies.map((company) => (
+                <View
+                  key={company}
+                  className={cn(
+                    "flex-row items-center px-3 py-1 rounded-full",
+                    isDark ? "bg-neutral-700" : "bg-neutral-200"
+                  )}
+                >
+                  <Text className={cn("text-sm mr-2", themeStyles.primaryText)}>
+                    {company}
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      setSelectedCompanies(
+                        selectedCompanies.filter((c) => c !== company)
+                      );
+                    }}
+                  >
+                    <X size={16} color={isDark ? "#888" : "#666"} />
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </View>
 

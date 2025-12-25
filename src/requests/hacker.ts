@@ -15,6 +15,7 @@ export const hackerEndpoints = {
 
 export interface Hacker {
   hacker_id: number;
+  application_id?: number;
   hacker_fname: string;
   hacker_lname: string;
   hacker_email: string;
@@ -72,6 +73,7 @@ export interface HackerQueryParams {
   interests?: string[];
   school?: string;
   major?: string;
+  companies?: string[];
   search_query?: string;
   page?: number;
   page_size?: number;

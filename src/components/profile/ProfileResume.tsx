@@ -27,7 +27,7 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
   const [showModal, setShowModal] = useState(false);
   const [pdfUri, setPdfUri] = useState<string>("");
 
-  const applicationId = hacker.hacker_id;
+  const applicationId = hacker.application_id ?? hacker.hacker_id;
   const { mutateAsync: fetchResume, isPending } = useFetchHackerResume();
 
   const handleViewResume = async () => {
