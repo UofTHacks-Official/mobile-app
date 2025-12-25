@@ -177,6 +177,7 @@ export const HackerTable = ({
     interests: selectedInterests.length > 0 ? selectedInterests : undefined,
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
+    has_rsvpd: true,
   });
 
   const hackers = hackersData?.data || [];
