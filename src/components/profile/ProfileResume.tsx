@@ -5,14 +5,17 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
 } from "react-native";
 import { FileText, ExternalLink, X } from "lucide-react-native";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import { useFetchHackerResume } from "@/queries/hacker";
-import Pdf from "react-native-pdf";
 import { useState } from "react";
+
+// Conditionally import PDF viewer only for native platforms
+const Pdf = Platform.OS !== "web" ? require("react-native-pdf").default : null;
 
 interface ProfileResumeProps {
   hacker: HackerProfile;
@@ -152,18 +155,31 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
           </View>
 
           {/* PDF Viewer */}
-          <Pdf
-            source={{ uri: pdfUri }}
-            style={{ flex: 1 }}
-            trustAllCerts={false}
-            onLoadComplete={(numberOfPages) => {
-              console.log(`PDF loaded with ${numberOfPages} pages`);
-            }}
-            onError={(error) => {
-              console.error("PDF Error:", error);
-              Alert.alert("Error", "Failed to load PDF");
-            }}
-          />
+          {Platform.OS === "web" ? (
+            <iframe
+              src={pdfUri}
+              style={{
+                flex: 1,
+                width: "100%",
+                height: "100%",
+                border: "none",
+              }}
+              title="Resume PDF"
+            />
+          ) : Pdf ? (
+            <Pdf
+              source={{ uri: pdfUri }}
+              style={{ flex: 1 }}
+              trustAllCerts={false}
+              onLoadComplete={(numberOfPages: number) => {
+                console.log(`PDF loaded with ${numberOfPages} pages`);
+              }}
+              onError={(error: Error) => {
+                console.error("PDF Error:", error);
+                Alert.alert("Error", "Failed to load PDF");
+              }}
+            />
+          ) : null}
         </View>
       </Modal>
     </>
