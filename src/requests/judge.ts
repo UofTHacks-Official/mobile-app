@@ -1,6 +1,8 @@
 import {
   JudgeLoginRequest,
   JudgeLoginResponse,
+  JudgeRegisterRequest,
+  JudgeRegisterResponse,
   JudgeSchedulesResponse,
   SponsorByPinResponse,
 } from "@/types/judge";
@@ -9,6 +11,7 @@ import { axiosInstance } from "./axiosConfig";
 export const judgeEndpoints = {
   SPONSOR_BY_PIN: "/api/v13/judges/sponsor-by-pin",
   LOGIN: "/api/v13/judges/login",
+  REGISTER: "/api/v13/admins/judges/register",
   GET_SCHEDULES: "/api/v13/judges/{judge_id}/schedules",
 };
 
@@ -34,6 +37,19 @@ export const judgeLogin = async (
   const response = await axiosInstance.post<JudgeLoginResponse>(
     judgeEndpoints.LOGIN,
     credentials
+  );
+  return response.data;
+};
+
+/**
+ * Register a new judge with name and PIN
+ */
+export const registerJudge = async (
+  registrationData: JudgeRegisterRequest
+): Promise<JudgeRegisterResponse> => {
+  const response = await axiosInstance.post<JudgeRegisterResponse>(
+    judgeEndpoints.REGISTER,
+    registrationData
   );
   return response.data;
 };

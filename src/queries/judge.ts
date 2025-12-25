@@ -2,8 +2,9 @@ import {
   getJudgeSchedules,
   getSponsorByPin,
   judgeLogin,
+  registerJudge,
 } from "@/requests/judge";
-import { JudgeLoginRequest } from "@/types/judge";
+import { JudgeLoginRequest, JudgeRegisterRequest } from "@/types/judge";
 import { devError } from "@/utils/logger";
 import {
   MOCK_JUDGING_SCHEDULES,
@@ -39,6 +40,23 @@ export const useJudgeLogin = () => {
         return data;
       } catch (error) {
         devError("Judge login error:", error);
+        throw error;
+      }
+    },
+  });
+};
+
+/**
+ * Mutation hook for judge registration
+ */
+export const useJudgeRegister = () => {
+  return useMutation({
+    mutationFn: async (registrationData: JudgeRegisterRequest) => {
+      try {
+        const data = await registerJudge(registrationData);
+        return data;
+      } catch (error) {
+        devError("Judge registration error:", error);
         throw error;
       }
     },
