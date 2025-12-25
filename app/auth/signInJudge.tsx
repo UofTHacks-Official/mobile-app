@@ -234,6 +234,35 @@ const SignInJudge = () => {
                 </Text>
               </Pressable>
             ))}
+
+            <View className="mt-6 mb-4">
+              <Text
+                className={cn(
+                  "text-center text-sm mb-3",
+                  themeStyles.secondaryText
+                )}
+              >
+                Don&apos;t see your name?
+              </Text>
+              <Pressable
+                onPress={() => router.replace(`/auth/registerJudge?pin=${pin}`)}
+                className={cn(
+                  "py-4 rounded-xl border-2",
+                  isDark
+                    ? "border-[#75EDEF] bg-transparent"
+                    : "border-[#132B38] bg-transparent"
+                )}
+              >
+                <Text
+                  className={cn(
+                    "text-center text-lg font-semibold",
+                    isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                  )}
+                >
+                  Register as New Judge
+                </Text>
+              </Pressable>
+            </View>
           </ScrollView>
         )}
       </View>
