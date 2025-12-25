@@ -1,7 +1,13 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  UseQueryResult,
+  UseMutationResult,
+} from "@tanstack/react-query";
 import {
   fetchHackers,
   fetchHackerById,
+  fetchHackerResume,
   type HackerProfile,
   type HackerQueryParams,
 } from "@/requests/hacker";
@@ -33,5 +39,18 @@ export const useFetchHackerById = (
     enabled: !!hackerId,
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+/**
+ * Hook to fetch a hacker's resume (requires admin/judge authentication)
+ */
+export const useFetchHackerResume = (): UseMutationResult<
+  Blob,
+  Error,
+  number
+> => {
+  return useMutation<Blob, Error, number>({
+    mutationFn: (applicationId: number) => fetchHackerResume(applicationId),
   });
 };

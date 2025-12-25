@@ -6,6 +6,7 @@ import { ProfileExperience } from "./ProfileExperience";
 import { ProfileSkills } from "./ProfileSkills";
 import { ProfileInterests } from "./ProfileInterests";
 import { ProfileSocials } from "./ProfileSocials";
+import { ProfileResume } from "./ProfileResume";
 
 interface ProfileDisplayProps {
   hacker: HackerProfile;
@@ -25,6 +26,7 @@ export const ProfileDisplay = ({ hacker }: ProfileDisplayProps) => {
         <ProfileSkills hacker={hacker} />
         <ProfileInterests hacker={hacker} />
         <ProfileSocials hacker={hacker} />
+        <ProfileResume hacker={hacker} />
       </View>
     </ScrollView>
   );

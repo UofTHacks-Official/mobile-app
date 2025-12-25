@@ -9,6 +9,8 @@ export const hackerEndpoints = {
   HACKER_AVATAR: "/api/v13/hackers/avatar/",
   HACKERS_GET: "/api/v13/hackers/get",
   HACKER_BY_ID: "/api/v13/hackers",
+  HACKER_RESUME: "/api/v13/hackers/application/resume",
+  ADMIN_RESUME: "/api/v13/admins/applications",
 };
 
 export interface Hacker {
@@ -179,6 +181,35 @@ export const fetchHackerById = async (
 ): Promise<HackerProfile> => {
   const response = await axiosInstance.get<HackerProfile>(
     `${hackerEndpoints.HACKER_BY_ID}/${hackerId}/profile`
+  );
+  return response.data;
+};
+
+/**
+ * Get the resume URL for a hacker by application ID (admin access)
+ */
+export const getHackerResumeUrl = (applicationId: number): string => {
+  return `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`;
+};
+
+/**
+ * Get the authenticated hacker's resume URL
+ */
+export const getOwnResumeUrl = (): string => {
+  return hackerEndpoints.HACKER_RESUME;
+};
+
+/**
+ * Fetch a hacker's resume file (requires admin/judge authentication)
+ */
+export const fetchHackerResume = async (
+  applicationId: number
+): Promise<Blob> => {
+  const response = await axiosInstance.get(
+    `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`,
+    {
+      responseType: "blob",
+    }
   );
   return response.data;
 };
