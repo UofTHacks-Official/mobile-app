@@ -1,4 +1,5 @@
 import { axiosInstance } from "./axiosConfig";
+import type { PaginatedResponse } from "@/types/pagination";
 
 export const hackerEndpoints = {
   HACKER_LOGIN: "/api/v13/hackers/login",
@@ -70,6 +71,9 @@ export interface HackerQueryParams {
   school?: string;
   major?: string;
   search_query?: string;
+  page?: number;
+  page_size?: number;
+  has_rsvpd?: boolean;
 }
 
 /**
@@ -153,12 +157,12 @@ export const getHackerAvatar = async (bearerToken: string) => {
 };
 
 /**
- * Fetch all hackers with optional filtering
+ * Fetch all hackers with optional filtering and pagination
  */
 export const fetchHackers = async (
   queryParams: HackerQueryParams = {}
-): Promise<HackerProfile[]> => {
-  const response = await axiosInstance.post<HackerProfile[]>(
+): Promise<PaginatedResponse<HackerProfile>> => {
+  const response = await axiosInstance.post<PaginatedResponse<HackerProfile>>(
     hackerEndpoints.HACKERS_GET,
     queryParams
   );

@@ -165,7 +165,7 @@ export const HackerTable = ({
   // Debounce search input for backend API calls
   const debouncedSearch = useDebounce(searchInput, 300);
 
-  // Fetch hackers with filters (using backend search)
+  // Fetch hackers with filters (using backend pagination)
   const {
     data: hackersData,
     isLoading,
@@ -175,18 +175,21 @@ export const HackerTable = ({
   } = useFetchHackers({
     skills: selectedSkills.length > 0 ? selectedSkills : undefined,
     interests: selectedInterests.length > 0 ? selectedInterests : undefined,
+    page: enablePagination ? currentPage : undefined,
+    page_size: enablePagination ? itemsPerPage : undefined,
   });
 
-  const hackers = (hackersData as HackerProfile[]) || [];
+  const hackers = hackersData?.data || [];
+  const pageInfo = hackersData?.page_info;
 
-  // Pagination logic (client-side on filtered results from backend)
-  const totalItems = hackers.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const paginatedHackers = enablePagination
-    ? hackers.slice(startIndex, endIndex)
-    : hackers;
+  // Use backend pagination info
+  const totalItems = pageInfo?.total || 0;
+  const totalPages = pageInfo?.total_pages || 0;
+  const startIndex = pageInfo ? (pageInfo.page - 1) * pageInfo.page_size : 0;
+  const endIndex = pageInfo
+    ? Math.min(startIndex + pageInfo.page_size, pageInfo.total)
+    : 0;
+  const paginatedHackers = hackers;
 
   const handleClearSearch = () => {
     setSearchInput("");

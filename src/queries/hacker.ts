@@ -5,14 +5,15 @@ import {
   type HackerProfile,
   type HackerQueryParams,
 } from "@/requests/hacker";
+import type { PaginatedResponse } from "@/types/pagination";
 
 /**
  * Hook to fetch all hackers with optional filters
  */
 export const useFetchHackers = (
   queryParams: HackerQueryParams
-): UseQueryResult<HackerProfile[], Error> => {
-  return useQuery<HackerProfile[], Error>({
+): UseQueryResult<PaginatedResponse<HackerProfile>, Error> => {
+  return useQuery<PaginatedResponse<HackerProfile>, Error>({
     queryKey: ["hackers", queryParams],
     queryFn: () => fetchHackers(queryParams),
     staleTime: 1000 * 60 * 2, // 2 minutes
