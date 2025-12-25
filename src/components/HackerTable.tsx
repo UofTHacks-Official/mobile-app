@@ -186,11 +186,11 @@ export const HackerTable = ({
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
     has_rsvpd: true,
-    education_start_year: educationStartYear
-      ? parseInt(educationStartYear)
+    start_grad_date: educationStartYear
+      ? new Date(`${educationStartYear}-01-01`).toISOString()
       : undefined,
-    education_end_year: educationEndYear
-      ? parseInt(educationEndYear)
+    end_grad_date: educationEndYear
+      ? new Date(`${educationEndYear}-12-31`).toISOString()
       : undefined,
   });
 

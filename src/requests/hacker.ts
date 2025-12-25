@@ -71,15 +71,14 @@ export interface HackerProfile extends Hacker {
 export interface HackerQueryParams {
   skills?: string[];
   interests?: string[];
-  school?: string;
-  major?: string;
   companies?: string[];
   search_query?: string;
+  start_grad_date?: string;
+  end_grad_date?: string;
+  num_results?: number;
   page?: number;
   page_size?: number;
   has_rsvpd?: boolean;
-  education_start_year?: number;
-  education_end_year?: number;
 }
 
 /**
