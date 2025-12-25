@@ -74,6 +74,8 @@ export interface HackerQueryParams {
   page?: number;
   page_size?: number;
   has_rsvpd?: boolean;
+  education_start_year?: number;
+  education_end_year?: number;
 }
 
 /**

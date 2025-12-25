@@ -161,6 +161,8 @@ export const HackerTable = ({
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [educationStartYear, setEducationStartYear] = useState<string>("");
+  const [educationEndYear, setEducationEndYear] = useState<string>("");
 
   // Debounce search input for backend API calls (longer debounce for cosine similarity)
   const debouncedSearch = useDebounce(searchInput, 600);
@@ -179,6 +181,12 @@ export const HackerTable = ({
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
     has_rsvpd: true,
+    education_start_year: educationStartYear
+      ? parseInt(educationStartYear)
+      : undefined,
+    education_end_year: educationEndYear
+      ? parseInt(educationEndYear)
+      : undefined,
   });
 
   const hackers = hackersData?.data || [];
@@ -244,9 +252,9 @@ export const HackerTable = ({
 
   return (
     <View className="flex-1" style={{ width: "100%", height: "100%" }}>
-      {/* Search Bar */}
+      {/* Search Bar and Filters */}
       <View className="px-6 py-4">
-        <View className="relative max-w-md">
+        <View className="relative max-w-md mb-4">
           <View className="absolute left-3 top-3 z-10">
             <Search size={18} color={isDark ? "#888" : "#666"} />
           </View>
@@ -270,6 +278,48 @@ export const HackerTable = ({
               <X size={18} color={isDark ? "#888" : "#666"} />
             </Pressable>
           )}
+        </View>
+
+        {/* Education Year Filters */}
+        <View className="flex-row gap-4 max-w-md">
+          <View className="flex-1">
+            <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
+              Education Start Year
+            </Text>
+            <TextInput
+              placeholder="e.g., 2020"
+              placeholderTextColor={isDark ? "#888" : "#666"}
+              value={educationStartYear}
+              onChangeText={setEducationStartYear}
+              keyboardType="number-pad"
+              maxLength={4}
+              className={cn(
+                "px-3 py-2 rounded-md border",
+                isDark
+                  ? "bg-neutral-800 border-neutral-700 text-white"
+                  : "bg-white border-neutral-300 text-black"
+              )}
+            />
+          </View>
+          <View className="flex-1">
+            <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
+              Education End Year
+            </Text>
+            <TextInput
+              placeholder="e.g., 2024"
+              placeholderTextColor={isDark ? "#888" : "#666"}
+              value={educationEndYear}
+              onChangeText={setEducationEndYear}
+              keyboardType="number-pad"
+              maxLength={4}
+              className={cn(
+                "px-3 py-2 rounded-md border",
+                isDark
+                  ? "bg-neutral-800 border-neutral-700 text-white"
+                  : "bg-white border-neutral-300 text-black"
+              )}
+            />
+          </View>
         </View>
       </View>
 
