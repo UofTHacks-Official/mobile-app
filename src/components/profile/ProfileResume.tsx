@@ -11,7 +11,7 @@ import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import { useFetchHackerResume } from "@/queries/hacker";
-import { WebView } from "react-native-webview";
+import Pdf from "react-native-pdf";
 import { useState } from "react";
 
 interface ProfileResumeProps {
@@ -152,18 +152,17 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
           </View>
 
           {/* PDF Viewer */}
-          <WebView
+          <Pdf
             source={{ uri: pdfUri }}
             style={{ flex: 1 }}
-            startInLoadingState
-            renderLoading={() => (
-              <View className="flex-1 items-center justify-center">
-                <ActivityIndicator
-                  size="large"
-                  color={isDark ? "#75EDEF" : "#132B38"}
-                />
-              </View>
-            )}
+            trustAllCerts={false}
+            onLoadComplete={(numberOfPages) => {
+              console.log(`PDF loaded with ${numberOfPages} pages`);
+            }}
+            onError={(error) => {
+              console.error("PDF Error:", error);
+              Alert.alert("Error", "Failed to load PDF");
+            }}
           />
         </View>
       </Modal>
