@@ -210,9 +210,8 @@ export const HackerTable = ({
     setSearchInput("");
   };
 
-  // Generate year options (current year down to 20 years ago)
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 21 }, (_, i) => currentYear - i);
+  const yearOptions = Array.from({ length: 10 }, (_, i) => 2020 + i);
 
   return (
     <View className="flex-1" style={{ width: "100%", height: "100%" }}>
@@ -274,11 +273,12 @@ export const HackerTable = ({
               {showStartYearDropdown && (
                 <View
                   className={cn(
-                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48 z-50",
+                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
                     isDark
                       ? "bg-neutral-800 border-neutral-700"
                       : "bg-white border-neutral-300"
                   )}
+                  style={{ zIndex: 9999 }}
                 >
                   <ScrollView style={{ maxHeight: 192 }}>
                     <Pressable
@@ -338,11 +338,12 @@ export const HackerTable = ({
               {showEndYearDropdown && (
                 <View
                   className={cn(
-                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48 z-50",
+                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
                     isDark
                       ? "bg-neutral-800 border-neutral-700"
                       : "bg-white border-neutral-300"
                   )}
+                  style={{ zIndex: 9999 }}
                 >
                   <ScrollView style={{ maxHeight: 192 }}>
                     <Pressable
