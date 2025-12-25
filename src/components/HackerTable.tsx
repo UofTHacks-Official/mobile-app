@@ -162,8 +162,8 @@ export const HackerTable = ({
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Debounce search input for backend API calls
-  const debouncedSearch = useDebounce(searchInput, 300);
+  // Debounce search input for backend API calls (longer debounce for cosine similarity)
+  const debouncedSearch = useDebounce(searchInput, 600);
 
   // Fetch hackers with filters (using backend pagination)
   const {
@@ -175,6 +175,7 @@ export const HackerTable = ({
   } = useFetchHackers({
     skills: selectedSkills.length > 0 ? selectedSkills : undefined,
     interests: selectedInterests.length > 0 ? selectedInterests : undefined,
+    search_query: debouncedSearch || undefined,
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
     has_rsvpd: true,
