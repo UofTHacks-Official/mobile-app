@@ -163,6 +163,8 @@ export const HackerTable = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [educationStartYear, setEducationStartYear] = useState<string>("");
   const [educationEndYear, setEducationEndYear] = useState<string>("");
+  const [showStartYearDropdown, setShowStartYearDropdown] = useState(false);
+  const [showEndYearDropdown, setShowEndYearDropdown] = useState(false);
 
   // Debounce search input for backend API calls (longer debounce for cosine similarity)
   const debouncedSearch = useDebounce(searchInput, 600);
@@ -205,50 +207,9 @@ export const HackerTable = ({
     setSearchInput("");
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator
-          size="large"
-          color={isDark ? "#75EDEF" : "#132B38"}
-        />
-        <Text className={cn("mt-4 text-lg", themeStyles.primaryText)}>
-          Loading hackers...
-        </Text>
-      </View>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-red-400 text-lg mb-4">
-          Failed to load hackers
-        </Text>
-        <Text className={cn("mb-6", themeStyles.secondaryText)}>
-          {(error as Error)?.message || "An error occurred"}
-        </Text>
-        <Pressable
-          onPress={() => refetch()}
-          className={cn(
-            "px-6 py-3 rounded-xl",
-            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-          )}
-        >
-          <Text
-            className={cn(
-              "font-semibold",
-              isDark ? "text-black" : "text-white"
-            )}
-          >
-            Try Again
-          </Text>
-        </Pressable>
-      </View>
-    );
-  }
+  // Generate year options (current year down to 20 years ago)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 21 }, (_, i) => currentYear - i);
 
   return (
     <View className="flex-1" style={{ width: "100%", height: "100%" }}>
@@ -286,39 +247,129 @@ export const HackerTable = ({
             <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
               Education Start Year
             </Text>
-            <TextInput
-              placeholder="e.g., 2020"
-              placeholderTextColor={isDark ? "#888" : "#666"}
-              value={educationStartYear}
-              onChangeText={setEducationStartYear}
-              keyboardType="number-pad"
-              maxLength={4}
-              className={cn(
-                "px-3 py-2 rounded-md border",
-                isDark
-                  ? "bg-neutral-800 border-neutral-700 text-white"
-                  : "bg-white border-neutral-300 text-black"
+            <View className="relative">
+              <Pressable
+                onPress={() => setShowStartYearDropdown(!showStartYearDropdown)}
+                className={cn(
+                  "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                  isDark
+                    ? "bg-neutral-800 border-neutral-700"
+                    : "bg-white border-neutral-300"
+                )}
+              >
+                <Text
+                  className={cn(
+                    educationStartYear
+                      ? themeStyles.primaryText
+                      : "text-neutral-500"
+                  )}
+                >
+                  {educationStartYear || "Select year"}
+                </Text>
+                <Text className={themeStyles.secondaryText}>▼</Text>
+              </Pressable>
+              {showStartYearDropdown && (
+                <View
+                  className={cn(
+                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48 z-50",
+                    isDark
+                      ? "bg-neutral-800 border-neutral-700"
+                      : "bg-white border-neutral-300"
+                  )}
+                >
+                  <ScrollView style={{ maxHeight: 192 }}>
+                    <Pressable
+                      onPress={() => {
+                        setEducationStartYear("");
+                        setShowStartYearDropdown(false);
+                      }}
+                      className="px-3 py-2 border-b border-neutral-700"
+                    >
+                      <Text className="text-neutral-500">Clear</Text>
+                    </Pressable>
+                    {yearOptions.map((year) => (
+                      <Pressable
+                        key={year}
+                        onPress={() => {
+                          setEducationStartYear(year.toString());
+                          setShowStartYearDropdown(false);
+                        }}
+                        className={cn(
+                          "px-3 py-2 border-b",
+                          isDark ? "border-neutral-700" : "border-neutral-200"
+                        )}
+                      >
+                        <Text className={themeStyles.primaryText}>{year}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
-            />
+            </View>
           </View>
           <View className="flex-1">
             <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
               Education End Year
             </Text>
-            <TextInput
-              placeholder="e.g., 2024"
-              placeholderTextColor={isDark ? "#888" : "#666"}
-              value={educationEndYear}
-              onChangeText={setEducationEndYear}
-              keyboardType="number-pad"
-              maxLength={4}
-              className={cn(
-                "px-3 py-2 rounded-md border",
-                isDark
-                  ? "bg-neutral-800 border-neutral-700 text-white"
-                  : "bg-white border-neutral-300 text-black"
+            <View className="relative">
+              <Pressable
+                onPress={() => setShowEndYearDropdown(!showEndYearDropdown)}
+                className={cn(
+                  "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                  isDark
+                    ? "bg-neutral-800 border-neutral-700"
+                    : "bg-white border-neutral-300"
+                )}
+              >
+                <Text
+                  className={cn(
+                    educationEndYear
+                      ? themeStyles.primaryText
+                      : "text-neutral-500"
+                  )}
+                >
+                  {educationEndYear || "Select year"}
+                </Text>
+                <Text className={themeStyles.secondaryText}>▼</Text>
+              </Pressable>
+              {showEndYearDropdown && (
+                <View
+                  className={cn(
+                    "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48 z-50",
+                    isDark
+                      ? "bg-neutral-800 border-neutral-700"
+                      : "bg-white border-neutral-300"
+                  )}
+                >
+                  <ScrollView style={{ maxHeight: 192 }}>
+                    <Pressable
+                      onPress={() => {
+                        setEducationEndYear("");
+                        setShowEndYearDropdown(false);
+                      }}
+                      className="px-3 py-2 border-b border-neutral-700"
+                    >
+                      <Text className="text-neutral-500">Clear</Text>
+                    </Pressable>
+                    {yearOptions.map((year) => (
+                      <Pressable
+                        key={year}
+                        onPress={() => {
+                          setEducationEndYear(year.toString());
+                          setShowEndYearDropdown(false);
+                        }}
+                        className={cn(
+                          "px-3 py-2 border-b",
+                          isDark ? "border-neutral-700" : "border-neutral-200"
+                        )}
+                      >
+                        <Text className={themeStyles.primaryText}>{year}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
-            />
+            </View>
           </View>
         </View>
       </View>
@@ -381,7 +432,42 @@ export const HackerTable = ({
 
           {/* Table Body */}
           <ScrollView style={{ flex: 1 }}>
-            {paginatedHackers.length > 0 ? (
+            {isLoading ? (
+              <View className="px-4 py-8 items-center">
+                <ActivityIndicator
+                  size="large"
+                  color={isDark ? "#75EDEF" : "#132B38"}
+                />
+                <Text className={cn("mt-4 text-lg", themeStyles.primaryText)}>
+                  Loading hackers...
+                </Text>
+              </View>
+            ) : isError ? (
+              <View className="px-4 py-8 items-center">
+                <Text className="text-red-400 text-lg mb-4">
+                  Failed to load hackers
+                </Text>
+                <Text className={cn("mb-6", themeStyles.secondaryText)}>
+                  {(error as Error)?.message || "An error occurred"}
+                </Text>
+                <Pressable
+                  onPress={() => refetch()}
+                  className={cn(
+                    "px-6 py-3 rounded-xl",
+                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                  )}
+                >
+                  <Text
+                    className={cn(
+                      "font-semibold",
+                      isDark ? "text-black" : "text-white"
+                    )}
+                  >
+                    Try Again
+                  </Text>
+                </Pressable>
+              </View>
+            ) : paginatedHackers.length > 0 ? (
               paginatedHackers.map((hacker) => (
                 <HackerRow
                   key={hacker.hacker_id}
