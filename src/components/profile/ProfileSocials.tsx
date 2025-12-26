@@ -1,19 +1,11 @@
 import { View, Text, Pressable, Linking } from "react-native";
-import {
-  Users,
-  Github,
-  Linkedin,
-  Instagram,
-  Twitter,
-  Globe,
-} from "lucide-react-native";
+import { Users, Github, Linkedin, Twitter, Globe } from "lucide-react-native";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import {
   formatGitHubUrl,
   formatLinkedInUrl,
-  formatInstagramUrl,
   formatXUrl,
   normalizeUrl,
 } from "@/utils/profile";
@@ -71,7 +63,6 @@ export const ProfileSocials = ({ hacker }: ProfileSocialsProps) => {
   const hasSocials =
     hacker.github_url ||
     hacker.linkedin_url ||
-    hacker.instagram_url ||
     hacker.x_url ||
     hacker.portfolio_url;
 
@@ -109,16 +100,6 @@ export const ProfileSocials = ({ hacker }: ProfileSocialsProps) => {
                 icon={<Github size={iconSize} color={iconColor} />}
                 label={formatGitHubUrl(hacker.github_url).username}
                 url={formatGitHubUrl(hacker.github_url).url}
-                isDark={isDark}
-                themeStyles={themeStyles}
-              />
-            )}
-
-            {hacker.instagram_url && (
-              <SocialLink
-                icon={<Instagram size={iconSize} color={iconColor} />}
-                label={formatInstagramUrl(hacker.instagram_url).username}
-                url={formatInstagramUrl(hacker.instagram_url).url}
                 isDark={isDark}
                 themeStyles={themeStyles}
               />
