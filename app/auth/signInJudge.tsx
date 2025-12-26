@@ -48,16 +48,7 @@ const SignInJudge = () => {
       const result = await sponsorMutation.mutateAsync(parseInt(pin));
       const judgesList = result.sponsor.judges;
 
-      if (!judgesList || judgesList.length === 0) {
-        Toast.show({
-          type: "error",
-          text1: "No Judges Found",
-          text2: "No judges are associated with this sponsor PIN",
-        });
-        return;
-      }
-
-      setJudges(judgesList);
+      setJudges(judgesList || []);
       setStep("select");
     } catch (error) {
       devError("Error getting sponsor by PIN", error);
