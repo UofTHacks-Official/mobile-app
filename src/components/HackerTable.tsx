@@ -5,7 +5,7 @@ import type { HackerProfile } from "@/requests/hacker";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { router } from "expo-router";
 import { Search, X } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -168,8 +168,18 @@ export const HackerTable = ({
   const [showStartYearDropdown, setShowStartYearDropdown] = useState(false);
   const [showEndYearDropdown, setShowEndYearDropdown] = useState(false);
 
-  // Debounce search input for backend API calls (longer debounce for cosine similarity)
   const debouncedSearch = useDebounce(searchInput, 600);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedSkills,
+    selectedInterests,
+    selectedCompanies,
+    educationStartYear,
+    educationEndYear,
+    debouncedSearch,
+  ]);
 
   // Fetch hackers with filters (using backend pagination)
   const {
