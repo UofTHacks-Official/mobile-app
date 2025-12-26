@@ -7,12 +7,17 @@ import {
   Text,
   TextInput,
   View,
+  Keyboard,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
 import { axiosInstance } from "@/requests/axiosConfig";
 import Toast from "react-native-toast-message";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 
 const TestQRScreen = () => {
   const { isDark } = useTheme();
@@ -95,76 +100,99 @@ const TestQRScreen = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <View className="flex-1 px-6 py-6">
-        <Text
-          className={cn(
-            "text-2xl font-onest-bold mb-4",
-            themeStyles.primaryText
-          )}
-        >
-          Test QR Code Generator
-        </Text>
-
-        <Text className={cn("text-sm font-pp mb-2", themeStyles.secondaryText)}>
-          Enter Hacker User ID
-        </Text>
-
-        <TextInput
-          className={cn(
-            "p-4 rounded-xl text-base font-pp mb-4",
-            isDark ? "bg-[#303030] text-white" : "bg-gray-100 text-black"
-          )}
-          placeholder="e.g., 1, 42, 123"
-          placeholderTextColor={isDark ? "#888" : "#666"}
-          value={userId}
-          onChangeText={setUserId}
-          keyboardType="numeric"
-        />
-
-        <Pressable
-          onPress={handleGenerateQR}
-          disabled={loading}
-          className={cn(
-            "py-4 rounded-xl mb-6",
-            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-          )}
-          style={{ opacity: loading ? 0.6 : 1 }}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color={isDark ? "#000" : "#fff"} />
-          ) : (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View className="flex-1 px-6 py-6">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}
+            className="mb-4 flex-row items-center"
+          >
+            <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
             <Text
-              className={cn(
-                "text-center text-lg font-onest-bold",
-                isDark ? "text-black" : "text-white"
-              )}
+              className={cn("text-base font-pp ml-1", themeStyles.primaryText)}
             >
-              Generate QR Code
+              Back
             </Text>
-          )}
-        </Pressable>
+          </TouchableOpacity>
 
-        {qrData && (
-          <View className="items-center">
-            <View
-              className={cn(
-                "p-6 rounded-2xl",
-                isDark ? "bg-[#303030]" : "bg-white"
-              )}
-            >
-              <QRCode value={qrData} size={250} />
+          <Text
+            className={cn(
+              "text-2xl font-onest-bold mb-4",
+              themeStyles.primaryText
+            )}
+          >
+            Test QR Code Generator
+          </Text>
+
+          <Text
+            className={cn("text-sm font-pp mb-2", themeStyles.secondaryText)}
+          >
+            Enter Hacker User ID
+          </Text>
+
+          <TextInput
+            className={cn(
+              "p-4 rounded-xl text-base font-pp mb-4",
+              isDark ? "bg-[#303030] text-white" : "bg-gray-100 text-black"
+            )}
+            placeholder="e.g., 1, 42, 123"
+            placeholderTextColor={isDark ? "#888" : "#666"}
+            value={userId}
+            onChangeText={setUserId}
+            keyboardType="numeric"
+          />
+
+          <Pressable
+            onPress={handleGenerateQR}
+            disabled={loading}
+            className={cn(
+              "py-4 rounded-xl mb-6",
+              isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+            )}
+            style={{ opacity: loading ? 0.6 : 1 }}
+          >
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+                color={isDark ? "#000" : "#fff"}
+              />
+            ) : (
+              <Text
+                className={cn(
+                  "text-center text-lg font-onest-bold",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                Generate QR Code
+              </Text>
+            )}
+          </Pressable>
+
+          {qrData && (
+            <View className="items-center">
+              <View
+                className={cn(
+                  "p-6 rounded-2xl",
+                  isDark ? "bg-[#303030]" : "bg-white"
+                )}
+              >
+                <QRCode value={qrData} size={250} />
+              </View>
+              <Text
+                className={cn(
+                  "text-xs font-pp mt-4 text-center",
+                  themeStyles.secondaryText
+                )}
+              >
+                Scan this QR code with the HackerBucks scanner
+              </Text>
             </View>
-            <Text
-              className={cn(
-                "text-xs font-pp mt-4 text-center",
-                themeStyles.secondaryText
-              )}
-            >
-              Scan this QR code with the HackerBucks scanner
-            </Text>
-          </View>
-        )}
-      </View>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };

@@ -47,7 +47,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
       })}
       onPress={() => role.available && onPress(role.name)}
     >
-      <IconComponent width={60} height={60} />
+      <IconComponent width={80} height={80} />
 
       <Text className="text-black text-center font-pp text-base font-bold mt-2">
         {role.name}

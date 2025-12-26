@@ -37,7 +37,6 @@ import { useJudgeSchedules } from "@/queries/judging";
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
 const LionSquare = require("../../assets/images/icons/lion-square.png");
 const AxSquare = require("../../assets/images/icons/ax-square.png");
-const AppIcon = require("../../assets/images/icons/app-icon.png");
 
 // Types
 interface DashboardItem {
@@ -740,9 +739,10 @@ const AdminDashboard = () => {
         {userType && (
           <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
         )}
-        {FEATURE_FLAGS.ENABLE_HACKERBUCKS && userType === "admin" && (
-          <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
-        )}
+        {FEATURE_FLAGS.ENABLE_HACKERBUCKS &&
+          (userType === "admin" || userType === "volunteer") && (
+            <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
+          )}
         {FEATURE_FLAGS.ENABLE_TEST_QR_GENERATOR && userType === "admin" && (
           <View className="mt-4">
             <Pressable

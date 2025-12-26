@@ -93,7 +93,24 @@ export default function QRScanner() {
         // Parse user_id from QR code data
         const userId = parseInt(data, 10);
         if (isNaN(userId)) {
-          Alert.alert("Error", "Invalid QR code format");
+          Alert.alert("Error", "Invalid QR code format", [
+            {
+              text: "Try Again",
+              onPress: () => {
+                isProcessingScan.current = false;
+                setIsProcessingCheckIn(false);
+              },
+            },
+            {
+              text: "Go Back",
+              style: "cancel",
+              onPress: () => {
+                isProcessingScan.current = false;
+                setIsProcessingCheckIn(false);
+                router.back();
+              },
+            },
+          ]);
           isProcessingScan.current = false;
           setIsProcessingCheckIn(false);
           return;
@@ -130,7 +147,7 @@ export default function QRScanner() {
             },
           },
           {
-            text: "Cancel",
+            text: "Go Back",
             style: "cancel",
             onPress: () => {
               isProcessingScan.current = false;
