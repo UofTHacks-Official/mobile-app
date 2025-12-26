@@ -378,7 +378,7 @@ export const HackerTable = ({
         </View>
 
         {/* Company Filter */}
-        <View className="mt-4">
+        <View className="mt-4" style={{ zIndex: -1000 }}>
           <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
             Filter by Company
           </Text>
@@ -465,7 +465,10 @@ export const HackerTable = ({
       </View>
 
       {/* Table */}
-      <View className="flex-1" style={{ width: "100%", overflow: "hidden" }}>
+      <View
+        className="flex-1"
+        style={{ width: "100%", overflow: "hidden", zIndex: -1000 }}
+      >
         <View
           className={cn(
             "border-t flex-1",
