@@ -23,7 +23,7 @@ const ENDPOINTS_WITHOUT_AUTH = [
 
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL,
-  timeout: 7500,
+  timeout: 30000,
 });
 
 axiosRetry(axiosInstance, {
