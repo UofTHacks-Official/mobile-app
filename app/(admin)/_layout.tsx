@@ -49,6 +49,7 @@ export default function AdminLayout() {
               route.name === "gallery" ||
               route.name === "judgeSchedule" ||
               route.name === "judgingTimer" ||
+              route.name === "timesUp" ||
               route.name === "test-qr" ||
               route.name.startsWith("schedule-detail")
             ) {
@@ -181,6 +182,12 @@ export default function AdminLayout() {
         />
         <Tabs.Screen
           name="judgeSchedule"
+          options={{
+            href: null, // Hide from tabs
+          }}
+        />
+        <Tabs.Screen
+          name="timesUp"
           options={{
             href: null, // Hide from tabs
           }}
