@@ -3,7 +3,7 @@ require("dotenv").config();
 export default ({ config }) => {
   return {
     ...config,
-    name: "uoft-hacks",
+    name: "UofTHacks",
     slug: "uoft-hacks",
     version: "1.0.2",
     orientation: "portrait",
