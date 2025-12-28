@@ -11,7 +11,8 @@ export const useProjects = (pin: number | null) => {
     enabled: !!pin,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2, // Only retry twice on failure
+    retry: 2, // Retry twice on failure
+    retryDelay: 1000, // Wait 1 second between retries
   });
 };
 
@@ -25,6 +26,7 @@ export const useProject = (pin: number | null, teamId: number | null) => {
     enabled: !!pin && !!teamId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2, // Only retry twice on failure
+    retry: 2, // Retry twice on failure
+    retryDelay: 1000, // Wait 1 second between retries
   });
 };

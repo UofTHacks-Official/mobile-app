@@ -23,7 +23,7 @@ import {
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
+import { getUserType, getJudgeId , getSponsorPin } from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -32,6 +32,7 @@ import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
 import { useJudgeSchedules } from "@/queries/judging";
+import { useProjects } from "@/queries/project";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -425,15 +426,18 @@ const UpcomingEvents = ({
   const isJudge = userType === "judge";
   const isVolunteer = userType === "volunteer";
   const [judgeId, setJudgeId] = useState<number | null>(null);
+  const [pin, setPin] = useState<number | null>(null);
 
-  // Get judge ID for filtering
+  // Get judge ID and PIN for filtering
   useEffect(() => {
     if (isJudge) {
-      const loadJudgeId = async () => {
+      const loadData = async () => {
         const id = await getJudgeId();
+        const sponsorPin = await getSponsorPin();
         setJudgeId(id);
+        setPin(sponsorPin);
       };
-      loadJudgeId();
+      loadData();
     }
   }, [isJudge]);
 
@@ -449,41 +453,50 @@ const UpcomingEvents = ({
     userType !== null && isJudge
   );
 
+  // Fetch projects for judges to display project names
+  const { data: projectsResponse } = useProjects(isJudge ? pin : null);
+
+  // Create a map of teamId -> project for quick lookup
+  const projectsMap = useMemo(() => {
+    if (!projectsResponse?.projects) return new Map();
+    return new Map(projectsResponse.projects.map((p) => [p.team_id, p]));
+  }, [projectsResponse]);
+
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
 
   // Filter and sort to get 10 upcoming events
   const upcomingEvents = useMemo(() => {
     if (isJudge) {
-      // For judges: combine all judging sessions into one event
+      // For judges: show individual judging sessions with project info
       if (!judgeSchedules || judgeSchedules.length === 0) {
         return [];
       }
 
-      // Sort by timestamp to get earliest and latest times
+      // Sort by timestamp
       const sorted = [...judgeSchedules].sort(
         (a, b) =>
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
 
-      const firstSession = sorted[0];
-      const lastSession = sorted[sorted.length - 1];
-      const lastEndTime = new Date(
-        new Date(lastSession.timestamp).getTime() + lastSession.duration * 60000
-      );
+      // Map each schedule to an event with project info
+      return sorted.slice(0, 10).map((schedule) => {
+        const project = projectsMap.get(schedule.team_id);
+        const endTime = new Date(
+          new Date(schedule.timestamp).getTime() + schedule.duration * 60000
+        );
 
-      // Return a single combined event
-      return [
-        {
-          id: "judging-sessions",
-          title: `Judging Sessions (${judgeSchedules.length})`,
-          startTime: firstSession.timestamp,
-          endTime: lastEndTime.toISOString(),
+        return {
+          id: schedule.judging_schedule_id.toString(),
+          title: project?.project_name || `Project (Team #${schedule.team_id})`,
+          startTime: schedule.timestamp,
+          endTime: endTime.toISOString(),
           type: "activity" as const,
-          location: firstSession.location,
-          sessionCount: judgeSchedules.length,
-        },
-      ];
+          location: schedule.location,
+          teamId: schedule.team_id,
+          scheduleId: schedule.judging_schedule_id,
+        };
+      });
     } else {
       // For hackers/admins: show regular schedules
       return hackerSchedules
@@ -498,7 +511,7 @@ const UpcomingEvents = ({
         })
         .slice(0, 10);
     }
-  }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
+  }, [isJudge, judgeSchedules, hackerSchedules, currentTime, projectsMap]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
@@ -579,8 +592,17 @@ const UpcomingEvents = ({
             key={event.id}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              if (isJudge) {
-                // Navigate to judging schedule page for judges
+              if (isJudge && "teamId" in event && "scheduleId" in event) {
+                // Navigate to specific project overview for judges
+                router.push({
+                  pathname: "/(judge)/projectOverview",
+                  params: {
+                    teamId: event.teamId,
+                    scheduleId: event.scheduleId,
+                  },
+                });
+              } else if (isJudge) {
+                // Fallback: navigate to judging schedule page
                 router.push("/(admin)/judging");
               } else {
                 // Navigate to schedule detail for others
