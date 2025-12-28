@@ -1,31 +1,22 @@
 import { useTheme } from "@/context/themeContext";
-import { useProject } from "@/queries/project";
+import { useProjects } from "@/queries/project";
 import { JudgingScheduleItem } from "@/types/judging";
+import { Project } from "@/types/project";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 interface ProjectCardProps {
   schedule: JudgingScheduleItem;
+  project?: Project;
 }
 
-const ProjectCard = ({ schedule }: ProjectCardProps) => {
+const ProjectCard = ({ schedule, project }: ProjectCardProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const [pin, setPin] = useState<number | null>(null);
-
-  useEffect(() => {
-    const loadPin = async () => {
-      const storedPin = await getSponsorPin();
-      setPin(storedPin);
-    };
-    loadPin();
-  }, []);
-
-  const { data: project } = useProject(pin, schedule.team_id);
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -92,11 +83,14 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
     loadPin();
   }, []);
 
-  // Get first schedule to get sponsor category
-  const { data: firstProject } = useProject(
-    pin,
-    schedules.length > 0 ? schedules[0].team_id : null
-  );
+  // Fetch ALL projects once instead of per-card
+  const { data: projectsResponse } = useProjects(pin);
+
+  // Create a map of teamId -> project for quick lookup
+  const projectsMap = useMemo(() => {
+    if (!projectsResponse?.projects) return new Map();
+    return new Map(projectsResponse.projects.map((p) => [p.team_id, p]));
+  }, [projectsResponse]);
 
   // Sort schedules by timestamp
   const sortedSchedules = [...schedules].sort(
@@ -105,6 +99,8 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
 
   // Get location from first schedule (assuming all in same location)
   const location = schedules.length > 0 ? schedules[0].location : "";
+  const firstProject =
+    schedules.length > 0 ? projectsMap.get(schedules[0].team_id) : undefined;
   const category = firstProject?.categories[0] || "General";
 
   return (
@@ -129,7 +125,11 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
       {/* Project Cards */}
       <View className="mb-6">
         {sortedSchedules.map((schedule) => (
-          <ProjectCard key={schedule.judging_schedule_id} schedule={schedule} />
+          <ProjectCard
+            key={schedule.judging_schedule_id}
+            schedule={schedule}
+            project={projectsMap.get(schedule.team_id)}
+          />
         ))}
       </View>
 
