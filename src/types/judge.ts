@@ -36,6 +36,18 @@ export interface JudgeLoginResponse {
   token: string;
 }
 
+export interface JudgeRegisterRequest {
+  pin: number;
+  judge_name: string;
+}
+
+export interface JudgeRegisterResponse {
+  judge_name: string;
+  company_id: number;
+  judge_id: number;
+  token: string;
+}
+
 export interface JudgeSchedulesResponse {
   schedules: {
     judging_schedule_id: number;
