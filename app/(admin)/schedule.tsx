@@ -25,13 +25,15 @@ const Schedule = () => {
   const insets = useSafeAreaInsets();
 
   const [isJudge, setIsJudge] = useState(false);
+  const [isVolunteer, setIsVolunteer] = useState(false);
   const [userTypeChecked, setUserTypeChecked] = useState(false);
 
-  // Check if user is a judge
+  // Check user type
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
       setIsJudge(userType === "judge");
+      setIsVolunteer(userType === "volunteer");
       setUserTypeChecked(true);
     };
     checkUserType();
@@ -51,10 +53,10 @@ const Schedule = () => {
     clearFilters,
   } = useScheduleFilters();
 
-  // Conditionally fetch schedule data based on user type
+  // Conditionally fetch schedule data based on user type (skip for judges and volunteers)
   const { data: hackerSchedules = [] } = useScheduleData(
     selectedEventTypes,
-    !isJudge && userTypeChecked
+    !isJudge && !isVolunteer && userTypeChecked
   );
 
   // For judges, fetch all their judging schedules (no event type filtering)

@@ -423,6 +423,7 @@ const UpcomingEvents = ({
   userType: string | null;
 }) => {
   const isJudge = userType === "judge";
+  const isVolunteer = userType === "volunteer";
   const [judgeId, setJudgeId] = useState<number | null>(null);
 
   // Get judge ID for filtering
@@ -436,10 +437,10 @@ const UpcomingEvents = ({
     }
   }, [isJudge]);
 
-  // Fetch hacker/admin schedules (skip for judges AND when userType is still loading)
+  // Fetch hacker/admin schedules (skip for judges, volunteers, AND when userType is still loading)
   const { data: hackerSchedules = [] } = useScheduleData(
     ["activity", "networking", "food"],
-    userType !== null && !isJudge
+    userType !== null && !isJudge && !isVolunteer
   );
 
   // Fetch judging schedules for judges using judge-specific endpoint
