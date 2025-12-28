@@ -23,7 +23,11 @@ import {
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import { getUserType, getJudgeId , getSponsorPin } from "@/utils/tokens/secureStorage";
+import {
+  getUserType,
+  getJudgeId,
+  getSponsorPin,
+} from "@/utils/tokens/secureStorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
