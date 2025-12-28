@@ -139,6 +139,25 @@ const HackerRow = ({
           )}
         </View>
       </View>
+
+      {/* Checked In Column */}
+      <View className="px-4 py-4 justify-center" style={{ flex: 1 }}>
+        <View className="items-center">
+          {hacker.checked_in ? (
+            <View className="bg-green-500/20 px-3 py-1.5 rounded-full">
+              <Text className="text-green-500 text-xs font-semibold">
+                Checked In
+              </Text>
+            </View>
+          ) : (
+            <View className="bg-neutral-500/20 px-3 py-1.5 rounded-full">
+              <Text className="text-neutral-500 text-xs font-semibold">
+                Not Checked In
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
     </View>
   );
 };
@@ -529,6 +548,13 @@ export const HackerTable = ({
                 className={cn("font-medium text-sm", themeStyles.secondaryText)}
               >
                 Projects
+              </Text>
+            </View>
+            <View className="px-4 py-3" style={{ flex: 1 }}>
+              <Text
+                className={cn("font-medium text-sm", themeStyles.secondaryText)}
+              >
+                Status
               </Text>
             </View>
           </View>

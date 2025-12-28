@@ -66,6 +66,7 @@ export interface HackerProfile extends Hacker {
   hacker_educations?: HackerEducation[];
   personalities?: any[];
   pronouns?: string | null;
+  checked_in?: boolean;
 }
 
 export interface HackerQueryParams {
