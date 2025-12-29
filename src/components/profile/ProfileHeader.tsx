@@ -1,8 +1,14 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import { getDisplayName } from "@/utils/profile";
+import { Star } from "lucide-react-native";
+import {
+  useSaveHacker,
+  useUnsaveHacker,
+  useIsHackerSaved,
+} from "@/queries/judge";
 
 interface ProfileHeaderProps {
   hacker: HackerProfile;
@@ -16,6 +22,23 @@ export const ProfileHeader = ({ hacker }: ProfileHeaderProps) => {
   const initials =
     `${hacker.hacker_fname[0] || ""}${hacker.hacker_lname[0] || ""}`.toUpperCase();
 
+  // Check if this hacker is saved
+  const { data: isSaved = false } = useIsHackerSaved(hacker.hacker_id);
+  const saveHackerMutation = useSaveHacker();
+  const unsaveHackerMutation = useUnsaveHacker();
+
+  const handleToggleSave = async () => {
+    try {
+      if (isSaved) {
+        await unsaveHackerMutation.mutateAsync(hacker.hacker_id);
+      } else {
+        await saveHackerMutation.mutateAsync(hacker.hacker_id);
+      }
+    } catch (error) {
+      console.error("Toggle save error:", error);
+    }
+  };
+
   return (
     <View className="mb-8">
       {/* Avatar and Name Section */}
@@ -27,11 +50,36 @@ export const ProfileHeader = ({ hacker }: ProfileHeaderProps) => {
 
         {/* Name and Email */}
         <View className="flex-1">
-          <Text
-            className={cn("text-2xl font-bold mb-1", themeStyles.primaryText)}
-          >
-            {displayName}
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Text
+              className={cn("text-2xl font-bold mb-1", themeStyles.primaryText)}
+            >
+              {displayName}
+            </Text>
+            <Pressable
+              onPress={handleToggleSave}
+              className={cn(
+                "p-1.5 rounded-lg",
+                isSaved ? (isDark ? "bg-[#75EDEF]/20" : "bg-[#132B38]/10") : ""
+              )}
+            >
+              <Star
+                size={20}
+                color={
+                  isSaved
+                    ? isDark
+                      ? "#75EDEF"
+                      : "#132B38"
+                    : isDark
+                      ? "#666"
+                      : "#999"
+                }
+                fill={
+                  isSaved ? (isDark ? "#75EDEF" : "#132B38") : "transparent"
+                }
+              />
+            </Pressable>
+          </View>
           <Text className={cn("text-sm", themeStyles.secondaryText)}>
             {hacker.hacker_email}
           </Text>

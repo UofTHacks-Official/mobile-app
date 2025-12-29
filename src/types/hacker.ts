@@ -22,3 +22,52 @@ export interface HackerQueryParams {
   major?: string;
   search?: string;
 }
+
+export interface JobExperience {
+  company: string;
+  position: string;
+  start_date: string;
+  end_date?: string | null;
+  description?: string | null;
+}
+
+export interface Education {
+  school: string;
+  degree: string;
+  field_of_study: string;
+  start_date: string;
+  end_date?: string | null;
+}
+
+export interface AvatarRead {
+  avatar_id: number;
+  hacker_id: number;
+  hair_style: string;
+  hair_color: string;
+  skin_tone: string;
+  top: string;
+  accessory: string;
+  facial_hair: string;
+  glasses: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HackerRead {
+  hacker_fname: string;
+  hacker_lname: string;
+  hacker_email: string;
+  hacker_id: number;
+  hacker_verified: boolean;
+  hacker_bucks: number;
+  last_login?: string | null;
+  hacker_jobs?: JobExperience[] | null;
+  hacker_educations?: Education[] | null;
+  skills?: string[] | null;
+  interest?: string[] | null;
+  major?: string | null;
+  school?: string | null;
+  avatar?: AvatarRead | null;
+  pronouns?: string | null;
+  checked_in?: boolean | null;
+}

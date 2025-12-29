@@ -12,10 +12,18 @@ import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import { useFetchHackerResume } from "@/queries/hacker";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Conditionally import PDF viewer only for native platforms
-const Pdf = Platform.OS !== "web" ? require("react-native-pdf").default : null;
+// Dynamic import for PDF viewer to avoid bundling on web
+let Pdf: any = null;
+if (Platform.OS !== "web") {
+  try {
+    // // This will only be evaluated on native platforms
+    // Pdf = require("react-native-pdf").default;
+  } catch (error) {
+    console.warn("Failed to load react-native-pdf:", error);
+  }
+}
 
 interface ProfileResumeProps {
   hacker: HackerProfile;

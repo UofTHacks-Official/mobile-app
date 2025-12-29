@@ -61,3 +61,13 @@ export interface JudgeSchedulesResponse {
     updated_at: string;
   }[];
 }
+
+export interface SavedHackerActionResponse {
+  message: string;
+  judge_id: number;
+  hacker_id: number;
+}
+
+export interface IsHackerSavedResponse {
+  is_saved: boolean;
+}
