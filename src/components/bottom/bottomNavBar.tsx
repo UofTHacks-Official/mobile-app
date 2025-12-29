@@ -360,6 +360,21 @@ const CustomTabBar = ({
             }}
           >
             {state.routes.map((route, index) => {
+              // Define valid routes that should show in nav bar
+              const validRoutes = [
+                "index",
+                "schedule",
+                "judging",
+                "qr",
+                "photobooth",
+                "profile",
+              ];
+
+              // Skip routes that don't have icons defined
+              if (!validRoutes.includes(route.name)) {
+                return null;
+              }
+
               const { options } = descriptors[route.key];
               let label =
                 typeof options.tabBarLabel === "string"
