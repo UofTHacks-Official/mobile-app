@@ -8,9 +8,9 @@ import {
   IsHackerSavedResponse,
   SponsorByPinResponse,
 } from "@/types/judge";
-import { HackerRead } from "@/types/hacker";
 import { PaginatedResponse } from "@/types/pagination";
 import { axiosInstance } from "./axiosConfig";
+import { HackerProfile } from "./hacker";
 
 export const judgeEndpoints = {
   SPONSOR_BY_PIN: "/api/v13/judges/sponsor-by-pin",
@@ -104,8 +104,8 @@ export const unsaveHacker = async (
 export const getSavedHackers = async (
   page: number = 1,
   pageSize: number = 20
-): Promise<PaginatedResponse<HackerRead>> => {
-  const response = await axiosInstance.get<PaginatedResponse<HackerRead>>(
+): Promise<PaginatedResponse<HackerProfile>> => {
+  const response = await axiosInstance.get<PaginatedResponse<HackerProfile>>(
     judgeEndpoints.GET_SAVED_HACKERS,
     {
       params: { page, page_size: pageSize },

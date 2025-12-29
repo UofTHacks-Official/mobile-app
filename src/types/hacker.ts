@@ -52,22 +52,3 @@ export interface AvatarRead {
   created_at: string;
   updated_at: string;
 }
-
-export interface HackerRead {
-  hacker_fname: string;
-  hacker_lname: string;
-  hacker_email: string;
-  hacker_id: number;
-  hacker_verified: boolean;
-  hacker_bucks: number;
-  last_login?: string | null;
-  hacker_jobs?: JobExperience[] | null;
-  hacker_educations?: Education[] | null;
-  skills?: string[] | null;
-  interest?: string[] | null;
-  major?: string | null;
-  school?: string | null;
-  avatar?: AvatarRead | null;
-  pronouns?: string | null;
-  checked_in?: boolean | null;
-}
