@@ -58,6 +58,7 @@ export default function AdminLayout() {
             route.name === "gallery" ||
             route.name === "judgeSchedule" ||
             route.name === "judgingTimer" ||
+            route.name === "timesUp" ||
             route.name === "test-qr" ||
             route.name.startsWith("schedule-detail")
           ) {
@@ -69,8 +70,8 @@ export default function AdminLayout() {
             return false;
           }
 
-          // Hide schedule for judges
-          if (route.name === "schedule" && isJudge) {
+          // Hide schedule for judges and volunteers
+          if (route.name === "schedule" && (isJudge || isVolunteer)) {
             return false;
           }
 
@@ -187,6 +188,12 @@ export default function AdminLayout() {
       />
       <Tabs.Screen
         name="judgeSchedule"
+        options={{
+          href: null, // Hide from tabs
+        }}
+      />
+      <Tabs.Screen
+        name="timesUp"
         options={{
           href: null, // Hide from tabs
         }}

@@ -5,6 +5,7 @@ import { useTheme } from "@/context/themeContext";
 import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import * as Haptics from "expo-haptics";
 import { usePathname } from "expo-router";
 import {
@@ -20,7 +21,7 @@ import {
   UserCheck,
   X,
 } from "lucide-react-native";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
@@ -34,6 +35,7 @@ const CustomTabBar = ({
   const pathname = usePathname();
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const [isVolunteer, setIsVolunteer] = useState(false);
 
   // Use Zustand store for nav bar state
   const isExpanded = useBottomNavBarStore((s) => s.isExpanded);
@@ -44,6 +46,15 @@ const CustomTabBar = ({
     (s) => s.setPhotoboothViewMode
   );
   const closeNavBar = useBottomNavBarStore((s) => s.closeNavBar);
+
+  // Check if user is a volunteer
+  useEffect(() => {
+    const checkUserType = async () => {
+      const userType = await getUserType();
+      setIsVolunteer(userType === "volunteer");
+    };
+    checkUserType();
+  }, []);
 
   // Animation values for each tab
   // Use useMemo to recreate when routes change (e.g., feature flags)
@@ -158,9 +169,11 @@ const CustomTabBar = ({
   };
 
   // Animate the height of the container
+  // Volunteers only see 1 option (checkin), admins see 3 options (checkin, add, deduct)
+  const expandedHeight = isVolunteer ? 140 : 220;
   const animatedHeight = expandAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [60, 220], // Collapsed and expanded heights (increased for 3 items)
+    outputRange: [60, expandedHeight], // Collapsed and expanded heights
   });
 
   // Dynamically adjust width based on number of tabs
@@ -262,42 +275,46 @@ const CustomTabBar = ({
                       color={isDark ? "#FFFFFF" : "#000000"}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleScanOption("add")}
-                    className="rounded-xl p-2 flex-row items-center justify-between"
-                  >
-                    <Text
-                      className={cn(
-                        "text-lg font-onest-extralight",
-                        isDark ? "text-white" : "text-black"
-                      )}
-                    >
-                      Add HackerBux
-                    </Text>
-                    <BanknoteArrowUp
-                      size={28}
-                      strokeWidth={1.5}
-                      color={isDark ? "#FFFFFF" : "#000000"}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleScanOption("deduct")}
-                    className="rounded-xl p-2 flex-row items-center justify-between"
-                  >
-                    <Text
-                      className={cn(
-                        "text-lg font-onest-extralight",
-                        isDark ? "text-white" : "text-black"
-                      )}
-                    >
-                      Deduct HackerBux
-                    </Text>
-                    <BanknoteArrowDown
-                      size={28}
-                      strokeWidth={1.5}
-                      color={isDark ? "#FFFFFF" : "#000000"}
-                    />
-                  </TouchableOpacity>
+                  {!isVolunteer && (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => handleScanOption("add")}
+                        className="rounded-xl p-2 flex-row items-center justify-between"
+                      >
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-extralight",
+                            isDark ? "text-white" : "text-black"
+                          )}
+                        >
+                          Add HackerBux
+                        </Text>
+                        <BanknoteArrowUp
+                          size={28}
+                          strokeWidth={1.5}
+                          color={isDark ? "#FFFFFF" : "#000000"}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleScanOption("deduct")}
+                        className="rounded-xl p-2 flex-row items-center justify-between"
+                      >
+                        <Text
+                          className={cn(
+                            "text-lg font-onest-extralight",
+                            isDark ? "text-white" : "text-black"
+                          )}
+                        >
+                          Deduct HackerBux
+                        </Text>
+                        <BanknoteArrowDown
+                          size={28}
+                          strokeWidth={1.5}
+                          color={isDark ? "#FFFFFF" : "#000000"}
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </>
               )}
               {!FEATURE_FLAGS.ENABLE_HACKERBUCKS && (

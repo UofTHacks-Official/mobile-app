@@ -9,6 +9,10 @@ export const useProjects = (pin: number | null) => {
     queryKey: ["projects", pin],
     queryFn: () => getProjectsByPin(pin!),
     enabled: !!pin,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2, // Retry twice on failure
+    retryDelay: 1000, // Wait 1 second between retries
   });
 };
 
@@ -20,5 +24,9 @@ export const useProject = (pin: number | null, teamId: number | null) => {
     queryKey: ["project", pin, teamId],
     queryFn: () => getProjectByTeamId(pin!, teamId!),
     enabled: !!pin && !!teamId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2, // Retry twice on failure
+    retryDelay: 1000, // Wait 1 second between retries
   });
 };

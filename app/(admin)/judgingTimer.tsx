@@ -216,6 +216,8 @@ const JudgingTimerScreen = () => {
               text1: "Session Complete!",
               text2: "All stages finished",
             });
+            // Navigate to Time's Up screen
+            router.replace("/(admin)/timesUp");
           }
         }
       }, 100);
