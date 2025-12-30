@@ -5,19 +5,25 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+  ImageSourcePropType,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SvgProps } from "react-native-svg";
-import DeerIcon from "../../assets/images/icons/deer.svg";
-import GoatIcon from "../../assets/images/icons/Goat.svg";
-import HedIcon from "../../assets/images/icons/Hed.svg";
-import OwlIcon from "../../assets/images/icons/owl.svg";
+
+import DeerIcon from "../../assets/images/icons/deer.png";
+import GoatIcon from "../../assets/images/icons/goat.png";
+import HedIcon from "../../assets/images/icons/eg.png";
+import OwlIcon from "../../assets/images/icons/owl.png";
 
 type RoleType = "Admin" | "Volunteer" | "Judge" | "Hacker";
 
 interface Role {
   name: RoleType;
-  icon: React.FC<SvgProps>;
+  icon: ImageSourcePropType;
   color: string;
   available: boolean;
   description: string;
@@ -31,8 +37,6 @@ interface RoleCardProps {
 
 // Role Card Component
 const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
-  const IconComponent = role.icon;
-
   return (
     <Pressable
       className={cn(
@@ -47,7 +51,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
       })}
       onPress={() => role.available && onPress(role.name)}
     >
-      <IconComponent width={80} height={80} />
+      <Image source={role.icon} style={{ width: 80, height: 80 }} />
 
       <Text className="text-black text-center font-pp text-base font-bold mt-2">
         {role.name}
@@ -80,21 +84,6 @@ const Header: React.FC<{ isDark: boolean }> = ({ isDark }) => {
       >
         Choose how you&apos;ll be using the app
       </Text>
-    </View>
-  );
-};
-
-// Footer Component
-const Footer: React.FC<{ isDark: boolean }> = ({ isDark }) => {
-  const themeStyles = getThemeStyles(isDark);
-
-  return (
-    <View className="mt-12 justify-center items-center">
-      <Pressable className="py-4">
-        <Text className={cn("underline text-lg", themeStyles.secondaryText2)}>
-          What role am I?
-        </Text>
-      </Pressable>
     </View>
   );
 };
@@ -132,28 +121,28 @@ const SelectRole = () => {
     {
       name: "Admin",
       icon: DeerIcon,
-      color: "bg-uoft_primary_blue",
+      color: "bg-role_admin",
       available: true,
       description: "Manage events and oversee operations",
     },
     {
       name: "Volunteer",
       icon: HedIcon,
-      color: "bg-uoft_accent_purple",
+      color: "bg-role_volunteer",
       available: true,
       description: "Help with event coordination and support",
     },
     {
       name: "Judge",
       icon: GoatIcon,
-      color: "bg-uoft__orange",
+      color: "bg-role_judge",
       available: true,
       description: "Evaluate and score hackathon projects",
     },
     {
       name: "Hacker",
       icon: OwlIcon,
-      color: "bg-uoft_accent_red",
+      color: "bg-role_hacker",
       available: true,
       description: "Participate in the hackathon",
     },
@@ -189,8 +178,6 @@ const SelectRole = () => {
             ))}
           </View>
         </View>
-
-        <Footer isDark={isDark} />
       </View>
     </SafeAreaView>
   );

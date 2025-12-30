@@ -465,8 +465,11 @@ const JudgingLocationScreen = () => {
                 Judging Events
               </Text>
             )}
-            {filteredSchedules?.map((event) => (
-              <JudgingEventCard key={event.judging_schedule_id} event={event} />
+            {filteredSchedules?.map((event, index) => (
+              <JudgingEventCard
+                key={`${event.judging_schedule_id}-${event.team_id}-${index}`}
+                event={event}
+              />
             ))}
           </View>
         )}

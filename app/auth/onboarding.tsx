@@ -16,11 +16,9 @@ import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import CameraOwlSvg from "../../assets/images/animals/camera_owl.svg";
-
-import GoatSvg from "../../assets/images/icons/Goat.svg";
-import HedSvg from "../../assets/images/icons/Hed.svg";
-import DeerSvg from "../../assets/images/icons/deer.svg";
-
+import GoatIcon from "../../assets/images/icons/goat.png";
+import HedIcon from "../../assets/images/icons/eg.png";
+import DeerIcon from "../../assets/images/icons/deer.png";
 import WelcomeDarkSvg from "../../assets/images/onboarding/onboard_dark.svg";
 import WelcomeLightSvg from "../../assets/images/onboarding/onboard_light.svg";
 
@@ -120,21 +118,27 @@ export default function OnboardingPage() {
           <View className="w-full gap-y-2">
             <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
               <NotificationCard
-                icon={<DeerSvg width={40} height={40} />}
+                icon={
+                  <Image source={DeerIcon} style={{ width: 40, height: 40 }} />
+                }
                 title="Judging Schedules are out!"
                 body="Check your schedule in the dashboard"
                 timestamp="2h"
               />
             </View>
             <NotificationCard
-              icon={<HedSvg width={40} height={40} />}
+              icon={
+                <Image source={HedIcon} style={{ width: 40, height: 40 }} />
+              }
               title="📸 Photo Booth"
               body="Capture your 3am hacking setup"
               timestamp="1h"
             />
             <View style={{ transform: [{ scale: 0.9 }] }} className="w-full">
               <NotificationCard
-                icon={<GoatSvg width={40} height={40} />}
+                icon={
+                  <Image source={GoatIcon} style={{ width: 40, height: 40 }} />
+                }
                 title="Lunch is delayed by 10 minutes!"
                 body="Catering came late, we're hungry too"
                 timestamp="2m"

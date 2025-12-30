@@ -44,6 +44,12 @@ module.exports = {
         "red-500": "#E57373",
         "red-300": "#FFCDD2",
 
+        // Role Selection Colors
+        role_admin: "#75EDEF",
+        role_volunteer: "#F17AAD",
+        role_judge: "#FF9F6E",
+        role_hacker: "#FFDD80",
+
         // Legacy UofT Colors (keeping for backward compatibility)
         uoft_primary_blue_dark: "#132B38",
         uoft_primary_blue: "#75EDEF",
