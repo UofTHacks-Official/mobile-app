@@ -50,8 +50,8 @@ module.exports = {
         uoft_yellow: "#FFDD80",
         uoft__orange: "#FF9F6E",
         uoft_pink: "#F17AAD",
-        uoft_accent_purple: "#E9B6F7",
-        uoft_accent_red: "#F85C5C",
+        uoft_accent_purple: "#F17AAD",
+        uoft_accent_red: "#FFDD80",
         uoft_accent_cream: "#F3E7E3",
         uoft_grey: "#D3D3D3",
 
