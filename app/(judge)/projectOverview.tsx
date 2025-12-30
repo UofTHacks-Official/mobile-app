@@ -3,7 +3,7 @@ import { useProject } from "@/queries/project";
 import { useAllJudgingSchedules } from "@/queries/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, ExternalLink } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -72,7 +72,7 @@ const ProjectOverview = () => {
 
   const handleOpenLink = (url: string) => {
     if (url) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.impactAsync(ImpactFeedbackStyle.Light);
       Linking.openURL(url);
     }
   };
@@ -80,7 +80,7 @@ const ProjectOverview = () => {
   const handleReady = () => {
     if (!project || !scheduleId) return;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(judge)/scorecard",
       params: {
@@ -92,7 +92,7 @@ const ProjectOverview = () => {
   };
 
   const handleGoBack = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 

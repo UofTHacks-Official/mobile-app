@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { Dimensions, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ const Onboarding = () => {
   const svgHeight = Math.min(height * 0.8, 500);
 
   const handleContinue = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.replace("/auth/notification");
   };
 

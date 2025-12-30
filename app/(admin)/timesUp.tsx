@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,7 +10,7 @@ const TimesUpScreen = () => {
   const themeStyles = getThemeStyles(isDark);
 
   const handleBackToJudging = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.replace("/(admin)/judging");
   };
 

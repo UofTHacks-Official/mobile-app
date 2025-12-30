@@ -8,7 +8,7 @@ import { devError, devLog } from "@/utils/logger";
 import { registerForPushNotificationsAsync } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Camera } from "expo-camera";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { Calendar, Camera as CameraIcon } from "lucide-react-native";
 import { useState } from "react";
@@ -217,7 +217,7 @@ export default function OnboardingPage() {
   };
 
   const handleNext = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     const currentStepData = stepsWithIcons[currentStep];
 
     // Handle permission screens
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
   };
 
   const handleSkip = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
 
     if (currentStep === onboardingSteps.length - 1) {
       // Last screen - complete onboarding

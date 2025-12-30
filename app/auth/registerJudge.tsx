@@ -10,7 +10,7 @@ import {
   storeSponsorPin,
   storeUserType,
 } from "@/utils/tokens/secureStorage";
-import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useContext, useState } from "react";
@@ -37,7 +37,7 @@ const RegisterJudge = () => {
       return;
     }
 
-    impactAsync(ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     try {
       const result = await registerMutation.mutateAsync({
@@ -85,7 +85,7 @@ const RegisterJudge = () => {
   };
 
   const handleGoBack = () => {
-    impactAsync(ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 

@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { ArrowDownCircle, ArrowUpCircle, UserCheck } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -18,22 +18,22 @@ export default function HackerBucksLanding() {
   } = useHackerBucksStore();
 
   const handleAddPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=add");
   };
 
   const handleDeductPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=deduct");
   };
 
   const handleCheckInPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=checkin");
   };
 
   const handlePreviewResult = (status: "completed" | "failed") => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     clearTransaction();
     startTransaction(
       {

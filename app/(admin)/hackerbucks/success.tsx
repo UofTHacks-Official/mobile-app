@@ -4,7 +4,7 @@ import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { useRouter } from "expo-router";
 import {
   ArrowLeftRight,
@@ -26,14 +26,14 @@ export default function Success() {
     useHackerBucksStore();
 
   const handleDone = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     clearTransaction();
     router.dismissAll();
     router.replace("/(admin)");
   };
 
   const handleRetry = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.back();
   };
 

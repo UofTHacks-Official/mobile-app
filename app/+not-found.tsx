@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { Home } from "lucide-react-native";
 import { Image, Pressable, Text, View } from "react-native";
@@ -49,7 +49,7 @@ const NotFoundPage = () => {
           <View className="w-full space-y-4">
             <Pressable
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 router.replace("/(admin)");
               }}
               className={cn(

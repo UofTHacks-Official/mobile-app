@@ -6,7 +6,7 @@ import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { getUserType } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
@@ -129,7 +129,7 @@ const CustomTabBar = ({
   ]);
 
   const toggleExpansion = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     setIsExpanded(!isExpanded);
   };
@@ -137,7 +137,7 @@ const CustomTabBar = ({
   const handleScanOption = (
     option: "checkin" | "add" | "deduct" | "qr" | "hackerbucks"
   ) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
 
     // Collapse the expansion immediately
     closeNavBar();
@@ -491,7 +491,7 @@ const CustomTabBar = ({
               };
 
               const onPress = () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                haptics.impactAsync(ImpactFeedbackStyle.Light);
 
                 const event = navigation.emit({
                   type: "tabPress",
@@ -526,7 +526,7 @@ const CustomTabBar = ({
               };
 
               const onLongPress = () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 navigation.emit({
                   type: "tabLongPress",
                   target: route.key,

@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
 import { axiosInstance } from "@/requests/axiosConfig";
 import Toast from "react-native-toast-message";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 
@@ -49,7 +49,7 @@ const TestQRScreen = () => {
 
     try {
       setLoading(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
       const response = await axiosInstance.post("/api/v13/qr/get-qr", {
         userid: userIdNumber,
@@ -105,7 +105,7 @@ const TestQRScreen = () => {
           {/* Back Button */}
           <TouchableOpacity
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              haptics.impactAsync(ImpactFeedbackStyle.Light);
               router.back();
             }}
             className="mb-4 flex-row items-center"
