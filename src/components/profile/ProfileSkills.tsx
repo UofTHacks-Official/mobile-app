@@ -21,11 +21,9 @@ export const ProfileSkills = ({ hacker }: ProfileSkillsProps) => {
     <View className="mb-8">
       {/* Section Header */}
       <View className="flex-row items-center mb-4">
-        <Code
-          size={20}
-          color={isDark ? "#75EDEF" : "#132B38"}
-          className="mr-2"
-        />
+        <View className="mr-3">
+          <Code size={20} color={isDark ? "#75EDEF" : "#132B38"} />
+        </View>
         <Text
           className={cn(
             "text-lg font-semibold uppercase",

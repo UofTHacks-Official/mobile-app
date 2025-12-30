@@ -3,7 +3,11 @@ import { useTimer } from "@/context/timerContext";
 import { JudgingScheduleItem } from "@/types/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import {
+  haptics,
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+} from "@/utils/haptics";
 import { router } from "expo-router";
 import { Play, Clock, MapPin, Users, CheckCircle } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -73,7 +77,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
   const handleStartTimer = () => {
     // Check if another timer is running
     if (isTimerRunning && activeTimerId !== event.judging_schedule_id) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      haptics.notificationAsync(NotificationFeedbackType.Error);
       Toast.show({
         type: "error",
         text1: "Timer Already Running",
@@ -82,7 +86,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
       return;
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(admin)/judgingTimer",
       params: { scheduleId: event.judging_schedule_id },
@@ -90,7 +94,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
   };
 
   const handleStartJudging = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(judge)/projectOverview",
       params: {

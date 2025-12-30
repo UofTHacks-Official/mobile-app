@@ -12,7 +12,7 @@ import {
   useSavedHackers,
 } from "@/queries/judge";
 import { useState, useEffect } from "react";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import Toast from "react-native-toast-message";
 
 const ProfileDetailPage = () => {
@@ -44,7 +44,7 @@ const ProfileDetailPage = () => {
   }, [savedHackers, hackerId]);
 
   const handleToggleSave = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     try {
       if (isSaved) {

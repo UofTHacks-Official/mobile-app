@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -18,12 +18,12 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
   const themeStyles = getThemeStyles(isDark);
 
   const handleKeyPress = (key: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    haptics.impactAsync(ImpactFeedbackStyle.Soft);
     onKeyPress(key);
   };
 
   const handleDelete = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+    haptics.impactAsync(ImpactFeedbackStyle.Rigid);
     onDelete();
   };
 

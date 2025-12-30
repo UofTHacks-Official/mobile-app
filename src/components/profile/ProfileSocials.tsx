@@ -74,7 +74,9 @@ export const ProfileSocials = ({ hacker }: ProfileSocialsProps) => {
     <View className="mb-8">
       {/* Section Header */}
       <View className="flex-row items-center mb-4">
-        <Users size={20} color={iconColor} className="mr-2" />
+        <View className="mr-3">
+          <Users size={20} color={iconColor} />
+        </View>
         <Text
           className={cn(
             "text-lg font-semibold uppercase",
@@ -92,53 +94,45 @@ export const ProfileSocials = ({ hacker }: ProfileSocialsProps) => {
           isDark ? "bg-neutral-800" : "bg-neutral-100"
         )}
       >
-        <View className="flex-row flex-wrap">
-          {/* First Column */}
-          <View className="flex-1 min-w-[45%]">
-            {hacker.github_url && (
-              <SocialLink
-                icon={<Github size={iconSize} color={iconColor} />}
-                label={formatGitHubUrl(hacker.github_url).username}
-                url={formatGitHubUrl(hacker.github_url).url}
-                isDark={isDark}
-                themeStyles={themeStyles}
-              />
-            )}
+        {hacker.github_url && (
+          <SocialLink
+            icon={<Github size={iconSize} color={iconColor} />}
+            label={formatGitHubUrl(hacker.github_url).username}
+            url={formatGitHubUrl(hacker.github_url).url}
+            isDark={isDark}
+            themeStyles={themeStyles}
+          />
+        )}
 
-            {hacker.portfolio_url && (
-              <SocialLink
-                icon={<Globe size={iconSize} color={iconColor} />}
-                label={hacker.portfolio_url}
-                url={normalizeUrl(hacker.portfolio_url)}
-                isDark={isDark}
-                themeStyles={themeStyles}
-              />
-            )}
-          </View>
+        {hacker.linkedin_url && (
+          <SocialLink
+            icon={<Linkedin size={iconSize} color={iconColor} />}
+            label={formatLinkedInUrl(hacker.linkedin_url).username}
+            url={formatLinkedInUrl(hacker.linkedin_url).url}
+            isDark={isDark}
+            themeStyles={themeStyles}
+          />
+        )}
 
-          {/* Second Column */}
-          <View className="flex-1 min-w-[45%]">
-            {hacker.linkedin_url && (
-              <SocialLink
-                icon={<Linkedin size={iconSize} color={iconColor} />}
-                label={formatLinkedInUrl(hacker.linkedin_url).username}
-                url={formatLinkedInUrl(hacker.linkedin_url).url}
-                isDark={isDark}
-                themeStyles={themeStyles}
-              />
-            )}
+        {hacker.x_url && (
+          <SocialLink
+            icon={<Twitter size={iconSize} color={iconColor} />}
+            label={formatXUrl(hacker.x_url).username}
+            url={formatXUrl(hacker.x_url).url}
+            isDark={isDark}
+            themeStyles={themeStyles}
+          />
+        )}
 
-            {hacker.x_url && (
-              <SocialLink
-                icon={<Twitter size={iconSize} color={iconColor} />}
-                label={formatXUrl(hacker.x_url).username}
-                url={formatXUrl(hacker.x_url).url}
-                isDark={isDark}
-                themeStyles={themeStyles}
-              />
-            )}
-          </View>
-        </View>
+        {hacker.portfolio_url && (
+          <SocialLink
+            icon={<Globe size={iconSize} color={iconColor} />}
+            label={hacker.portfolio_url}
+            url={normalizeUrl(hacker.portfolio_url)}
+            isDark={isDark}
+            themeStyles={themeStyles}
+          />
+        )}
       </View>
     </View>
   );

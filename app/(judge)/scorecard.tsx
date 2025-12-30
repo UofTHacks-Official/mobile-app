@@ -6,7 +6,11 @@ import { useJudgeSchedules } from "@/queries/judging";
 import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import {
+  haptics,
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+} from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -113,15 +117,14 @@ const Scorecard = () => {
     if (scores.pitching === 0) missingFields.push("Pitching");
 
     if (missingFields.length > 0) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      haptics.notificationAsync(NotificationFeedbackType.Warning);
       Alert.alert(
         "Missing Required Scores",
         `Please provide scores for the following required fields:\n\n${missingFields.join(", ")}\n\nThese fields must have a minimum score of 1.`,
         [
           {
             text: "OK",
-            onPress: () =>
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+            onPress: () => haptics.impactAsync(ImpactFeedbackStyle.Light),
           },
         ]
       );
@@ -135,13 +138,13 @@ const Scorecard = () => {
       [
         {
           text: "Cancel",
-          onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+          onPress: () => haptics.impactAsync(ImpactFeedbackStyle.Light),
           style: "cancel",
         },
         {
           text: "Submit",
           onPress: async () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            haptics.impactAsync(ImpactFeedbackStyle.Heavy);
 
             try {
               // Backend validation: design, technicality, and pitching require minimum of 1
@@ -245,7 +248,7 @@ const Scorecard = () => {
   };
 
   const handleGoBack = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 
@@ -323,7 +326,7 @@ const Scorecard = () => {
             {project.categories.length > 3 && (
               <Pressable
                 onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  haptics.impactAsync(ImpactFeedbackStyle.Light);
                   setShowAllTags(!showAllTags);
                 }}
               >

@@ -80,18 +80,24 @@ export default function AdminLayout() {
             return false;
           }
 
-          // Hide QR scanner if all scanner features are disabled
+          // Hide QR scanner if all scanner features are disabled OR if user is a judge
           if (
             route.name === "qr" &&
-            !FEATURE_FLAGS.ENABLE_QR_SCANNER &&
-            !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
-            !FEATURE_FLAGS.ENABLE_HACKERBUCKS
+            ((!FEATURE_FLAGS.ENABLE_QR_SCANNER &&
+              !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
+              !FEATURE_FLAGS.ENABLE_HACKERBUCKS) ||
+              isJudge)
           ) {
             return false;
           }
 
           // Hide photobooth if disabled
           if (route.name === "photobooth" && !FEATURE_FLAGS.ENABLE_PHOTOBOOTH) {
+            return false;
+          }
+
+          // Hide profiles for hackers and volunteers (only show for judges)
+          if (route.name === "profiles" && (isHacker || isVolunteer)) {
             return false;
           }
 
@@ -133,6 +139,12 @@ export default function AdminLayout() {
           title: "Judging",
           // Hide tab if judging is disabled
           href: FEATURE_FLAGS.ENABLE_JUDGING ? undefined : null,
+        }}
+      />
+      <Tabs.Screen
+        name="profiles"
+        options={{
+          title: "Hackers",
         }}
       />
       <Tabs.Screen

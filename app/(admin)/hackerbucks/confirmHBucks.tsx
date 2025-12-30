@@ -8,7 +8,7 @@ import { devError } from "@/utils/logger";
 import { cn, getStatusStyles, getThemeStyles } from "@/utils/theme";
 import { shortenString } from "@/utils/tokens/format/shorten";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { useRouter } from "expo-router";
 import {
   ArrowLeftRight,
@@ -72,7 +72,7 @@ export default function ConfirmHBucks() {
       return;
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     setIsLoading(true);
 
     try {
@@ -126,7 +126,7 @@ export default function ConfirmHBucks() {
               name="chevron-left"
               size={36}
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 router.back();
               }}
               color={themeStyles.iconColor}
