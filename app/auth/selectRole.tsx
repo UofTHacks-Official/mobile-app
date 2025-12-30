@@ -14,10 +14,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const DeerIcon = require("../../assets/images/icons/deer.png");
-const GoatIcon = require("../../assets/images/icons/goat.png");
-const HedIcon = require("../../assets/images/icons/eg.png");
-const OwlIcon = require("../../assets/images/icons/owl.png");
+import DeerIcon from "../../assets/images/icons/deer.png";
+import GoatIcon from "../../assets/images/icons/goat.png";
+import HedIcon from "../../assets/images/icons/eg.png";
+import OwlIcon from "../../assets/images/icons/owl.png";
 
 type RoleType = "Admin" | "Volunteer" | "Judge" | "Hacker";
 
@@ -84,21 +84,6 @@ const Header: React.FC<{ isDark: boolean }> = ({ isDark }) => {
       >
         Choose how you&apos;ll be using the app
       </Text>
-    </View>
-  );
-};
-
-// Footer Component
-const Footer: React.FC<{ isDark: boolean }> = ({ isDark }) => {
-  const themeStyles = getThemeStyles(isDark);
-
-  return (
-    <View className="mt-12 justify-center items-center">
-      <Pressable className="py-4">
-        <Text className={cn("underline text-lg", themeStyles.secondaryText2)}>
-          What role am I?
-        </Text>
-      </Pressable>
     </View>
   );
 };
@@ -193,8 +178,6 @@ const SelectRole = () => {
             ))}
           </View>
         </View>
-
-        <Footer isDark={isDark} />
       </View>
     </SafeAreaView>
   );

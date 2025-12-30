@@ -31,7 +31,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
-import GoatIcon from "../../assets/images/icons/Goat.svg";
+import GoatIcon from "../../assets/images/icons/goat.png";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
@@ -388,7 +388,7 @@ const RecentAnnouncement = ({
         })}
       >
         <View className="flex-row items-start gap-3">
-          <GoatIcon width={48} height={48} />
+          <Image source={GoatIcon} style={{ width: 48, height: 48 }} />
           <View className="flex-1">
             <View className="flex-row items-start justify-between mb-2">
               <Text
