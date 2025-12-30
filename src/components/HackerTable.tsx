@@ -201,8 +201,40 @@ export const HackerTable = ({
   const [educationEndYear, setEducationEndYear] = useState<string>("");
   const [showStartYearDropdown, setShowStartYearDropdown] = useState(false);
   const [showEndYearDropdown, setShowEndYearDropdown] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const debouncedSearch = useDebounce(searchInput, 600);
+
+  // Handle scroll to show/hide search bar
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      // Scrolling down - hide search bar
+      setShowSearchBar(false);
+      setShowFilters(false);
+    } else if (currentScrollY < lastScrollY) {
+      // Scrolling up - show search bar
+      setShowSearchBar(true);
+    }
+
+    setLastScrollY(currentScrollY);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    selectedCompanies.length > 0 || educationStartYear || educationEndYear;
+
+  // Clear all filters
+  const handleClearAllFilters = () => {
+    setSearchInput("");
+    setSelectedCompanies([]);
+    setEducationStartYear("");
+    setEducationEndYear("");
+    setCompanyInput("");
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -342,19 +374,20 @@ export const HackerTable = ({
       </View>
 
       {/* Search Bar and Filters - Only show for "All Hackers" tab */}
-      {activeTab === "all" && (
+      {showSearchBar && activeTab === "all" && (
         <View className="px-6 py-4">
-          <View className="relative max-w-md mb-4">
+          {/* Main Search Bar */}
+          <View className="relative mb-3">
             <View className="absolute left-3 top-3 z-10">
               <Search size={18} color={isDark ? "#888" : "#666"} />
             </View>
             <TextInput
-              placeholder="Search hackers by name, skills, bio..."
+              placeholder="Search by name..."
               placeholderTextColor={isDark ? "#888" : "#666"}
               value={searchInput}
               onChangeText={setSearchInput}
               className={cn(
-                "w-full pl-10 pr-10 py-2 rounded-md border",
+                "w-full pl-10 pr-10 py-3 rounded-lg border",
                 isDark
                   ? "bg-neutral-800 border-neutral-700 text-white"
                   : "bg-white border-neutral-300 text-black"
@@ -370,233 +403,291 @@ export const HackerTable = ({
             )}
           </View>
 
-          {/* Education Year Filters */}
-          <View className="flex-row gap-4 max-w-md">
-            <View className="flex-1">
-              <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
-                Education Start Year
-              </Text>
-              <View className="relative">
-                <Pressable
-                  onPress={() =>
-                    setShowStartYearDropdown(!showStartYearDropdown)
-                  }
-                  className={cn(
-                    "px-3 py-2 rounded-md border flex-row justify-between items-center",
-                    isDark
-                      ? "bg-neutral-800 border-neutral-700"
-                      : "bg-white border-neutral-300"
-                  )}
-                >
-                  <Text
-                    className={cn(
-                      educationStartYear
-                        ? themeStyles.primaryText
-                        : "text-neutral-500"
-                    )}
-                  >
-                    {educationStartYear || "Select year"}
-                  </Text>
-                  <Text className={themeStyles.secondaryText}>▼</Text>
-                </Pressable>
-                {showStartYearDropdown && (
-                  <View
-                    className={cn(
-                      "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
-                      isDark
-                        ? "bg-neutral-800 border-neutral-700"
-                        : "bg-white border-neutral-300"
-                    )}
-                    style={{ zIndex: 9999 }}
-                  >
-                    <ScrollView style={{ maxHeight: 192 }}>
-                      <Pressable
-                        onPress={() => {
-                          setEducationStartYear("");
-                          setShowStartYearDropdown(false);
-                        }}
-                        className="px-3 py-2 border-b border-neutral-700"
-                      >
-                        <Text className="text-neutral-500">Clear</Text>
-                      </Pressable>
-                      {yearOptions.map((year) => (
-                        <Pressable
-                          key={year}
-                          onPress={() => {
-                            setEducationStartYear(year.toString());
-                            setShowStartYearDropdown(false);
-                          }}
-                          className={cn(
-                            "px-3 py-2 border-b",
-                            isDark ? "border-neutral-700" : "border-neutral-200"
-                          )}
-                        >
-                          <Text className={themeStyles.primaryText}>
-                            {year}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </ScrollView>
-                  </View>
+          {/* Filter Controls Row */}
+          <View className="flex-row items-center justify-between mb-3">
+            <Pressable
+              onPress={() => setShowFilters(!showFilters)}
+              className={cn(
+                "flex-row items-center px-4 py-2 rounded-lg",
+                isDark ? "bg-neutral-800" : "bg-neutral-200"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-sm font-medium mr-2",
+                  themeStyles.primaryText
                 )}
-              </View>
-            </View>
-            <View className="flex-1">
-              <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
-                Education End Year
+              >
+                {showFilters ? "Hide Filters" : "Show Filters"}
+                {hasActiveFilters &&
+                  ` (${
+                    selectedCompanies.length +
+                    (educationStartYear ? 1 : 0) +
+                    (educationEndYear ? 1 : 0)
+                  })`}
               </Text>
-              <View className="relative">
-                <Pressable
-                  onPress={() => setShowEndYearDropdown(!showEndYearDropdown)}
-                  className={cn(
-                    "px-3 py-2 rounded-md border flex-row justify-between items-center",
-                    isDark
-                      ? "bg-neutral-800 border-neutral-700"
-                      : "bg-white border-neutral-300"
-                  )}
-                >
-                  <Text
-                    className={cn(
-                      educationEndYear
-                        ? themeStyles.primaryText
-                        : "text-neutral-500"
-                    )}
-                  >
-                    {educationEndYear || "Select year"}
-                  </Text>
-                  <Text className={themeStyles.secondaryText}>▼</Text>
-                </Pressable>
-                {showEndYearDropdown && (
-                  <View
-                    className={cn(
-                      "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
-                      isDark
-                        ? "bg-neutral-800 border-neutral-700"
-                        : "bg-white border-neutral-300"
-                    )}
-                    style={{ zIndex: 9999 }}
-                  >
-                    <ScrollView style={{ maxHeight: 192 }}>
-                      <Pressable
-                        onPress={() => {
-                          setEducationEndYear("");
-                          setShowEndYearDropdown(false);
-                        }}
-                        className="px-3 py-2 border-b border-neutral-700"
-                      >
-                        <Text className="text-neutral-500">Clear</Text>
-                      </Pressable>
-                      {yearOptions.map((year) => (
-                        <Pressable
-                          key={year}
-                          onPress={() => {
-                            setEducationEndYear(year.toString());
-                            setShowEndYearDropdown(false);
-                          }}
-                          className={cn(
-                            "px-3 py-2 border-b",
-                            isDark ? "border-neutral-700" : "border-neutral-200"
-                          )}
-                        >
-                          <Text className={themeStyles.primaryText}>
-                            {year}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
+              <Text className={cn("text-xs", themeStyles.secondaryText)}>
+                {showFilters ? "▲" : "▼"}
+              </Text>
+            </Pressable>
 
-          {/* Company Filter */}
-          <View className="mt-4" style={{ zIndex: -1000 }}>
-            <Text className={cn("text-sm mb-2", themeStyles.secondaryText)}>
-              Filter by Company
-            </Text>
-            <View className="flex-row gap-2">
-              <TextInput
-                value={companyInput}
-                onChangeText={setCompanyInput}
-                placeholder="Enter company name..."
-                placeholderTextColor={isDark ? "#888" : "#666"}
-                onSubmitEditing={() => {
-                  if (
-                    companyInput.trim() &&
-                    !selectedCompanies.includes(companyInput.trim())
-                  ) {
-                    setSelectedCompanies([
-                      ...selectedCompanies,
-                      companyInput.trim(),
-                    ]);
-                    setCompanyInput("");
-                  }
-                }}
-                className={cn(
-                  "flex-1 px-3 py-2 rounded-md border",
-                  isDark
-                    ? "bg-neutral-800 border-neutral-700 text-white"
-                    : "bg-white border-neutral-300 text-black"
-                )}
-              />
+            {hasActiveFilters && (
               <Pressable
-                onPress={() => {
-                  if (
-                    companyInput.trim() &&
-                    !selectedCompanies.includes(companyInput.trim())
-                  ) {
-                    setSelectedCompanies([
-                      ...selectedCompanies,
-                      companyInput.trim(),
-                    ]);
-                    setCompanyInput("");
-                  }
-                }}
+                onPress={handleClearAllFilters}
                 className={cn(
-                  "px-4 py-2 rounded-md",
-                  isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                  "px-4 py-2 rounded-lg",
+                  isDark ? "bg-red-500/20" : "bg-red-100"
                 )}
               >
                 <Text
                   className={cn(
-                    "font-semibold",
-                    isDark ? "text-black" : "text-white"
+                    "text-sm font-medium",
+                    isDark ? "text-red-400" : "text-red-600"
                   )}
                 >
-                  Add
+                  Clear All
                 </Text>
               </Pressable>
-            </View>
-            {selectedCompanies.length > 0 && (
-              <View className="flex-row flex-wrap gap-2 mt-2">
-                {selectedCompanies.map((company) => (
-                  <View
-                    key={company}
-                    className={cn(
-                      "flex-row items-center px-3 py-1 rounded-full",
-                      isDark ? "bg-neutral-700" : "bg-neutral-200"
-                    )}
-                  >
-                    <Text
-                      className={cn("text-sm mr-2", themeStyles.primaryText)}
-                    >
-                      {company}
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        setSelectedCompanies(
-                          selectedCompanies.filter((c) => c !== company)
-                        );
-                      }}
-                    >
-                      <X size={16} color={isDark ? "#888" : "#666"} />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
             )}
           </View>
+
+          {/* Collapsible Filters Section */}
+          {showFilters && (
+            <View
+              className={cn(
+                "p-4 rounded-lg mb-2",
+                isDark ? "bg-neutral-800/50" : "bg-neutral-100"
+              )}
+            >
+              {/* Graduation Year Filter */}
+              <Text
+                className={cn(
+                  "text-sm font-semibold mb-3",
+                  themeStyles.primaryText
+                )}
+              >
+                GRADUATION YEAR
+              </Text>
+              <View className="flex-row gap-3 mb-4">
+                <View className="flex-1">
+                  <Text
+                    className={cn("text-xs mb-2", themeStyles.secondaryText)}
+                  >
+                    From
+                  </Text>
+                  <View className="relative">
+                    <Pressable
+                      onPress={() =>
+                        setShowStartYearDropdown(!showStartYearDropdown)
+                      }
+                      className={cn(
+                        "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                        isDark
+                          ? "bg-neutral-800 border-neutral-700"
+                          : "bg-white border-neutral-300"
+                      )}
+                    >
+                      <Text
+                        className={cn(
+                          educationStartYear
+                            ? themeStyles.primaryText
+                            : "text-neutral-500"
+                        )}
+                      >
+                        {educationStartYear || "Select year"}
+                      </Text>
+                      <Text className={themeStyles.secondaryText}>▼</Text>
+                    </Pressable>
+                    {showStartYearDropdown && (
+                      <View
+                        className={cn(
+                          "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
+                          isDark
+                            ? "bg-neutral-800 border-neutral-700"
+                            : "bg-white border-neutral-300"
+                        )}
+                        style={{ zIndex: 9999 }}
+                      >
+                        <ScrollView style={{ maxHeight: 192 }}>
+                          <Pressable
+                            onPress={() => {
+                              setEducationStartYear("");
+                              setShowStartYearDropdown(false);
+                            }}
+                            className="px-3 py-2 border-b border-neutral-700"
+                          >
+                            <Text className="text-neutral-500">Clear</Text>
+                          </Pressable>
+                          {yearOptions.map((year) => (
+                            <Pressable
+                              key={year}
+                              onPress={() => {
+                                setEducationStartYear(year.toString());
+                                setShowStartYearDropdown(false);
+                              }}
+                              className={cn(
+                                "px-3 py-2 border-b",
+                                isDark
+                                  ? "border-neutral-700"
+                                  : "border-neutral-200"
+                              )}
+                            >
+                              <Text className={themeStyles.primaryText}>
+                                {year}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View className="flex-1">
+                  <Text
+                    className={cn("text-xs mb-2", themeStyles.secondaryText)}
+                  >
+                    To
+                  </Text>
+                  <View className="relative">
+                    <Pressable
+                      onPress={() =>
+                        setShowEndYearDropdown(!showEndYearDropdown)
+                      }
+                      className={cn(
+                        "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                        isDark
+                          ? "bg-neutral-800 border-neutral-700"
+                          : "bg-white border-neutral-300"
+                      )}
+                    >
+                      <Text
+                        className={cn(
+                          educationEndYear
+                            ? themeStyles.primaryText
+                            : "text-neutral-500"
+                        )}
+                      >
+                        {educationEndYear || "Select year"}
+                      </Text>
+                      <Text className={themeStyles.secondaryText}>▼</Text>
+                    </Pressable>
+                    {showEndYearDropdown && (
+                      <View
+                        className={cn(
+                          "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
+                          isDark
+                            ? "bg-neutral-800 border-neutral-700"
+                            : "bg-white border-neutral-300"
+                        )}
+                        style={{ zIndex: 9999 }}
+                      >
+                        <ScrollView style={{ maxHeight: 192 }}>
+                          <Pressable
+                            onPress={() => {
+                              setEducationEndYear("");
+                              setShowEndYearDropdown(false);
+                            }}
+                            className="px-3 py-2 border-b border-neutral-700"
+                          >
+                            <Text className="text-neutral-500">Clear</Text>
+                          </Pressable>
+                          {yearOptions.map((year) => (
+                            <Pressable
+                              key={year}
+                              onPress={() => {
+                                setEducationEndYear(year.toString());
+                                setShowEndYearDropdown(false);
+                              }}
+                              className={cn(
+                                "px-3 py-2 border-b",
+                                isDark
+                                  ? "border-neutral-700"
+                                  : "border-neutral-200"
+                              )}
+                            >
+                              <Text className={themeStyles.primaryText}>
+                                {year}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </View>
+
+              {/* Company Filter */}
+              <View>
+                <Text
+                  className={cn(
+                    "text-sm font-semibold mb-3",
+                    themeStyles.primaryText
+                  )}
+                >
+                  PREVIOUS COMPANIES
+                </Text>
+                <TextInput
+                  value={companyInput}
+                  onChangeText={setCompanyInput}
+                  placeholder="Type company name and press Enter..."
+                  placeholderTextColor={isDark ? "#888" : "#666"}
+                  returnKeyType="done"
+                  onSubmitEditing={() => {
+                    if (
+                      companyInput.trim() &&
+                      !selectedCompanies.includes(companyInput.trim())
+                    ) {
+                      setSelectedCompanies([
+                        ...selectedCompanies,
+                        companyInput.trim(),
+                      ]);
+                      setCompanyInput("");
+                    }
+                  }}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-lg border",
+                    isDark
+                      ? "bg-neutral-700 border-neutral-600 text-white"
+                      : "bg-white border-neutral-300 text-black"
+                  )}
+                />
+                {selectedCompanies.length > 0 && (
+                  <View className="flex-row flex-wrap gap-2 mt-3">
+                    {selectedCompanies.map((company) => (
+                      <View
+                        key={company}
+                        className={cn(
+                          "flex-row items-center px-3 py-1.5 rounded-full",
+                          isDark
+                            ? "bg-[#75EDEF]/20 border border-[#75EDEF]/30"
+                            : "bg-[#132B38]/10 border border-[#132B38]/20"
+                        )}
+                      >
+                        <Text
+                          className={cn(
+                            "text-sm mr-2 font-medium",
+                            isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                          )}
+                        >
+                          {company}
+                        </Text>
+                        <Pressable
+                          onPress={() => {
+                            setSelectedCompanies(
+                              selectedCompanies.filter((c) => c !== company)
+                            );
+                          }}
+                        >
+                          <X size={14} color={isDark ? "#75EDEF" : "#132B38"} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
         </View>
       )}
 
@@ -605,6 +696,8 @@ export const HackerTable = ({
         className="flex-1"
         style={{ width: "100%", zIndex: -1000 }}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {isLoading ? (
           <View className="px-4 py-8 items-center">
