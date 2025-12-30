@@ -5,19 +5,25 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+  ImageSourcePropType,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SvgProps } from "react-native-svg";
-import DeerIcon from "../../assets/images/icons/deer.svg";
-import GoatIcon from "../../assets/images/icons/Goat.svg";
-import HedIcon from "../../assets/images/icons/Hed.svg";
-import OwlIcon from "../../assets/images/icons/owl.svg";
+
+const DeerIcon = require("../../assets/images/icons/deer.png");
+const GoatIcon = require("../../assets/images/icons/goat.png");
+const HedIcon = require("../../assets/images/icons/eg.png");
+const OwlIcon = require("../../assets/images/icons/owl.png");
 
 type RoleType = "Admin" | "Volunteer" | "Judge" | "Hacker";
 
 interface Role {
   name: RoleType;
-  icon: React.FC<SvgProps>;
+  icon: ImageSourcePropType;
   color: string;
   available: boolean;
   description: string;
@@ -31,8 +37,6 @@ interface RoleCardProps {
 
 // Role Card Component
 const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
-  const IconComponent = role.icon;
-
   return (
     <Pressable
       className={cn(
@@ -47,7 +51,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, onPress }) => {
       })}
       onPress={() => role.available && onPress(role.name)}
     >
-      <IconComponent width={80} height={80} />
+      <Image source={role.icon} style={{ width: 80, height: 80 }} />
 
       <Text className="text-black text-center font-pp text-base font-bold mt-2">
         {role.name}
