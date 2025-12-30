@@ -151,6 +151,15 @@ export default function RootLayout() {
               />
 
               <Stack.Screen
+                name="(judge)"
+                options={{
+                  headerShown: false,
+                  animation: "fade",
+                  gestureEnabled: false,
+                }}
+              />
+
+              <Stack.Screen
                 name="schedule-detail/[scheduleID]"
                 options={{
                   headerShown: false,

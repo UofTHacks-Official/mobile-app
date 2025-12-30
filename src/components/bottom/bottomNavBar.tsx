@@ -17,8 +17,10 @@ import {
   Home,
   ScanLine,
   ScanQrCode,
+  Search,
   User,
   UserCheck,
+  Users,
   X,
 } from "lucide-react-native";
 import { useEffect, useRef, useMemo, useState } from "react";
@@ -365,6 +367,7 @@ const CustomTabBar = ({
                 "index",
                 "schedule",
                 "judging",
+                "profiles",
                 "qr",
                 "photobooth",
                 "profile",
@@ -448,6 +451,18 @@ const CustomTabBar = ({
                   case "photobooth":
                     return (
                       <Camera
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "profiles":
+                    return (
+                      <Search
                         size={24}
                         strokeWidth={1.5}
                         color={

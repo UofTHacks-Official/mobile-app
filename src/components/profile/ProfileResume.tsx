@@ -77,11 +77,9 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
           )}
         >
           <View className="flex-row items-center mb-3">
-            <FileText
-              size={20}
-              color={isDark ? "#75EDEF" : "#132B38"}
-              className="mr-2"
-            />
+            <View className="mr-3">
+              <FileText size={20} color={isDark ? "#75EDEF" : "#132B38"} />
+            </View>
             <Text
               className={cn(
                 "text-base font-medium flex-1",
@@ -103,11 +101,12 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
           >
             {isPending ? (
               <>
-                <ActivityIndicator
-                  size="small"
-                  color={isDark ? "#000" : "#fff"}
-                  className="mr-2"
-                />
+                <View className="mr-2">
+                  <ActivityIndicator
+                    size="small"
+                    color={isDark ? "#000" : "#fff"}
+                  />
+                </View>
                 <Text
                   className={cn(
                     "font-semibold text-base",
@@ -119,11 +118,9 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
               </>
             ) : (
               <>
-                <ExternalLink
-                  size={18}
-                  color={isDark ? "#000" : "#fff"}
-                  className="mr-2"
-                />
+                <View className="mr-2">
+                  <ExternalLink size={18} color={isDark ? "#000" : "#fff"} />
+                </View>
                 <Text
                   className={cn(
                     "font-semibold text-base",

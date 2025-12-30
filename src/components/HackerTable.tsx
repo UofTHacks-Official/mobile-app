@@ -23,7 +23,7 @@ interface HackerRowProps {
   onProfilePress?: (hackerId: number) => void;
 }
 
-const HackerRow = ({
+const HackerCard = ({
   hacker,
   isDark,
   themeStyles,
@@ -38,128 +38,141 @@ const HackerRow = ({
   };
 
   return (
-    <View
+    <Pressable
+      onPress={handleViewProfile}
       className={cn(
-        "flex-row border-b",
-        isDark ? "border-neutral-800" : "border-neutral-200"
+        "mx-4 mb-4 p-4 rounded-xl",
+        isDark ? "bg-neutral-800" : "bg-white",
+        "border",
+        isDark ? "border-neutral-700" : "border-neutral-200"
       )}
-      style={{ minHeight: 60, width: "100%" }}
     >
-      {/* Hacker Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 2 }}>
-        <View className="flex-row items-center">
-          {/* Avatar */}
-          <View className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 items-center justify-center mr-3">
-            <Text className="text-white font-bold text-base">
-              {hacker.hacker_fname[0]}
-              {hacker.hacker_lname[0]}
-            </Text>
-          </View>
-          {/* Name and Link */}
-          <View className="flex-1">
-            <Text className={cn("font-medium", themeStyles.primaryText)}>
-              {hacker.hacker_fname} {hacker.hacker_lname}
-            </Text>
-            <Pressable onPress={handleViewProfile}>
-              <Text className="text-blue-400 text-sm hover:underline">
-                View Profile
-              </Text>
-            </Pressable>
-          </View>
+      {/* Header with Avatar and Name */}
+      <View className="flex-row items-center mb-3">
+        <View className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 items-center justify-center mr-3">
+          <Text className="text-white font-bold text-lg">
+            {hacker.hacker_fname[0]}
+            {hacker.hacker_lname[0]}
+          </Text>
         </View>
-      </View>
-
-      {/* School Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 1.5 }}>
-        <Text className={cn(themeStyles.secondaryText)}>
-          {hacker.school || <Text className="text-neutral-500 text-sm">-</Text>}
-        </Text>
-      </View>
-
-      {/* Major Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 1.5 }}>
-        <Text className={cn(themeStyles.secondaryText)}>
-          {hacker.major || <Text className="text-neutral-500 text-sm">-</Text>}
-        </Text>
-      </View>
-
-      {/* Skills Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 2 }}>
-        <View className="flex-row flex-wrap">
-          {hacker.skills && hacker.skills.length > 0 ? (
-            <>
-              {hacker.skills.slice(0, 2).map((skill) => (
-                <View
-                  key={skill}
-                  className="bg-cyan-400/20 px-2 py-1 rounded mr-1 mb-1"
-                >
-                  <Text className="text-cyan-400 text-xs font-medium">
-                    {skill}
-                  </Text>
-                </View>
-              ))}
-              {hacker.skills.length > 2 && (
-                <View className="bg-cyan-400/20 px-2 py-1 rounded mb-1">
-                  <Text className="text-cyan-400 text-xs font-medium">
-                    +{hacker.skills.length - 2}
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <Text className="text-neutral-500 text-sm">-</Text>
-          )}
-        </View>
-      </View>
-
-      {/* Interests Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 2 }}>
-        <View className="flex-row flex-wrap">
-          {hacker.interest && hacker.interest.length > 0 ? (
-            <>
-              {hacker.interest.slice(0, 2).map((interest) => (
-                <View
-                  key={interest}
-                  className="bg-teal-400/20 px-2 py-1 rounded mr-1 mb-1"
-                >
-                  <Text className="text-teal-400 text-xs font-medium">
-                    {interest}
-                  </Text>
-                </View>
-              ))}
-              {hacker.interest.length > 2 && (
-                <View className="bg-teal-400/20 px-2 py-1 rounded mb-1">
-                  <Text className="text-teal-400 text-xs font-medium">
-                    +{hacker.interest.length - 2}
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <Text className="text-neutral-500 text-sm">-</Text>
-          )}
-        </View>
-      </View>
-
-      {/* Checked In Column */}
-      <View className="px-4 py-4 justify-center" style={{ flex: 1 }}>
-        <View className="items-center">
+        <View className="flex-1">
+          <Text
+            className={cn("text-lg font-onest-bold", themeStyles.primaryText)}
+          >
+            {hacker.hacker_fname} {hacker.hacker_lname}
+          </Text>
           {hacker.checked_in ? (
-            <View className="bg-green-500/20 px-3 py-1.5 rounded-full">
-              <Text className="text-green-500 text-xs font-semibold">
-                Checked In
-              </Text>
+            <View className="flex-row items-center mt-1">
+              <View className="bg-green-500/20 px-2 py-0.5 rounded-full">
+                <Text className="text-green-500 text-xs font-semibold">
+                  Checked In
+                </Text>
+              </View>
             </View>
           ) : (
-            <View className="bg-neutral-500/20 px-3 py-1.5 rounded-full">
-              <Text className="text-neutral-500 text-xs font-semibold">
-                Not Checked In
-              </Text>
+            <View className="flex-row items-center mt-1">
+              <View className="bg-neutral-500/20 px-2 py-0.5 rounded-full">
+                <Text className="text-neutral-500 text-xs font-semibold">
+                  Not Checked In
+                </Text>
+              </View>
             </View>
           )}
         </View>
       </View>
-    </View>
+
+      {/* School and Major */}
+      {(hacker.school || hacker.major) && (
+        <View className="mb-3">
+          {hacker.school && (
+            <Text className={cn("text-sm mb-1", themeStyles.secondaryText)}>
+              {hacker.school}
+            </Text>
+          )}
+          {hacker.major && (
+            <Text className={cn("text-sm", themeStyles.secondaryText)}>
+              {hacker.major}
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Skills */}
+      {hacker.skills && hacker.skills.length > 0 && (
+        <View className="mb-3">
+          <Text
+            className={cn(
+              "text-xs font-semibold mb-2",
+              themeStyles.secondaryText
+            )}
+          >
+            SKILLS
+          </Text>
+          <View className="flex-row flex-wrap">
+            {hacker.skills.slice(0, 5).map((skill) => (
+              <View
+                key={skill}
+                className="bg-cyan-400/20 px-2 py-1 rounded mr-1 mb-1"
+              >
+                <Text className="text-cyan-400 text-xs font-medium">
+                  {skill}
+                </Text>
+              </View>
+            ))}
+            {hacker.skills.length > 5 && (
+              <View className="bg-cyan-400/20 px-2 py-1 rounded mb-1">
+                <Text className="text-cyan-400 text-xs font-medium">
+                  +{hacker.skills.length - 5}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Interests */}
+      {hacker.interest && hacker.interest.length > 0 && (
+        <View className="mb-2">
+          <Text
+            className={cn(
+              "text-xs font-semibold mb-2",
+              themeStyles.secondaryText
+            )}
+          >
+            INTERESTS
+          </Text>
+          <View className="flex-row flex-wrap">
+            {hacker.interest.slice(0, 5).map((interest) => (
+              <View
+                key={interest}
+                className="bg-teal-400/20 px-2 py-1 rounded mr-1 mb-1"
+              >
+                <Text className="text-teal-400 text-xs font-medium">
+                  {interest}
+                </Text>
+              </View>
+            ))}
+            {hacker.interest.length > 5 && (
+              <View className="bg-teal-400/20 px-2 py-1 rounded mb-1">
+                <Text className="text-teal-400 text-xs font-medium">
+                  +{hacker.interest.length - 5}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* View Profile Link */}
+      <View
+        className="mt-2 pt-3 border-t"
+        style={{ borderTopColor: isDark ? "#404040" : "#e5e5e5" }}
+      >
+        <Text className="text-blue-400 text-sm font-medium text-center">
+          Tap to View Full Profile →
+        </Text>
+      </View>
+    </Pressable>
   );
 };
 
@@ -587,227 +600,167 @@ export const HackerTable = ({
         </View>
       )}
 
-      {/* Table */}
-      <View
+      {/* Cards */}
+      <ScrollView
         className="flex-1"
-        style={{ width: "100%", overflow: "hidden", zIndex: -1000 }}
+        style={{ width: "100%", zIndex: -1000 }}
+        showsVerticalScrollIndicator={false}
       >
-        <View
-          className={cn(
-            "border-t flex-1",
-            isDark
-              ? "bg-neutral-900 border-neutral-800"
-              : "bg-white border-neutral-200"
-          )}
-          style={{ width: "100%", height: "100%" }}
-        >
-          {/* Table Header */}
-          <View
-            className={cn(
-              "flex-row border-b",
-              isDark ? "border-neutral-800" : "border-neutral-200"
-            )}
-            style={{ width: "100%" }}
-          >
-            <View className="px-4 py-3" style={{ flex: 2 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                Hacker
-              </Text>
-            </View>
-            <View className="px-4 py-3" style={{ flex: 1.5 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                School
-              </Text>
-            </View>
-            <View className="px-4 py-3" style={{ flex: 1.5 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                Major
-              </Text>
-            </View>
-            <View className="px-4 py-3" style={{ flex: 2 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                Skills
-              </Text>
-            </View>
-            <View className="px-4 py-3" style={{ flex: 2 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                Projects
-              </Text>
-            </View>
-            <View className="px-4 py-3" style={{ flex: 1 }}>
-              <Text
-                className={cn("font-medium text-sm", themeStyles.secondaryText)}
-              >
-                Status
-              </Text>
-            </View>
+        {isLoading ? (
+          <View className="px-4 py-8 items-center">
+            <ActivityIndicator
+              size="large"
+              color={isDark ? "#75EDEF" : "#132B38"}
+            />
+            <Text className={cn("mt-4 text-lg", themeStyles.primaryText)}>
+              Loading hackers...
+            </Text>
           </View>
+        ) : isError ? (
+          <View className="px-4 py-8 items-center">
+            <Text className="text-red-400 text-lg mb-4">
+              Failed to load hackers
+            </Text>
+            <Text className={cn("mb-6", themeStyles.secondaryText)}>
+              {(error as Error)?.message || "An error occurred"}
+            </Text>
+            <Pressable
+              onPress={() => refetch()}
+              className={cn(
+                "px-6 py-3 rounded-xl",
+                isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+              )}
+            >
+              <Text
+                className={cn(
+                  "font-semibold",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                Try Again
+              </Text>
+            </Pressable>
+          </View>
+        ) : paginatedHackers.length > 0 ? (
+          <View className="pt-4">
+            {paginatedHackers.map((hacker) => (
+              <HackerCard
+                key={hacker.hacker_id}
+                hacker={hacker}
+                isDark={isDark}
+                themeStyles={themeStyles}
+                onProfilePress={onProfilePress}
+              />
+            ))}
+          </View>
+        ) : (
+          <View className="px-4 py-8 items-center">
+            <Text className={cn("text-center", themeStyles.secondaryText)}>
+              {searchInput
+                ? "No hackers found matching your search"
+                : "No hackers available"}
+            </Text>
+            {searchInput && (
+              <Pressable onPress={handleClearSearch} className="mt-3">
+                <Text className="text-blue-400 underline text-sm">
+                  Clear search
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
 
-          {/* Table Body */}
-          <ScrollView style={{ flex: 1 }}>
-            {isLoading ? (
-              <View className="px-4 py-8 items-center">
-                <ActivityIndicator
-                  size="large"
-                  color={isDark ? "#75EDEF" : "#132B38"}
-                />
-                <Text className={cn("mt-4 text-lg", themeStyles.primaryText)}>
-                  Loading hackers...
-                </Text>
-              </View>
-            ) : isError ? (
-              <View className="px-4 py-8 items-center">
-                <Text className="text-red-400 text-lg mb-4">
-                  Failed to load hackers
-                </Text>
-                <Text className={cn("mb-6", themeStyles.secondaryText)}>
-                  {(error as Error)?.message || "An error occurred"}
-                </Text>
-                <Pressable
-                  onPress={() => refetch()}
-                  className={cn(
-                    "px-6 py-3 rounded-xl",
-                    isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-                  )}
-                >
-                  <Text
+        {/* Pagination - moved inside ScrollView */}
+        {enablePagination && totalItems > 0 && (
+          <View className="px-6 py-4 mb-4">
+            <Text
+              className={cn(
+                "text-sm text-center mb-3",
+                themeStyles.secondaryText
+              )}
+            >
+              Showing {startIndex + 1} to {endIndex} of {totalItems} results
+            </Text>
+            <View className="flex-row items-center justify-center gap-2 flex-wrap">
+              {/* Previous Button */}
+              <Pressable
+                onPress={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={cn(
+                  "px-3 py-1.5 rounded-md border",
+                  isDark
+                    ? "bg-neutral-800 border-neutral-700"
+                    : "bg-white border-neutral-300",
+                  currentPage === 1 && "opacity-50"
+                )}
+              >
+                <Text className={themeStyles.primaryText}>&lt;</Text>
+              </Pressable>
+
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <Pressable
+                    key={pageNum}
+                    onPress={() => setCurrentPage(pageNum)}
                     className={cn(
-                      "font-semibold",
-                      isDark ? "text-black" : "text-white"
+                      "px-3 py-1.5 rounded-md",
+                      currentPage === pageNum
+                        ? "bg-blue-400"
+                        : isDark
+                          ? "bg-neutral-800 border border-neutral-700"
+                          : "bg-white border border-neutral-300"
                     )}
                   >
-                    Try Again
-                  </Text>
-                </Pressable>
-              </View>
-            ) : paginatedHackers.length > 0 ? (
-              paginatedHackers.map((hacker) => (
-                <HackerRow
-                  key={hacker.hacker_id}
-                  hacker={hacker}
-                  isDark={isDark}
-                  themeStyles={themeStyles}
-                  onProfilePress={onProfilePress}
-                />
-              ))
-            ) : (
-              <View className="px-4 py-8 items-center">
-                <Text className={cn("text-center", themeStyles.secondaryText)}>
-                  {searchInput
-                    ? "No hackers found matching your search"
-                    : "No hackers available"}
-                </Text>
-                {searchInput && (
-                  <Pressable onPress={handleClearSearch} className="mt-3">
-                    <Text className="text-blue-400 underline text-sm">
-                      Clear search
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            )}
-          </ScrollView>
-
-          {/* Pagination */}
-          {enablePagination && totalItems > 0 && (
-            <View
-              className="flex-row items-center justify-between px-6 py-4 border-t"
-              style={{
-                borderTopColor: isDark ? "#262626" : "#e5e5e5",
-              }}
-            >
-              <Text className={cn("text-sm", themeStyles.secondaryText)}>
-                Showing {startIndex + 1} to {endIndex} of {totalItems} results
-              </Text>
-              <View className="flex-row items-center gap-2">
-                {/* Previous Button */}
-                <Pressable
-                  onPress={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={cn(
-                    "px-3 py-1.5 rounded-md border",
-                    isDark
-                      ? "bg-neutral-800 border-neutral-700"
-                      : "bg-white border-neutral-300",
-                    currentPage === 1 && "opacity-50"
-                  )}
-                >
-                  <Text className={themeStyles.primaryText}>&lt;</Text>
-                </Pressable>
-
-                {/* Page Numbers */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <Pressable
-                      key={pageNum}
-                      onPress={() => setCurrentPage(pageNum)}
+                    <Text
                       className={cn(
-                        "px-3 py-1.5 rounded-md",
                         currentPage === pageNum
-                          ? "bg-blue-400"
-                          : isDark
-                            ? "bg-neutral-800 border border-neutral-700"
-                            : "bg-white border border-neutral-300"
+                          ? "text-black font-medium"
+                          : themeStyles.primaryText
                       )}
                     >
-                      <Text
-                        className={cn(
-                          currentPage === pageNum
-                            ? "text-black font-medium"
-                            : themeStyles.primaryText
-                        )}
-                      >
-                        {pageNum}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                      {pageNum}
+                    </Text>
+                  </Pressable>
+                );
+              })}
 
-                {/* Ellipsis */}
-                {totalPages > 5 && currentPage < totalPages - 2 && (
-                  <Text className="px-2">...</Text>
+              {/* Ellipsis */}
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <Text className={cn("px-2", themeStyles.secondaryText)}>
+                  ...
+                </Text>
+              )}
+
+              {/* Next Button */}
+              <Pressable
+                onPress={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={cn(
+                  "px-3 py-1.5 rounded-md border",
+                  isDark
+                    ? "bg-neutral-800 border-neutral-700"
+                    : "bg-white border-neutral-300",
+                  currentPage === totalPages && "opacity-50"
                 )}
-
-                {/* Next Button */}
-                <Pressable
-                  onPress={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={cn(
-                    "px-3 py-1.5 rounded-md border",
-                    isDark
-                      ? "bg-neutral-800 border-neutral-700"
-                      : "bg-white border-neutral-300",
-                    currentPage === totalPages && "opacity-50"
-                  )}
-                >
-                  <Text className={themeStyles.primaryText}>&gt;</Text>
-                </Pressable>
-              </View>
+              >
+                <Text className={themeStyles.primaryText}>&gt;</Text>
+              </Pressable>
             </View>
-          )}
-        </View>
-      </View>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 };
