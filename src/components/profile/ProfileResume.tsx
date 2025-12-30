@@ -139,52 +139,61 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
       <Modal
         visible={showModal}
         animationType="slide"
+        transparent={true}
         onRequestClose={() => setShowModal(false)}
       >
-        <View className={cn("flex-1", themeStyles.background)}>
-          {/* Header */}
+        <View className="flex-1 justify-end bg-black/50">
           <View
             className={cn(
-              "flex-row items-center justify-between p-4 border-b",
-              isDark ? "border-neutral-800" : "border-neutral-200"
+              "rounded-t-2xl overflow-hidden",
+              themeStyles.background
             )}
+            style={{ height: "75%" }}
           >
-            <Text
-              className={cn("text-lg font-semibold", themeStyles.primaryText)}
+            {/* Header */}
+            <View
+              className={cn(
+                "flex-row items-center justify-between p-4 border-b",
+                isDark ? "border-neutral-800" : "border-neutral-200"
+              )}
             >
-              {hacker.hacker_fname} {hacker.hacker_lname}&apos;s Resume
-            </Text>
-            <Pressable onPress={() => setShowModal(false)}>
-              <X size={24} color={isDark ? "#75EDEF" : "#132B38"} />
-            </Pressable>
-          </View>
+              <Text
+                className={cn("text-lg font-semibold", themeStyles.primaryText)}
+              >
+                {hacker.hacker_fname} {hacker.hacker_lname}&apos;s Resume
+              </Text>
+              <Pressable onPress={() => setShowModal(false)}>
+                <X size={24} color={isDark ? "#75EDEF" : "#132B38"} />
+              </Pressable>
+            </View>
 
-          {/* PDF Viewer */}
-          {Platform.OS === "web" ? (
-            <iframe
-              src={pdfUri}
-              style={{
-                flex: 1,
-                width: "100%",
-                height: "100%",
-                border: "none",
-              }}
-              title="Resume PDF"
-            />
-          ) : Pdf ? (
-            <Pdf
-              source={{ uri: pdfUri }}
-              style={{ flex: 1 }}
-              trustAllCerts={false}
-              onLoadComplete={(numberOfPages: number) => {
-                console.log(`PDF loaded with ${numberOfPages} pages`);
-              }}
-              onError={(error: Error) => {
-                console.error("PDF Error:", error);
-                Alert.alert("Error", "Failed to load PDF");
-              }}
-            />
-          ) : null}
+            {/* PDF Viewer */}
+            {Platform.OS === "web" ? (
+              <iframe
+                src={pdfUri}
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                }}
+                title="Resume PDF"
+              />
+            ) : Pdf ? (
+              <Pdf
+                source={{ uri: pdfUri }}
+                style={{ flex: 1 }}
+                trustAllCerts={false}
+                onLoadComplete={(numberOfPages: number) => {
+                  console.log(`PDF loaded with ${numberOfPages} pages`);
+                }}
+                onError={(error: Error) => {
+                  console.error("PDF Error:", error);
+                  Alert.alert("Error", "Failed to load PDF");
+                }}
+              />
+            ) : null}
+          </View>
         </View>
       </Modal>
     </>
