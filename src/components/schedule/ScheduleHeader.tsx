@@ -76,7 +76,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               <View
                 className={cn(
                   "w-8 h-8 rounded items-center justify-center",
-                  isCurrentDate ? "bg-uoft_accent_red" : ""
+                  isCurrentDate ? "bg-red-500" : ""
                 )}
               >
                 <Text
