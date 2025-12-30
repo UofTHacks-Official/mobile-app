@@ -3,27 +3,15 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
-  Alert,
-  Modal,
   Platform,
+  Linking,
 } from "react-native";
-import { FileText, ExternalLink, X } from "lucide-react-native";
+import { FileText, ExternalLink } from "lucide-react-native";
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import type { HackerProfile } from "@/requests/hacker";
 import { useFetchHackerResume } from "@/queries/hacker";
 import { useState, useEffect } from "react";
-
-// Dynamic import for PDF viewer to avoid bundling on web
-let Pdf: any = null;
-if (Platform.OS !== "web") {
-  try {
-    // // This will only be evaluated on native platforms
-    // Pdf = require("react-native-pdf").default;
-  } catch (error) {
-    console.warn("Failed to load react-native-pdf:", error);
-  }
-}
 
 interface ProfileResumeProps {
   hacker: HackerProfile;
@@ -32,170 +20,127 @@ interface ProfileResumeProps {
 export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const [showModal, setShowModal] = useState(false);
-  const [pdfUri, setPdfUri] = useState<string>("");
+  const [pdfUri, setPdfUri] = useState<string | null>(null);
 
   const applicationId = hacker.application_id ?? hacker.hacker_id;
-  const { mutateAsync: fetchResume, isPending } = useFetchHackerResume();
+  const { data: resumeBlob, isLoading: isPending } =
+    useFetchHackerResume(applicationId);
 
-  const handleViewResume = async () => {
-    try {
-      // Fetch the resume blob with authentication
-      const blob = await fetchResume(applicationId);
+  useEffect(() => {
+    if (resumeBlob) {
+      try {
+        const url = URL.createObjectURL(resumeBlob);
+        setPdfUri(url);
 
-      // Convert blob to base64 data URI
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
+        return () => {
+          URL.revokeObjectURL(url);
+        };
+      } catch (error) {
+        console.warn("Failed to create resume URL:", error);
+        setPdfUri(null);
+      }
+    }
+  }, [resumeBlob]);
 
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        setPdfUri(base64data);
-        setShowModal(true);
-      };
-
-      reader.onerror = () => {
-        Alert.alert("Error", "Failed to process resume file");
-      };
-    } catch (error) {
-      console.error("Error viewing resume:", error);
-      Alert.alert("Error", "Failed to load resume. Please try again.");
+  const handleViewResume = () => {
+    if (pdfUri) {
+      if (Platform.OS === "web") {
+        window.open(pdfUri, "_blank");
+      } else {
+        Linking.openURL(pdfUri);
+      }
     }
   };
 
   return (
-    <>
-      <View className="mt-6">
-        <Text
-          className={cn("text-lg font-semibold mb-3", themeStyles.primaryText)}
-        >
-          Resume
-        </Text>
-        <View
+    <View className="mt-6">
+      <Text
+        className={cn("text-lg font-semibold mb-3", themeStyles.primaryText)}
+      >
+        Resume
+      </Text>
+      <View
+        className={cn(
+          "p-4 rounded-xl",
+          isDark ? "bg-neutral-800" : "bg-neutral-100"
+        )}
+      >
+        <View className="flex-row items-center mb-3">
+          <FileText
+            size={20}
+            color={isDark ? "#75EDEF" : "#132B38"}
+            className="mr-2"
+          />
+          <Text
+            className={cn(
+              "text-base font-medium flex-1",
+              themeStyles.primaryText
+            )}
+          >
+            {hacker.hacker_fname} {hacker.hacker_lname}&apos;s Resume
+          </Text>
+        </View>
+
+        <Pressable
+          onPress={handleViewResume}
+          disabled={isPending || !pdfUri}
           className={cn(
-            "p-4 rounded-xl",
-            isDark ? "bg-neutral-800" : "bg-neutral-100"
+            "flex-row items-center justify-center py-3 px-4 rounded-lg",
+            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]",
+            (isPending || !pdfUri) && "opacity-50"
           )}
         >
-          <View className="flex-row items-center mb-3">
-            <View className="mr-3">
-              <FileText size={20} color={isDark ? "#75EDEF" : "#132B38"} />
-            </View>
-            <Text
-              className={cn(
-                "text-base font-medium flex-1",
-                themeStyles.primaryText
-              )}
-            >
-              {hacker.hacker_fname} {hacker.hacker_lname}&apos;s Resume
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={handleViewResume}
-            disabled={isPending}
-            className={cn(
-              "flex-row items-center justify-center py-3 px-4 rounded-lg",
-              isDark ? "bg-[#75EDEF]" : "bg-[#132B38]",
-              isPending && "opacity-50"
-            )}
-          >
-            {isPending ? (
-              <>
-                <View className="mr-2">
-                  <ActivityIndicator
-                    size="small"
-                    color={isDark ? "#000" : "#fff"}
-                  />
-                </View>
-                <Text
-                  className={cn(
-                    "font-semibold text-base",
-                    isDark ? "text-black" : "text-white"
-                  )}
-                >
-                  Loading...
-                </Text>
-              </>
-            ) : (
-              <>
-                <View className="mr-2">
-                  <ExternalLink size={18} color={isDark ? "#000" : "#fff"} />
-                </View>
-                <Text
-                  className={cn(
-                    "font-semibold text-base",
-                    isDark ? "text-black" : "text-white"
-                  )}
-                >
-                  View Resume
-                </Text>
-              </>
-            )}
-          </Pressable>
-        </View>
-      </View>
-
-      {/* PDF Viewer Modal */}
-      <Modal
-        visible={showModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View className="flex-1 justify-end bg-black/50">
-          <View
-            className={cn(
-              "rounded-t-2xl overflow-hidden",
-              themeStyles.background
-            )}
-            style={{ height: "75%" }}
-          >
-            {/* Header */}
-            <View
-              className={cn(
-                "flex-row items-center justify-between p-4 border-b",
-                isDark ? "border-neutral-800" : "border-neutral-200"
-              )}
-            >
+          {isPending ? (
+            <>
+              <ActivityIndicator
+                size="small"
+                color={isDark ? "#000" : "#fff"}
+                className="mr-2"
+              />
               <Text
-                className={cn("text-lg font-semibold", themeStyles.primaryText)}
+                className={cn(
+                  "font-semibold text-base",
+                  isDark ? "text-black" : "text-white"
+                )}
               >
-                {hacker.hacker_fname} {hacker.hacker_lname}&apos;s Resume
+                Loading...
               </Text>
-              <Pressable onPress={() => setShowModal(false)}>
-                <X size={24} color={isDark ? "#75EDEF" : "#132B38"} />
-              </Pressable>
-            </View>
-
-            {/* PDF Viewer */}
-            {Platform.OS === "web" ? (
-              <iframe
-                src={pdfUri}
-                style={{
-                  flex: 1,
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                }}
-                title="Resume PDF"
+            </>
+          ) : !pdfUri ? (
+            <>
+              <FileText
+                size={18}
+                color={isDark ? "#000" : "#fff"}
+                className="mr-2"
               />
-            ) : Pdf ? (
-              <Pdf
-                source={{ uri: pdfUri }}
-                style={{ flex: 1 }}
-                trustAllCerts={false}
-                onLoadComplete={(numberOfPages: number) => {
-                  console.log(`PDF loaded with ${numberOfPages} pages`);
-                }}
-                onError={(error: Error) => {
-                  console.error("PDF Error:", error);
-                  Alert.alert("Error", "Failed to load PDF");
-                }}
+              <Text
+                className={cn(
+                  "font-semibold text-base",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                No Resume Available
+              </Text>
+            </>
+          ) : (
+            <>
+              <ExternalLink
+                size={18}
+                color={isDark ? "#000" : "#fff"}
+                className="mr-2"
               />
-            ) : null}
-          </View>
-        </View>
-      </Modal>
-    </>
+              <Text
+                className={cn(
+                  "font-semibold text-base",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                View Resume
+              </Text>
+            </>
+          )}
+        </Pressable>
+      </View>
+    </View>
   );
 };

@@ -618,7 +618,7 @@ export const HackerTable = ({
               </View>
 
               {/* Company Filter */}
-              <View>
+              <View style={{ zIndex: -1000 }}>
                 <Text
                   className={cn(
                     "text-sm font-semibold mb-3",
