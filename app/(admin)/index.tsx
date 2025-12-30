@@ -5,7 +5,7 @@ import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { useScrollNavBar } from "@/utils/navigation";
 import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/utils/haptics";
 import { router } from "expo-router";
 import {
   BellPlus,
@@ -28,7 +28,7 @@ import {
   getJudgeId,
   getSponsorPin,
 } from "@/utils/tokens/secureStorage";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { PlatformSafeArea } from "@/components/common/PlatformSafeArea";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
 import GoatIcon from "../../assets/images/icons/goat.png";
@@ -751,7 +751,7 @@ const AdminDashboard = () => {
   });
 
   return (
-    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+    <PlatformSafeArea className={cn("flex-1", themeStyles.background)}>
       <ScrollView
         className="flex-1 px-6"
         onScroll={handleScroll}
@@ -807,7 +807,7 @@ const AdminDashboard = () => {
           style={{ width: 180, height: 180 }}
         />
       </View> */}
-    </SafeAreaView>
+    </PlatformSafeArea>
   );
 };
 

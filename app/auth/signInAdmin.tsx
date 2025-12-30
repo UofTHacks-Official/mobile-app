@@ -6,11 +6,11 @@ import { useUserTypeStore } from "@/reducers/userType";
 
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
+import { ImpactFeedbackStyle, impactAsync } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View, Platform } from "react-native";
 import Animated, {
   Easing,
   interpolateColor,
@@ -20,6 +20,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+
+// Use native View on web for better compatibility
+const AnimatedView = Platform.OS === "web" ? View : Animated.View;
 
 const SignInAdmin = () => {
   const { isDark } = useTheme();
@@ -222,8 +225,19 @@ const SignInAdmin = () => {
           onPress={handleSignIn}
           disabled={!isFormValid || loginMutation.isPending}
         >
-          <Animated.View
-            style={[animatedButtonStyle, animatedBackgroundStyle]}
+          <AnimatedView
+            style={
+              Platform.OS === "web"
+                ? {
+                    backgroundColor: isFormValid
+                      ? isDark
+                        ? "#75EDEF"
+                        : "#132B38"
+                      : "#9CA3AF",
+                    opacity: isFormValid ? 1 : 0.6,
+                  }
+                : [animatedButtonStyle, animatedBackgroundStyle]
+            }
             className={cn("py-4 mt-8 mx-8 rounded-md")}
           >
             <Text
@@ -234,7 +248,7 @@ const SignInAdmin = () => {
             >
               {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </Text>
-          </Animated.View>
+          </AnimatedView>
         </Pressable>
 
         <View className="w-full px-12 absolute bottom-0 mb-8">

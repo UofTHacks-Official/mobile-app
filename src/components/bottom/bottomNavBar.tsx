@@ -6,7 +6,7 @@ import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { getUserType } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/utils/haptics";
 import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
@@ -24,7 +24,7 @@ import {
 import { useEffect, useRef, useMemo, useState } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
+import { PlatformBlur } from "@/components/common/PlatformBlur";
 
 const CustomTabBar = ({
   state,
@@ -243,7 +243,7 @@ const CustomTabBar = ({
             elevation: 10,
           }}
         >
-          <BlurView
+          <PlatformBlur
             intensity={80}
             tint={isDark ? "dark" : "light"}
             className="absolute inset-0"
