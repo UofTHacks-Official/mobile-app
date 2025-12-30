@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  UseQueryResult,
-  UseMutationResult,
-} from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import {
   fetchHackers,
   fetchHackerById,
@@ -45,12 +40,14 @@ export const useFetchHackerById = (
 /**
  * Hook to fetch a hacker's resume (requires admin/judge authentication)
  */
-export const useFetchHackerResume = (): UseMutationResult<
-  Blob,
-  Error,
-  number
-> => {
-  return useMutation<Blob, Error, number>({
-    mutationFn: (applicationId: number) => fetchHackerResume(applicationId),
+export const useFetchHackerResume = (
+  applicationId: number
+): UseQueryResult<Blob, Error> => {
+  return useQuery<Blob, Error>({
+    queryKey: ["hackerResume", applicationId],
+    queryFn: () => fetchHackerResume(applicationId),
+    enabled: !!applicationId,
+    retry: false,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
