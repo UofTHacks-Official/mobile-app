@@ -33,9 +33,12 @@ export const PlatformBlur = ({
           style,
           {
             backgroundColor,
-            // @ts-ignore - web-specific CSS properties
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+            ...(Platform.OS === "web"
+              ? ({
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                } as any)
+              : {}),
           },
         ]}
       >

@@ -207,13 +207,17 @@ const CustomTabBar = ({
   });
 
   if (isWeb) {
+    const webFixedStyle = { position: "fixed" } as any;
     return (
       <>
         {isExpanded && (
           <View
             style={{
-              position: "fixed",
-              inset: 0,
+              ...webFixedStyle,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               zIndex: 9998,
             }}
             onTouchEnd={toggleExpansion}
@@ -221,14 +225,14 @@ const CustomTabBar = ({
         )}
         {isExpanded && (
           <View
+            pointerEvents="box-none"
             style={{
-              position: "fixed",
+              ...webFixedStyle,
               left: 0,
               right: 0,
               bottom: 88,
               alignItems: "center",
               zIndex: 9999,
-              pointerEvents: "box-none",
             }}
           >
             <View
@@ -327,14 +331,14 @@ const CustomTabBar = ({
           </View>
         )}
         <View
+          pointerEvents="box-none"
           style={{
-            position: "fixed",
+            ...webFixedStyle,
             left: 0,
             right: 0,
             bottom: 16,
             alignItems: "center",
             zIndex: 9999,
-            pointerEvents: "box-none",
           }}
         >
           <View
