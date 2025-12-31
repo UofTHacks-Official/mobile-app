@@ -1,6 +1,6 @@
 import { useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { useFocusEffect, useNavigation } from "expo-router";
 import { Camera, Settings } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -96,7 +96,7 @@ export default function App() {
     // Set the flag to true immediately to prevent further calls.
     isProcessingScan.current = true;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     setHasScanned(true);
     setIsExpanded(false);
@@ -251,7 +251,7 @@ export default function App() {
           {/* <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 navigation.goBack();
               }}
               className="bg-white/20 p-3 rounded-full"
@@ -291,7 +291,7 @@ export default function App() {
             <Button
               title="Close"
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 setPopupMessage(null);
                 setHasScanned(false);
                 setScannedBounds(null);

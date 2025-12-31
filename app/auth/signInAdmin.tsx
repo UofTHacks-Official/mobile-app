@@ -6,7 +6,7 @@ import { useUserTypeStore } from "@/reducers/userType";
 
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { ImpactFeedbackStyle, impactAsync } from "@/utils/haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -99,7 +99,7 @@ const SignInAdmin = () => {
       return;
     }
 
-    impactAsync(ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     try {
       const result = await loginMutation.mutateAsync({ email, password });
@@ -131,7 +131,7 @@ const SignInAdmin = () => {
   };
 
   const handleGoBack = () => {
-    impactAsync(ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 

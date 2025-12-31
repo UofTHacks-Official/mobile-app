@@ -4,7 +4,7 @@ import { JudgingScheduleItem, SessionStatus } from "@/types/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { ChevronLeft, Clock, MapPin } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -126,12 +126,12 @@ const JudgeScheduleOverview = () => {
   };
 
   const handleGoBack = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 
   const handleSessionPress = (scheduleId: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(admin)/judgingTimer",
       params: { scheduleId: scheduleId.toString() },

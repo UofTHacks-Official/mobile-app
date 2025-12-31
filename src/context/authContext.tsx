@@ -13,7 +13,7 @@ import {
   storeAuthTokens,
   storeUserType,
 } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import {
   ReactNode,
   createContext,
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = useCallback(async () => {
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      haptics.impactAsync(ImpactFeedbackStyle.Medium);
       await removeAuthTokens();
       setUserToken(null);
       setIsFirstSignIn(false);

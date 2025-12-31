@@ -6,7 +6,7 @@ import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { getUserType } from "@/utils/tokens/secureStorage";
-import * as Haptics from "@/utils/haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { usePathname } from "expo-router";
 import {
   BanknoteArrowUp,
@@ -17,8 +17,10 @@ import {
   Home,
   ScanLine,
   ScanQrCode,
+  Search,
   User,
   UserCheck,
+  Users,
   X,
 } from "lucide-react-native";
 import { useEffect, useRef, useMemo, useState } from "react";
@@ -128,7 +130,7 @@ const CustomTabBar = ({
 
   const toggleExpansion = () => {
     if (!isWeb) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      haptics.impactAsync(ImpactFeedbackStyle.Medium);
     }
 
     setIsExpanded(!isExpanded);
@@ -138,7 +140,7 @@ const CustomTabBar = ({
     option: "checkin" | "add" | "deduct" | "qr" | "hackerbucks"
   ) => {
     if (!isWeb) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.impactAsync(ImpactFeedbackStyle.Light);
     }
 
     // Collapse the expansion immediately
@@ -664,6 +666,22 @@ const CustomTabBar = ({
             }}
           >
             {state.routes.map((route, index) => {
+              // Define valid routes that should show in nav bar
+              const validRoutes = [
+                "index",
+                "schedule",
+                "judging",
+                "profiles",
+                "qr",
+                "photobooth",
+                "profile",
+              ];
+
+              // Skip routes that don't have icons defined
+              if (!validRoutes.includes(route.name)) {
+                return null;
+              }
+
               const { options } = descriptors[route.key];
               let label =
                 typeof options.tabBarLabel === "string"
@@ -746,6 +764,18 @@ const CustomTabBar = ({
                         }
                       />
                     );
+                  case "profiles":
+                    return (
+                      <Search
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
                   case "profile":
                     return (
                       <User
@@ -765,7 +795,7 @@ const CustomTabBar = ({
               };
 
               const onPress = () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                haptics.impactAsync(ImpactFeedbackStyle.Light);
 
                 const event = navigation.emit({
                   type: "tabPress",
@@ -800,7 +830,7 @@ const CustomTabBar = ({
               };
 
               const onLongPress = () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 navigation.emit({
                   type: "tabLongPress",
                   target: route.key,

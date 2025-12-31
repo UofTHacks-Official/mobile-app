@@ -12,7 +12,7 @@ import { Schedule as ScheduleInterface } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
 import { Dimensions, ScrollView, View, Platform } from "react-native";
@@ -124,7 +124,7 @@ const Schedule = () => {
   };
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/schedule-detail/[scheduleID]" as any,
       params: {
@@ -248,7 +248,7 @@ const Schedule = () => {
             isJudge
               ? undefined
               : () => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  haptics.impactAsync(ImpactFeedbackStyle.Medium);
                   setIsFilterModalVisible(true);
                 }
           }
