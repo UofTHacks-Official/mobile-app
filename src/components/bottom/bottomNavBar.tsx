@@ -127,7 +127,9 @@ const CustomTabBar = ({
   ]);
 
   const toggleExpansion = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!isWeb) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
 
     setIsExpanded(!isExpanded);
   };
@@ -135,7 +137,9 @@ const CustomTabBar = ({
   const handleScanOption = (
     option: "checkin" | "add" | "deduct" | "qr" | "hackerbucks"
   ) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (!isWeb) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
 
     // Collapse the expansion immediately
     closeNavBar();
@@ -204,166 +208,295 @@ const CustomTabBar = ({
 
   if (isWeb) {
     return (
-      <View
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 16,
-          alignItems: "center",
-          zIndex: 9999,
-          pointerEvents: "box-none",
-        }}
-      >
+      <>
+        {isExpanded && (
+          <View
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9998,
+            }}
+            onTouchEnd={toggleExpansion}
+          />
+        )}
+        {isExpanded && (
+          <View
+            style={{
+              position: "fixed",
+              left: 0,
+              right: 0,
+              bottom: 88,
+              alignItems: "center",
+              zIndex: 9999,
+              pointerEvents: "box-none",
+            }}
+          >
+            <View
+              style={{
+                width: baseWidth,
+                maxWidth: 560,
+                minWidth: 280,
+                backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
+                borderRadius: 20,
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                boxShadow: "0px 8px 18px rgba(0, 0, 0, 0.25)",
+              }}
+            >
+              {FEATURE_FLAGS.ENABLE_HACKERBUCKS ? (
+                <>
+                  <TouchableOpacity
+                    onPress={() => handleScanOption("checkin")}
+                    className="flex-row items-center justify-between py-2"
+                  >
+                    <Text
+                      className={cn(
+                        "text-base font-onest-extralight",
+                        isDark ? "text-white" : "text-black"
+                      )}
+                    >
+                      Check In Hacker
+                    </Text>
+                    <UserCheck
+                      size={22}
+                      strokeWidth={1.5}
+                      color={isDark ? "#FFFFFF" : "#000000"}
+                    />
+                  </TouchableOpacity>
+                  {!isVolunteer && (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => handleScanOption("add")}
+                        className="flex-row items-center justify-between py-2"
+                      >
+                        <Text
+                          className={cn(
+                            "text-base font-onest-extralight",
+                            isDark ? "text-white" : "text-black"
+                          )}
+                        >
+                          Add HackerBux
+                        </Text>
+                        <BanknoteArrowUp
+                          size={22}
+                          strokeWidth={1.5}
+                          color={isDark ? "#FFFFFF" : "#000000"}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleScanOption("deduct")}
+                        className="flex-row items-center justify-between py-2"
+                      >
+                        <Text
+                          className={cn(
+                            "text-base font-onest-extralight",
+                            isDark ? "text-white" : "text-black"
+                          )}
+                        >
+                          Deduct HackerBux
+                        </Text>
+                        <BanknoteArrowDown
+                          size={22}
+                          strokeWidth={1.5}
+                          color={isDark ? "#FFFFFF" : "#000000"}
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </>
+              ) : (
+                <Text
+                  className={cn(
+                    "text-center text-sm py-2",
+                    isDark ? "text-white" : "text-black"
+                  )}
+                >
+                  Scanner features coming soon!
+                </Text>
+              )}
+              <View className="flex-row justify-end">
+                <TouchableOpacity onPress={toggleExpansion} className="p-2">
+                  <X
+                    size={22}
+                    strokeWidth={1.5}
+                    color={themeStyles.navBarIconActive}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
         <View
           style={{
-            width: baseWidth,
-            maxWidth: 560,
-            minWidth: 280,
-            backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
-            borderRadius: 24,
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-            flexDirection: "row",
-            justifyContent: "space-around",
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 16,
             alignItems: "center",
-            boxShadow: "0px 8px 18px rgba(0, 0, 0, 0.25)",
+            zIndex: 9999,
+            pointerEvents: "box-none",
           }}
         >
-          {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
-            let label =
-              typeof options.tabBarLabel === "string"
-                ? options.tabBarLabel
-                : options.title !== undefined
-                  ? options.title
-                  : route.name;
+          <View
+            style={{
+              width: baseWidth,
+              maxWidth: 560,
+              minWidth: 280,
+              backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
+              borderRadius: 24,
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              flexDirection: "row",
+              justifyContent: "space-around",
+              alignItems: "center",
+              boxShadow: "0px 8px 18px rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            {state.routes.map((route, index) => {
+              const { options } = descriptors[route.key];
+              let label =
+                typeof options.tabBarLabel === "string"
+                  ? options.tabBarLabel
+                  : options.title !== undefined
+                    ? options.title
+                    : route.name;
 
-            if (label === "Photo") {
-              label = photoboothViewMode === "gallery" ? "Gallery" : "Photo";
-            }
-
-            const isFocused = isOnHackerBucksRoute
-              ? route.name === "qr"
-              : isOnPhotoboothRoute
-                ? route.name === "photobooth"
-                : state.index === index;
-
-            const iconComponent = () => {
-              switch (route.name) {
-                case "index":
-                  return (
-                    <Home
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                case "schedule":
-                  return (
-                    <Calendar
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                case "judging":
-                  return (
-                    <Gavel
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                case "qr":
-                  return (
-                    <ScanQrCode
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                case "photobooth":
-                  return (
-                    <Camera
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                case "profile":
-                  return (
-                    <User
-                      size={24}
-                      strokeWidth={1.5}
-                      color={
-                        isFocused
-                          ? themeStyles.navBarIconActive
-                          : themeStyles.navBarIconInactive
-                      }
-                    />
-                  );
-                default:
-                  return null;
+              if (label === "Photo") {
+                label = photoboothViewMode === "gallery" ? "Gallery" : "Photo";
               }
-            };
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
+              const isFocused = isOnHackerBucksRoute
+                ? route.name === "qr"
+                : isOnPhotoboothRoute
+                  ? route.name === "photobooth"
+                  : state.index === index;
 
-              if (!event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
+              const iconComponent = () => {
+                switch (route.name) {
+                  case "index":
+                    return (
+                      <Home
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "schedule":
+                    return (
+                      <Calendar
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "judging":
+                    return (
+                      <Gavel
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "qr":
+                    return (
+                      <ScanQrCode
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "photobooth":
+                    return (
+                      <Camera
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  case "profile":
+                    return (
+                      <User
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              };
 
-            const onLongPress = () => {
-              navigation.emit({
-                type: "tabLongPress",
-                target: route.key,
-              });
-            };
+              const onPress = () => {
+                const event = navigation.emit({
+                  type: "tabPress",
+                  target: route.key,
+                  canPreventDefault: true,
+                });
 
-            return (
-              <TouchableOpacity
-                key={route.key}
-                accessibilityRole="button"
-                accessibilityState={isFocused ? { selected: true } : {}}
-                accessibilityLabel={options.tabBarAccessibilityLabel}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                className="flex-row items-center justify-center"
-                style={{ padding: 10 }}
-              >
-                {iconComponent()}
-              </TouchableOpacity>
-            );
-          })}
+                if (route.name === "qr") {
+                  if (!event.defaultPrevented) {
+                    toggleExpansion();
+                  }
+                  return;
+                }
+
+                if (!event.defaultPrevented) {
+                  if (isExpanded) {
+                    closeNavBar();
+                  }
+                  navigation.navigate(route.name);
+                }
+              };
+
+              const onLongPress = () => {
+                navigation.emit({
+                  type: "tabLongPress",
+                  target: route.key,
+                });
+              };
+
+              return (
+                <TouchableOpacity
+                  key={route.key}
+                  accessibilityRole="button"
+                  accessibilityState={isFocused ? { selected: true } : {}}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  onPress={onPress}
+                  onLongPress={onLongPress}
+                  className="flex-row items-center justify-center"
+                  style={{ padding: 10 }}
+                >
+                  {iconComponent()}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-      </View>
+      </>
     );
   }
 
