@@ -1,4 +1,5 @@
 import { axiosInstance } from "./axiosConfig";
+import type { PaginatedResponse } from "@/types/pagination";
 
 export const hackerEndpoints = {
   HACKER_LOGIN: "/api/v13/hackers/login",
@@ -6,10 +7,15 @@ export const hackerEndpoints = {
   HACKER_TOKEN_REFRESH: "/api/v13/hackers/refresh",
   HACKER_PROFILE: "/api/v13/hackers/profile",
   HACKER_AVATAR: "/api/v13/hackers/avatar/",
+  HACKERS_GET: "/api/v13/hackers/get",
+  HACKER_BY_ID: "/api/v13/hackers",
+  HACKER_RESUME: "/api/v13/hackers/application/resume",
+  ADMIN_RESUME: "/api/v13/admins/applications",
 };
 
 export interface Hacker {
   hacker_id: number;
+  application_id?: number;
   hacker_fname: string;
   hacker_lname: string;
   hacker_email: string;
@@ -27,6 +33,53 @@ export interface Hacker {
   dietary_condition?: string;
   team_id?: number;
   last_login?: string | null;
+}
+
+export interface HackerJob {
+  role: string;
+  company: string;
+  start_date: string;
+  end_date?: string;
+  description?: string;
+}
+
+export interface HackerEducation {
+  institution: string;
+  program?: string | null;
+  start_date: string;
+  end_date?: string;
+}
+
+export interface HackerProfile extends Hacker {
+  skills?: string[];
+  interest?: string[];
+  github_url?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  bio?: string;
+  created_at?: string;
+  updated_at?: string;
+  preferred_name?: string;
+  instagram_url?: string;
+  x_url?: string;
+  hacker_jobs?: HackerJob[];
+  hacker_educations?: HackerEducation[];
+  personalities?: any[];
+  pronouns?: string | null;
+  checked_in?: boolean;
+}
+
+export interface HackerQueryParams {
+  skills?: string[];
+  interests?: string[];
+  companies?: string[];
+  search_query?: string;
+  start_grad_date?: string;
+  end_grad_date?: string;
+  num_results?: number;
+  page?: number;
+  page_size?: number;
+  has_rsvpd?: boolean;
 }
 
 /**
@@ -107,6 +160,60 @@ export const getHackerAvatar = async (bearerToken: string) => {
   } catch (error) {
     return { error };
   }
+};
+
+/**
+ * Fetch all hackers with optional filtering and pagination
+ */
+export const fetchHackers = async (
+  queryParams: HackerQueryParams = {}
+): Promise<PaginatedResponse<HackerProfile>> => {
+  const response = await axiosInstance.post<PaginatedResponse<HackerProfile>>(
+    hackerEndpoints.HACKERS_GET,
+    queryParams
+  );
+  return response.data;
+};
+
+/**
+ * Fetch a single hacker profile by ID
+ */
+export const fetchHackerById = async (
+  hackerId: number
+): Promise<HackerProfile> => {
+  const response = await axiosInstance.get<HackerProfile>(
+    `${hackerEndpoints.HACKER_BY_ID}/${hackerId}/profile`
+  );
+  return response.data;
+};
+
+/**
+ * Get the resume URL for a hacker by application ID (admin access)
+ */
+export const getHackerResumeUrl = (applicationId: number): string => {
+  return `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`;
+};
+
+/**
+ * Get the authenticated hacker's resume URL
+ */
+export const getOwnResumeUrl = (): string => {
+  return hackerEndpoints.HACKER_RESUME;
+};
+
+/**
+ * Fetch a hacker's resume file (requires admin/judge authentication)
+ */
+export const fetchHackerResume = async (
+  applicationId: number
+): Promise<Blob> => {
+  const response = await axiosInstance.get(
+    `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`,
+    {
+      responseType: "blob",
+    }
+  );
+  return response.data;
 };
 
 export default hackerEndpoints;

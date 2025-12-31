@@ -11,7 +11,7 @@ import {
   storeSponsorPin,
   storeUserType,
 } from "@/utils/tokens/secureStorage";
-import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useContext, useState } from "react";
@@ -42,7 +42,7 @@ const SignInJudge = () => {
       return;
     }
 
-    impactAsync(ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     try {
       const result = await sponsorMutation.mutateAsync(parseInt(pin));
@@ -61,7 +61,7 @@ const SignInJudge = () => {
   };
 
   const handleJudgeSelect = async (judge: Judge) => {
-    impactAsync(ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     setSelectedJudge(judge);
 
     try {
@@ -94,9 +94,9 @@ const SignInJudge = () => {
         text2: `Signed in as ${judge.judge_name}`,
       });
 
-      // Navigate to judging screen (works for both admin and judge)
+      // Navigate to home screen
       router.dismissAll();
-      router.replace("/(admin)/judging");
+      router.replace("/(admin)");
     } catch (error) {
       devError("Error logging in as judge", error);
       Toast.show({
@@ -108,7 +108,7 @@ const SignInJudge = () => {
   };
 
   const handleGoBack = () => {
-    impactAsync(ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     if (step === "select") {
       setStep("pin");
       setJudges([]);

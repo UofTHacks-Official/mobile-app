@@ -2,7 +2,7 @@ import { useTheme } from "@/context/themeContext";
 import { useUserTypeStore } from "@/reducers/userType";
 import { devLog } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -94,7 +94,7 @@ const SelectRole = () => {
   const { setUserType } = useUserTypeStore();
 
   const handleRoleSelection = (role: RoleType) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
 
     switch (role) {
       case "Admin":

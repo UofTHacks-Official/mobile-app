@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import LottieView from "lottie-react-native";
 import { useEffect, useState } from "react";
@@ -12,7 +12,7 @@ const LandingPage = () => {
   const [showCover, setShowCover] = useState(true);
 
   const handleGetStarted = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/auth/selectRole");
   };
 

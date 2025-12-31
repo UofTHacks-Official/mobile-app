@@ -3,7 +3,7 @@ import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { formatAmount, isValidAmount } from "@/utils/hackerbucks/format";
 import { cn, getThemeStyles } from "@/utils/theme";
 import NumericKeypad from "@/components/hacker_bucks/keyboard";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { X } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -60,7 +60,7 @@ export default function SendHBucksScreen() {
     if (!isAmountValid) {
       return;
     }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     hackerBucksTransaction.updateTransactionAmount(
       amount,
       isDeducting ? "deduct" : "send"
@@ -69,7 +69,7 @@ export default function SendHBucksScreen() {
   };
 
   const handleClose = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
 

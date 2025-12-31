@@ -7,7 +7,11 @@ import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Haptics from "expo-haptics";
+import {
+  haptics,
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+} from "@/utils/haptics";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Camera, Settings } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -83,7 +87,7 @@ export default function QRScanner() {
     // Set the flag to true immediately to prevent further calls.
     isProcessingScan.current = true;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     setIsExpanded(false);
 
     // Handle check-in mode differently
@@ -118,7 +122,7 @@ export default function QRScanner() {
 
         const response = await checkInHacker({ user_id: userId });
 
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        haptics.notificationAsync(NotificationFeedbackType.Success);
         Alert.alert("Check-In Successful", response.message, [
           {
             text: "OK",
@@ -131,7 +135,7 @@ export default function QRScanner() {
         ]);
       } catch (error: any) {
         devError("Check-in error:", error);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        haptics.notificationAsync(NotificationFeedbackType.Error);
 
         const errorMessage =
           error.response?.data?.detail ||
@@ -305,7 +309,7 @@ export default function QRScanner() {
           {/* <View className="absolute bottom-40 right-10">
             <TouchableOpacity
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 isProcessingScan.current = false;
                 navigation.goBack();
               }}

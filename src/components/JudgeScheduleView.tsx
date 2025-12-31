@@ -4,7 +4,7 @@ import { JudgingScheduleItem } from "@/types/judging";
 import { Project } from "@/types/project";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin } from "@/utils/tokens/secureStorage";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -26,7 +26,7 @@ const ProjectCard = ({ schedule, project }: ProjectCardProps) => {
   };
 
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(judge)/projectOverview",
       params: {
@@ -141,7 +141,7 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
             isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
           )}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            haptics.impactAsync(ImpactFeedbackStyle.Heavy);
             // Navigate to first project
             if (sortedSchedules.length > 0) {
               router.push({

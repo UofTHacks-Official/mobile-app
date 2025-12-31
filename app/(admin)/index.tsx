@@ -5,7 +5,7 @@ import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { useScrollNavBar } from "@/utils/navigation";
 import { schedulePushNotification } from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import {
   BellPlus,
@@ -195,7 +195,7 @@ const DashboardGrid = ({ items }: { items: DashboardItem[] }) => {
           key={item.id}
           item={item}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            haptics.impactAsync(ImpactFeedbackStyle.Medium);
             if (item.onPress) {
               item.onPress();
             } else if (item.route) {
@@ -223,22 +223,22 @@ const AdminActionButtons = ({
   } = useHackerBucksStore();
 
   const handleCheckIn = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=checkin");
   };
 
   const handleAddBucks = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=add");
   };
 
   const handleDeductBucks = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push("/hackerbucks/scan?mode=deduct");
   };
 
   const handlePreviewResult = (status: "completed" | "failed") => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     clearTransaction();
     startTransaction(
       {
@@ -375,7 +375,7 @@ const RecentAnnouncement = ({
       </Text>
       <Pressable
         onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          haptics.impactAsync(ImpactFeedbackStyle.Medium);
           // Could navigate to announcements page or show full announcement
         }}
         className={cn(
@@ -595,7 +595,7 @@ const UpcomingEvents = ({
           <Pressable
             key={event.id}
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              haptics.impactAsync(ImpactFeedbackStyle.Medium);
               if (isJudge && "teamId" in event && "scheduleId" in event) {
                 // Navigate to specific project overview for judges
                 router.push({
@@ -691,7 +691,7 @@ const UpcomingEvents = ({
 
 const ModalTestWidget = () => {
   const handleModalTestPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/schedule-detail/[scheduleID]" as any,
       params: {
@@ -774,7 +774,7 @@ const AdminDashboard = () => {
           <View className="mt-4">
             <Pressable
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
                 router.push("/(admin)/test-qr");
               }}
               className={cn(

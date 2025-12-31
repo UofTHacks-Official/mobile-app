@@ -1,6 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { cn, getThemeStyles } from "@/utils/theme";
-import * as Haptics from "expo-haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { Info } from "lucide-react-native";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
@@ -37,12 +37,12 @@ export const ScoringSlider = ({
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleInfoPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     setModalVisible(true);
   };
 
   const handleCloseModal = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
     setModalVisible(false);
   };
 
@@ -50,7 +50,7 @@ export const ScoringSlider = ({
     const newValue = Array.isArray(values) ? values[0] : values;
     const roundedValue = Math.round(newValue);
     if (roundedValue !== value) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      haptics.impactAsync(ImpactFeedbackStyle.Light);
       onChange(roundedValue);
     }
   };
