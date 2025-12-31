@@ -1,8 +1,9 @@
+import { ReactNode } from "react";
 import { Platform, View, ViewProps } from "react-native";
 import { BlurView, BlurViewProps } from "expo-blur";
 
 type PlatformBlurProps = BlurViewProps & {
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 /**
