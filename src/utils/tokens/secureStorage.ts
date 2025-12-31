@@ -2,6 +2,9 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { devError, devLog } from "../logger";
 
+const sanitizeStorageKey = (key: string): string =>
+  String(key).replace(/[^a-zA-Z0-9_-]/g, "");
+
 // Platform-aware secure storage wrapper
 // - On native: Uses expo-secure-store (hardware-backed encryption)
 // - On web: Uses localStorage (with sanitization for XSS protection)
@@ -9,7 +12,8 @@ const PlatformStorage = {
   async getItemAsync(key: string): Promise<string | null> {
     if (Platform.OS === "web") {
       try {
-        return localStorage.getItem(key);
+        const sanitizedKey = sanitizeStorageKey(key);
+        return localStorage.getItem(sanitizedKey);
       } catch (error) {
         devError("localStorage getItem error:", error);
         return null;
@@ -22,7 +26,7 @@ const PlatformStorage = {
     if (Platform.OS === "web") {
       try {
         // Sanitize key and value to prevent XSS
-        const sanitizedKey = String(key).replace(/[^a-zA-Z0-9_-]/g, "");
+        const sanitizedKey = sanitizeStorageKey(key);
         const sanitizedValue = String(value);
         localStorage.setItem(sanitizedKey, sanitizedValue);
       } catch (error) {
@@ -36,7 +40,7 @@ const PlatformStorage = {
   async deleteItemAsync(key: string): Promise<void> {
     if (Platform.OS === "web") {
       try {
-        const sanitizedKey = String(key).replace(/[^a-zA-Z0-9_-]/g, "");
+        const sanitizedKey = sanitizeStorageKey(key);
         localStorage.removeItem(sanitizedKey);
       } catch (error) {
         devError("localStorage removeItem error:", error);
