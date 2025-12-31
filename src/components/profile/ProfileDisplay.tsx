@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, Platform } from "react-native";
 import type { HackerProfile } from "@/requests/hacker";
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfileEducation } from "./ProfileEducation";
@@ -26,7 +26,7 @@ export const ProfileDisplay = ({ hacker }: ProfileDisplayProps) => {
         <ProfileSkills hacker={hacker} />
         <ProfileInterests hacker={hacker} />
         <ProfileSocials hacker={hacker} />
-        <ProfileResume hacker={hacker} />
+        {Platform.OS === "web" && <ProfileResume hacker={hacker} />}
       </View>
     </ScrollView>
   );

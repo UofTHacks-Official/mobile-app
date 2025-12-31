@@ -44,11 +44,7 @@ export const ProfileResume = ({ hacker }: ProfileResumeProps) => {
 
   const handleViewResume = () => {
     if (pdfUri) {
-      if (Platform.OS === "web") {
-        window.open(pdfUri, "_blank");
-      } else {
-        Linking.openURL(pdfUri);
-      }
+      window.open(pdfUri, "_blank");
     }
   };
 
