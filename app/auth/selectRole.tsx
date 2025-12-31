@@ -73,7 +73,7 @@ const Header: React.FC<{ isDark: boolean }> = ({ isDark }) => {
     <View className="mt-24 mb-8">
       <Text
         className={cn(
-          "text-3xl text-center font-semibold font-['PPObjectSans-Heavy'] mb-4",
+          "text-3xl text-center font-pp-semibold mb-4",
           themeStyles.primaryText
         )}
       >

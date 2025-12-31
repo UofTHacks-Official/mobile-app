@@ -15,7 +15,7 @@ import { getUserType } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
+import { Dimensions, ScrollView, View, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Schedule = () => {
@@ -102,8 +102,26 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   // Use current date based on user type
   const currentDate = isJudge
-    ? new Date(2025, 0, 1) // January 1, 2025 for judges (matches DB timestamp)
-    : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
+    ? allDates[0]
+    : daysToShow === 1
+      ? allDates[currentDayIndex]
+      : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
+
+  const handleDayScroll = (event: any) => {
+    handleScroll(event);
+
+    if (Platform.OS !== "web") {
+      return;
+    }
+
+    const screenWidth = Dimensions.get("window").width;
+    const newIndex = Math.round(
+      event.nativeEvent.contentOffset.x / screenWidth
+    );
+    if (newIndex >= 0 && newIndex < allDates.length) {
+      saveDayIndexPreference(newIndex);
+    }
+  };
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
@@ -249,6 +267,9 @@ const Schedule = () => {
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
                   onMomentumScrollEnd={(event) => {
+                    if (Platform.OS === "web") {
+                      return;
+                    }
                     const screenWidth = Dimensions.get("window").width;
                     const newIndex = Math.round(
                       event.nativeEvent.contentOffset.x / screenWidth
@@ -261,7 +282,7 @@ const Schedule = () => {
                     x: currentDayIndex * Dimensions.get("window").width,
                     y: 0,
                   }}
-                  onScroll={handleScroll}
+                  onScroll={handleDayScroll}
                   scrollEventThrottle={16}
                 >
                   {allDates.map((date, dayIndex) => (

@@ -86,65 +86,163 @@ module.exports = {
         navIconColor: "#BFBDBE",
       },
       fontFamily: {
-        // Onest fonts
-        onest: ["Onest-Regular", "sans-serif"],
-        "onest-thin": ["Onest-Thin", "sans-serif"],
-        "onest-extralight": ["Onest-ExtraLight", "sans-serif"],
-        "onest-light": ["Onest-Light", "sans-serif"],
-        "onest-medium": ["Onest-Medium", "sans-serif"],
-        "onest-semibold": ["Onest-SemiBold", "sans-serif"],
-        "onest-bold": ["Onest-Bold", "sans-serif"],
-        "onest-extrabold": ["Onest-ExtraBold", "sans-serif"],
-        "onest-black": ["Onest-Black", "sans-serif"],
+        // Onest fonts with web fallbacks
+        onest: ["Onest-Regular", "system-ui", "-apple-system", "sans-serif"],
+        "onest-thin": [
+          "Onest-Thin",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-extralight": [
+          "Onest-ExtraLight",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-light": [
+          "Onest-Light",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-medium": [
+          "Onest-Medium",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-semibold": [
+          "Onest-SemiBold",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-bold": [
+          "Onest-Bold",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-extrabold": [
+          "Onest-ExtraBold",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
+        "onest-black": [
+          "Onest-Black",
+          "system-ui",
+          "-apple-system",
+          "sans-serif",
+        ],
 
-        // Open Sans fonts
-        opensans: ["OpenSans-Regular", "sans-serif"],
-        "opensans-light": ["OpenSans-Light", "sans-serif"],
-        "opensans-medium": ["OpenSans-Medium", "sans-serif"],
-        "opensans-semibold": ["OpenSans-SemiBold", "sans-serif"],
-        "opensans-bold": ["OpenSans-Bold", "sans-serif"],
-        "opensans-extrabold": ["OpenSans-ExtraBold", "sans-serif"],
+        // Open Sans fonts with web fallbacks
+        opensans: ["OpenSans-Regular", "Open Sans", "system-ui", "sans-serif"],
+        "opensans-light": [
+          "OpenSans-Light",
+          "Open Sans",
+          "system-ui",
+          "sans-serif",
+        ],
+        "opensans-medium": [
+          "OpenSans-Medium",
+          "Open Sans",
+          "system-ui",
+          "sans-serif",
+        ],
+        "opensans-semibold": [
+          "OpenSans-SemiBold",
+          "Open Sans",
+          "system-ui",
+          "sans-serif",
+        ],
+        "opensans-bold": [
+          "OpenSans-Bold",
+          "Open Sans",
+          "system-ui",
+          "sans-serif",
+        ],
+        "opensans-extrabold": [
+          "OpenSans-ExtraBold",
+          "Open Sans",
+          "system-ui",
+          "sans-serif",
+        ],
 
-        // Open Sans Condensed fonts
-        "opensans-condensed": ["OpenSans_Condensed-Regular", "sans-serif"],
-        "opensans-condensed-light": ["OpenSans_Condensed-Light", "sans-serif"],
+        // Open Sans Condensed fonts with web fallbacks
+        "opensans-condensed": [
+          "OpenSans_Condensed-Regular",
+          "Open Sans Condensed",
+          "system-ui",
+          "sans-serif",
+        ],
+        "opensans-condensed-light": [
+          "OpenSans_Condensed-Light",
+          "Open Sans Condensed",
+          "system-ui",
+          "sans-serif",
+        ],
         "opensans-condensed-medium": [
           "OpenSans_Condensed-Medium",
+          "Open Sans Condensed",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-condensed-semibold": [
           "OpenSans_Condensed-SemiBold",
+          "Open Sans Condensed",
+          "system-ui",
           "sans-serif",
         ],
-        "opensans-condensed-bold": ["OpenSans_Condensed-Bold", "sans-serif"],
+        "opensans-condensed-bold": [
+          "OpenSans_Condensed-Bold",
+          "Open Sans Condensed",
+          "system-ui",
+          "sans-serif",
+        ],
         "opensans-condensed-extrabold": [
           "OpenSans_Condensed-ExtraBold",
+          "Open Sans Condensed",
+          "system-ui",
           "sans-serif",
         ],
 
-        // Open Sans SemiCondensed fonts
+        // Open Sans SemiCondensed fonts with web fallbacks
         "opensans-semicondensed": [
           "OpenSans_SemiCondensed-Regular",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-semicondensed-light": [
           "OpenSans_SemiCondensed-Light",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-semicondensed-medium": [
           "OpenSans_SemiCondensed-Medium",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-semicondensed-semibold": [
           "OpenSans_SemiCondensed-SemiBold",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-semicondensed-bold": [
           "OpenSans_SemiCondensed-Bold",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
         "opensans-semicondensed-extrabold": [
           "OpenSans_SemiCondensed-ExtraBold",
+          "Open Sans",
+          "system-ui",
           "sans-serif",
         ],
       },

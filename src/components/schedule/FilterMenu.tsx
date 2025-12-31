@@ -36,6 +36,7 @@ const FilterMenu = ({
   const [internalVisible, setInternalVisible] = useState(isVisible);
   const { isDark } = useTheme();
   const themeStyles = getScheduleThemeStyles(isDark);
+  const scheduleBackgroundColor = isDark ? "#1A1A1A" : "#F9FAFB";
 
   useEffect(() => {
     if (isVisible) {
@@ -142,6 +143,7 @@ const FilterMenu = ({
               left: 0,
               bottom: 0,
               zIndex: 10,
+              backgroundColor: scheduleBackgroundColor,
               transform: [{ translateX: slideAnim }],
             },
           ]}
