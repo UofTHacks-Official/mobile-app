@@ -96,8 +96,8 @@ export default function AdminLayout() {
             return false;
           }
 
-          // Hide profiles for hackers and volunteers (only show for judges)
-          if (route.name === "profiles" && (isHacker || isVolunteer)) {
+          // Hide profiles for all roles except judges (judge hacker finder)
+          if (route.name === "profiles" && !isJudge) {
             return false;
           }
 
