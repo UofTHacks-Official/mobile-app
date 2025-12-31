@@ -439,6 +439,18 @@ const CustomTabBar = ({
                         }
                       />
                     );
+                  case "profiles":
+                    return (
+                      <Search
+                        size={24}
+                        strokeWidth={1.5}
+                        color={
+                          isFocused
+                            ? themeStyles.navBarIconActive
+                            : themeStyles.navBarIconInactive
+                        }
+                      />
+                    );
                   case "profile":
                     return (
                       <User
