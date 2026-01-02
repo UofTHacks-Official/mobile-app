@@ -5,6 +5,7 @@ import {
   useStartJudgingTimer,
   useAllJudgingSchedules,
 } from "@/queries/judging";
+import { JudgingScheduleItem } from "@/types/judging";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
 import {
@@ -50,6 +51,9 @@ const JudgingTimerScreen = () => {
     qa: 2,
     buffer: 1,
   };
+
+  const formatLocation = (location: JudgingScheduleItem["location"]) =>
+    typeof location === "string" ? location : location.location_name;
 
   // Auto-load schedule from route params and reset state
   useEffect(() => {
@@ -631,7 +635,8 @@ const JudgingTimerScreen = () => {
                     themeStyles.secondaryText
                   )}
                 >
-                  Team #{scheduleData.team_id} • {scheduleData.location}
+                  Team #{scheduleData.team_id} •{" "}
+                  {formatLocation(scheduleData.location)}
                 </Text>
               </View>
             )}

@@ -73,6 +73,9 @@ const JudgeScheduleOverview = () => {
     }
   };
 
+  const formatLocation = (location: JudgingScheduleItem["location"]) =>
+    typeof location === "string" ? location : location.location_name;
+
   const getSessionStatus = (item: JudgingScheduleItem): SessionStatus => {
     const now = new Date().getTime();
     const scheduledTime = new Date(item.timestamp).getTime();
@@ -374,7 +377,7 @@ const JudgeScheduleOverview = () => {
                           themeStyles.secondaryText
                         )}
                       >
-                        {session.location}
+                        {formatLocation(session.location)}
                       </Text>
                     </View>
                   </View>

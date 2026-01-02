@@ -6,6 +6,8 @@ export type SessionStatus =
   | "completed"
   | "overdue";
 
+export type JudgingLocation = string | { location_name: string };
+
 export interface JudgingScheduleItem {
   judging_schedule_id: number;
   team_id: number;
@@ -13,7 +15,7 @@ export interface JudgingScheduleItem {
   timestamp: string;
   actual_timestamp: string | null;
   duration: number;
-  location: string;
+  location: JudgingLocation;
   created_at: string;
   updated_at: string;
 }

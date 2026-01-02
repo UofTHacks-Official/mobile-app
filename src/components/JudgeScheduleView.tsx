@@ -14,6 +14,9 @@ interface ProjectCardProps {
   project?: Project;
 }
 
+const getLocationName = (location: JudgingScheduleItem["location"]) =>
+  typeof location === "string" ? location : location.location_name;
+
 const ProjectCard = ({ schedule, project }: ProjectCardProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
@@ -98,7 +101,8 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
   );
 
   // Get location from first schedule (assuming all in same location)
-  const location = schedules.length > 0 ? schedules[0].location : "";
+  const location =
+    schedules.length > 0 ? getLocationName(schedules[0].location) : "";
   const firstProject =
     schedules.length > 0 ? projectsMap.get(schedules[0].team_id) : undefined;
   const category = firstProject?.categories[0] || "General";
