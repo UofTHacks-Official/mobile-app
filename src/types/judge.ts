@@ -1,5 +1,6 @@
 // Judge types based on API documentation
 
+import { JudgingLocation } from "./judging";
 export interface Judge {
   judge_id: number;
   judge_name: string;
@@ -56,7 +57,7 @@ export interface JudgeSchedulesResponse {
     timestamp: string;
     actual_timestamp: string | null;
     duration: number;
-    location: string;
+    location: JudgingLocation;
     created_at: string;
     updated_at: string;
   }[];

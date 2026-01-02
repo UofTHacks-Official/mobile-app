@@ -74,6 +74,9 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
     return `${month} ${day}, ${displayHours}:${displayMinutes} ${ampm}`;
   };
 
+  const formatLocation = (location: JudgingScheduleItem["location"]) =>
+    typeof location === "string" ? location : location.location_name;
+
   const handleStartTimer = () => {
     // Check if another timer is running
     if (isTimerRunning && activeTimerId !== event.judging_schedule_id) {
@@ -170,7 +173,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         <View className="flex-row items-center gap-2">
           <MapPin size={16} color={isDark ? "#A0A0A0" : "#666"} />
           <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {event.location}
+            {formatLocation(event.location)}
           </Text>
         </View>
 

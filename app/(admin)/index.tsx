@@ -496,7 +496,10 @@ const UpcomingEvents = ({
           startTime: schedule.timestamp,
           endTime: endTime.toISOString(),
           type: "activity" as const,
-          location: schedule.location,
+          location:
+            typeof schedule.location === "string"
+              ? schedule.location
+              : schedule.location.location_name,
           teamId: schedule.team_id,
           scheduleId: schedule.judging_schedule_id,
         };
