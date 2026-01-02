@@ -2,27 +2,168 @@ import { useIsFocused } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { useFocusEffect, useNavigation } from "expo-router";
-import { Camera, Settings } from "lucide-react-native";
+import { Camera, RefreshCw, Settings } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 
-import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
-import { openSettings } from "@/utils/camera/permissions";
+import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
+import { useHackerQRCode } from "@/queries/hackerBucks";
+import { useBottomNavBarStore } from "@/reducers/bottomNavBar";
+import { useUserTypeStore } from "@/reducers/userType";
+import { openSettings } from "@/utils/camera/permissions";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { getUserType } from "@/utils/tokens/secureStorage";
 import {
+  ActivityIndicator,
   Button,
   Dimensions,
   Modal,
+  Pressable,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import QRCode from "react-native-qrcode-svg";
 import Svg, { Defs, Mask, Rect } from "react-native-svg";
 
 const { width, height } = Dimensions.get("window");
 const SCAN_SIZE = 250;
 
-export default function App() {
+type ResolvedUserType = "admin" | "volunteer" | "judge" | "hacker" | null;
+
+const HackerQRCodeScreen = () => {
+  const { hackerData } = useAuth();
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
+  const userId = hackerData?.hacker_id;
+
+  const {
+    data: qrCode,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useHackerQRCode(userId);
+
+  const isBusy = isLoading || isFetching;
+  const canRefresh = !!userId;
+  const refreshDisabled = isBusy || !canRefresh;
+
+  return (
+    <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        className="flex-1 px-6"
+      >
+        <View className="flex-1 py-8 gap-6">
+          <View className="gap-2">
+            <Text
+              className={cn(
+                "text-3xl font-onest-bold",
+                themeStyles.primaryText
+              )}
+            >
+              Your QR Code
+            </Text>
+            <Text className={cn("text-base", themeStyles.secondaryText)}>
+              Show this code at check-in or whenever a volunteer needs to scan
+              your badge.
+            </Text>
+          </View>
+
+          <View
+            className={cn(
+              "rounded-2xl px-6 py-8 items-center",
+              themeStyles.cardBackground
+            )}
+          >
+            {isBusy && (
+              <ActivityIndicator
+                size="large"
+                color={isDark ? "#75EDEF" : "#132B38"}
+              />
+            )}
+
+            {!isBusy && qrCode && (
+              <View
+                className={cn(
+                  "p-4 rounded-xl",
+                  isDark ? "bg-[#303030]" : "bg-gray-100"
+                )}
+              >
+                <QRCode value={qrCode} size={240} />
+              </View>
+            )}
+
+            {!isBusy && !qrCode && (
+              <Text
+                className={cn("text-center mt-2", themeStyles.secondaryText)}
+              >
+                {error
+                  ? "We could not load your QR code right now."
+                  : "Your QR code will appear here."}
+              </Text>
+            )}
+
+            <View className="mt-6 w-full">
+              <Pressable
+                onPress={() => {
+                  if (!canRefresh) return;
+                  haptics.impactAsync(ImpactFeedbackStyle.Light);
+                  refetch();
+                }}
+                disabled={refreshDisabled}
+                className={cn(
+                  "flex-row items-center justify-center py-3 rounded-xl",
+                  isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+                )}
+                style={{ opacity: refreshDisabled ? 0.6 : 1 }}
+              >
+                <RefreshCw
+                  size={18}
+                  color={isDark ? "#000" : "#fff"}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  className={cn(
+                    "text-base font-onest-bold",
+                    isDark ? "text-black" : "text-white"
+                  )}
+                >
+                  Refresh QR Code
+                </Text>
+              </Pressable>
+            </View>
+
+            {userId ? (
+              <Text
+                className={cn(
+                  "text-xs text-center mt-4",
+                  themeStyles.secondaryText
+                )}
+              >
+                Linked to user ID {userId}
+              </Text>
+            ) : (
+              <Text
+                className={cn(
+                  "text-xs text-center mt-4",
+                  themeStyles.secondaryText
+                )}
+              >
+                Sign in to load your QR code.
+              </Text>
+            )}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const QRScannerScreen = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const navigation = useNavigation();
   const [hasScanned, setHasScanned] = useState(false);
@@ -303,4 +444,58 @@ export default function App() {
       </Modal>
     </View>
   );
+};
+
+export default function QRScreen() {
+  const { userType } = useUserTypeStore();
+  const [resolvedUserType, setResolvedUserType] =
+    useState<ResolvedUserType>(userType);
+  const { isDark } = useTheme();
+  const themeStyles = getThemeStyles(isDark);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const resolveUserType = async () => {
+      if (userType) {
+        setResolvedUserType(userType);
+        return;
+      }
+
+      const storedType = await getUserType();
+      if (isMounted) {
+        setResolvedUserType(
+          storedType as "admin" | "volunteer" | "judge" | "hacker" | null
+        );
+      }
+    };
+
+    resolveUserType();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userType]);
+
+  if (!resolvedUserType) {
+    return (
+      <SafeAreaView
+        className={cn(
+          "flex-1 items-center justify-center",
+          themeStyles.background
+        )}
+      >
+        <ActivityIndicator
+          size="large"
+          color={isDark ? "#75EDEF" : "#132B38"}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (resolvedUserType === "hacker") {
+    return <HackerQRCodeScreen />;
+  }
+
+  return <QRScannerScreen />;
 }
