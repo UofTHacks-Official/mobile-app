@@ -2,6 +2,7 @@ import { CustomSplashScreen } from "@/components/loading/SplashScreen";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
+import { useHackerQRCode } from "@/queries/hackerBucks";
 import { useUserTypeStore } from "@/reducers/userType";
 import { openSettings } from "@/utils/camera/permissions";
 import { useScrollNavBar } from "@/utils/navigation";
@@ -17,8 +18,16 @@ import {
   X,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import QRCode from "react-native-qrcode-svg";
 
 const Profile = () => {
   const { signOut, adminData, hackerData, profileLoading } = useAuth();
@@ -35,6 +44,13 @@ const Profile = () => {
   };
 
   const hacker = hackerData;
+  const {
+    data: qrCode,
+    isLoading: qrLoading,
+    isFetching: qrFetching,
+    error: qrError,
+  } = useHackerQRCode(hacker?.hacker_id);
+  const qrBusy = qrLoading || qrFetching;
 
   return (
     <SafeAreaView className={cn("flex-1", theme.background)}>
@@ -206,6 +222,57 @@ const Profile = () => {
               </Text>
             </Pressable>
           </View>
+
+          {/* Hacker QR Code */}
+          {hacker && (
+            <View>
+              <View className="flex-row items-center gap-2 mb-3">
+                <Camera size={20} color={theme.iconColor} />
+                <Text
+                  className={cn(
+                    "font-bold text-base",
+                    theme.textPrimaryBold,
+                    theme.primaryText
+                  )}
+                >
+                  Your QR Code
+                </Text>
+              </View>
+
+              <View
+                className={cn(
+                  "p-4 rounded-md items-center gap-4",
+                  theme.lightCardBackground
+                )}
+              >
+                {qrBusy && (
+                  <ActivityIndicator
+                    size="large"
+                    color={isDark ? "#75EDEF" : "#132B38"}
+                  />
+                )}
+
+                {!qrBusy && qrCode && (
+                  <View
+                    className={cn(
+                      "p-4 rounded-xl",
+                      isDark ? "bg-[#303030]" : "bg-gray-100"
+                    )}
+                  >
+                    <QRCode value={qrCode} size={220} />
+                  </View>
+                )}
+
+                {!qrBusy && !qrCode && (
+                  <Text className={cn("text-sm", theme.cardText)}>
+                    {qrError
+                      ? "We couldn't load your QR code."
+                      : "Your QR code will appear here."}
+                  </Text>
+                )}
+              </View>
+            </View>
+          )}
 
           {/* Camera Permissions Section */}
           <View>
