@@ -853,6 +853,8 @@ export const HackerTable = ({
             </View>
           </View>
         )}
+        {/* Spacer for bottom navigation bar */}
+        <View className="h-32" />
       </ScrollView>
     </View>
   );
