@@ -6,12 +6,22 @@ export type SessionStatus =
   | "completed"
   | "overdue";
 
-export type JudgingLocation = string | { location_name: string };
+export interface JudgingLocationObject {
+  judging_location_id: number;
+  sponsor_id: number;
+  location_name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type JudgingLocation = string | JudgingLocationObject;
 
 export interface JudgingScheduleItem {
   judging_schedule_id: number;
   team_id: number;
   judge_id: number;
+  judging_type?: string; // Optional until backend is fully updated
   timestamp: string;
   actual_timestamp: string | null;
   duration: number;
@@ -27,3 +37,8 @@ export interface JudgingScheduleItemWithStatus extends JudgingScheduleItem {
 }
 
 export type JudgingScheduleResponse = JudgingScheduleItem[];
+
+export interface StartTimerByRoomRequest {
+  room: string;
+  timestamp: string;
+}

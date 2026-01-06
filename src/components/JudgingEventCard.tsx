@@ -9,7 +9,7 @@ import {
   NotificationFeedbackType,
 } from "@/utils/haptics";
 import { router } from "expo-router";
-import { Play, Clock, MapPin, Users, CheckCircle } from "lucide-react-native";
+import { Play, Clock, Users, CheckCircle } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -129,7 +129,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         <Text
           className={cn("text-lg font-onest-bold", themeStyles.primaryText)}
         >
-          Event #{event.judging_schedule_id}
+          {formatLocation(event.location)}
         </Text>
         {status.label !== "Completed" && (
           <View className="flex-row items-center gap-1">
@@ -166,14 +166,6 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
           <Clock size={16} color={isDark ? "#A0A0A0" : "#666"} />
           <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
             {formatDateTime(event.timestamp)}
-          </Text>
-        </View>
-
-        {/* Location */}
-        <View className="flex-row items-center gap-2">
-          <MapPin size={16} color={isDark ? "#A0A0A0" : "#666"} />
-          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {formatLocation(event.location)}
           </Text>
         </View>
 

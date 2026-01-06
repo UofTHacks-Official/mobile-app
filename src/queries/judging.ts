@@ -3,6 +3,7 @@ import {
   getAllJudgingSchedules,
   getJudgingScheduleById,
   startJudgingTimer,
+  startJudgingTimerByRoom,
 } from "@/requests/judging";
 import { getJudgeSchedules } from "@/requests/judge";
 import { devError } from "@/utils/logger";
@@ -146,7 +147,8 @@ export const useJudgingScheduleById = (judgingScheduleId: number) => {
 
 /**
  * TanStack Query mutation hook for starting a judging timer
- * @returns Mutation result for starting the judging timer
+ * Note: This now starts timers for ALL judges in a session
+ * @returns Mutation result for starting the judging timer (returns array of schedules)
  */
 export const useStartJudgingTimer = () => {
   const queryClient = useQueryClient();
@@ -163,12 +165,14 @@ export const useStartJudgingTimer = () => {
         if (!schedule) {
           throw new Error("Schedule not found");
         }
-        // Return schedule with actual_timestamp set to now
-        return {
-          ...schedule,
-          actual_timestamp: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+        // Return array of schedules with actual_timestamp set to now
+        return [
+          {
+            ...schedule,
+            actual_timestamp: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ];
       }
 
       try {
@@ -179,11 +183,82 @@ export const useStartJudgingTimer = () => {
         throw error;
       }
     },
-    onSuccess: (data, judgingScheduleId) => {
-      // Update the cache with the new data
-      queryClient.setQueryData(["judging-schedule", judgingScheduleId], data);
+    onSuccess: (schedules) => {
+      // Update the cache for each schedule returned (all judges in the session)
+      schedules.forEach((schedule) => {
+        queryClient.setQueryData(
+          ["judging-schedule", schedule.judging_schedule_id],
+          schedule
+        );
+      });
       // Also invalidate the all schedules list to reflect the change
       queryClient.invalidateQueries({ queryKey: ["judging-schedules"] });
+      queryClient.invalidateQueries({ queryKey: ["judge-schedules"] });
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for starting timers by room
+ * Starts the judging timer for all sessions in a room at a specific time
+ * @returns Mutation result for starting timers (returns array of schedules)
+ */
+export const useStartJudgingTimerByRoom = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      room,
+      timestamp,
+    }: {
+      room: string;
+      timestamp: string;
+    }) => {
+      // Use mock data if enabled
+      if (USE_MOCK_JUDGING_DATA) {
+        // Simulate network delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Find all schedules matching the room and timestamp
+        const matchingSchedules = MOCK_JUDGING_SCHEDULES.filter((s) => {
+          // Extract room from location if it's an object
+          const location =
+            typeof s.location === "string"
+              ? s.location
+              : s.location.location_name;
+          return location.startsWith(room) && s.timestamp === timestamp;
+        });
+
+        if (matchingSchedules.length === 0) {
+          throw new Error("No schedules found for this room and time");
+        }
+
+        // Return array of schedules with actual_timestamp set to now
+        return matchingSchedules.map((schedule) => ({
+          ...schedule,
+          actual_timestamp: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+      }
+
+      try {
+        const data = await startJudgingTimerByRoom(room, timestamp);
+        return data;
+      } catch (error) {
+        devError("Start judging timer by room error:", error);
+        throw error;
+      }
+    },
+    onSuccess: (schedules) => {
+      // Update the cache for each schedule returned (all judges in the room)
+      schedules.forEach((schedule) => {
+        queryClient.setQueryData(
+          ["judging-schedule", schedule.judging_schedule_id],
+          schedule
+        );
+      });
+      // Also invalidate the all schedules list to reflect the change
+      queryClient.invalidateQueries({ queryKey: ["judging-schedules"] });
+      queryClient.invalidateQueries({ queryKey: ["judge-schedules"] });
     },
   });
 };
