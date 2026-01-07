@@ -1,7 +1,6 @@
 import {
   generateJudgingSchedules,
   getAllJudgingSchedules,
-  getJudgingScheduleById,
   startJudgingTimer,
   startJudgingTimerByRoom,
 } from "@/requests/judging";
@@ -93,10 +92,40 @@ export const useJudgeSchedules = (
 
 /**
  * TanStack Query hook for fetching a judging schedule by ID
+ * Tries cached schedules first to avoid hitting a non-existent detail endpoint.
+ * Falls back to the all-schedules endpoint and filters locally.
  * @param judgingScheduleId - The ID of the judging schedule
  * @returns Query result with judging schedule data
  */
 export const useJudgingScheduleById = (judgingScheduleId: number) => {
+  const queryClient = useQueryClient();
+
+  const getCachedSchedule = () => {
+    // Try admin schedules cache
+    const adminSchedules = queryClient.getQueryData<JudgingScheduleItem[]>([
+      "judging-schedules",
+    ]);
+    const adminMatch = adminSchedules?.find(
+      (s) => s.judging_schedule_id === judgingScheduleId
+    );
+    if (adminMatch) return adminMatch;
+
+    // Try any judge-specific schedules cache
+    const judgeSchedules = queryClient.getQueriesData<JudgingScheduleItem[]>({
+      queryKey: ["judge-schedules"],
+      exact: false,
+    });
+
+    for (const [, data] of judgeSchedules) {
+      const match = data?.find(
+        (s) => s.judging_schedule_id === judgingScheduleId
+      );
+      if (match) return match;
+    }
+
+    return undefined;
+  };
+
   return useQuery({
     queryKey: ["judging-schedule", judgingScheduleId],
     queryFn: async () => {
@@ -113,15 +142,29 @@ export const useJudgingScheduleById = (judgingScheduleId: number) => {
         return schedule;
       }
 
+      // Prefer cached schedules from other queries to avoid extra fetches
+      const cachedSchedule = getCachedSchedule();
+      if (cachedSchedule) {
+        return cachedSchedule;
+      }
+
       try {
-        const data = await getJudgingScheduleById(judgingScheduleId);
-        return data;
+        // Fallback: fetch all schedules and pick the matching one
+        const allSchedules = await getAllJudgingSchedules();
+        const schedule = allSchedules.find(
+          (s) => s.judging_schedule_id === judgingScheduleId
+        );
+        if (!schedule) {
+          throw new Error("Schedule not found (404)");
+        }
+        return schedule;
       } catch (error) {
         devError("Judging schedule fetch error:", error);
         throw error;
       }
     },
     enabled: !!judgingScheduleId,
+    initialData: getCachedSchedule,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
