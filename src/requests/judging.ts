@@ -84,6 +84,5 @@ export const generateJudgingSchedules = async (): Promise<any> => {
   const response = await axiosInstance.post<any>(
     judgingEndpoints.GENERATE_SCHEDULES
   );
-  console.log("[DEBUG] Generate schedules response:", response.data);
   return response.data;
 };

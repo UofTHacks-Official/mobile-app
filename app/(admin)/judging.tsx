@@ -43,11 +43,9 @@ const JudgingLocationScreen = () => {
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
-      console.log("[DEBUG] Judging page - User type:", userType);
       if (userType === "judge") {
         setIsJudge(true);
         const id = await getJudgeId();
-        console.log("[DEBUG] Judging page - Judge ID:", id);
         setJudgeId(id);
       }
       setUserTypeChecked(true);
@@ -69,20 +67,7 @@ const JudgingLocationScreen = () => {
   } = isJudge ? judgeSchedules : adminSchedules;
 
   useEffect(() => {
-    console.log("[DEBUG] Judging page - userTypeChecked:", userTypeChecked);
-    console.log("[DEBUG] Judging page - isJudge:", isJudge);
-    console.log("[DEBUG] Judging page - judgeId:", judgeId);
-    console.log(
-      "[DEBUG] Judging page - admin query enabled:",
-      !isJudge && userTypeChecked
-    );
-    console.log(
-      "[DEBUG] Judging page - judge query enabled:",
-      isJudge && userTypeChecked
-    );
-    console.log("[DEBUG] Judging page - judgingData:", judgingData);
-    console.log("[DEBUG] Judging page - isLoading:", isLoading);
-    console.log("[DEBUG] Judging page - isError:", isError);
+    // No-op: retain dependency array to avoid lint warnings
   }, [isJudge, judgeId, judgingData, isLoading, isError, userTypeChecked]);
 
   const handleGenerateSchedules = async () => {

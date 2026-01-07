@@ -25,19 +25,15 @@ export const useAllJudgingSchedules = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["judging-schedules"],
     queryFn: async () => {
-      console.log("[DEBUG] Fetching all judging schedules...");
       // Use mock data if enabled
       if (USE_MOCK_JUDGING_DATA) {
-        console.log("[DEBUG] Using mock data");
         // Simulate network delay
         await new Promise((resolve) => setTimeout(resolve, 500));
         return MOCK_JUDGING_SCHEDULES;
       }
 
       try {
-        console.log("[DEBUG] Calling GET /api/v13/judges/schedules/all");
         const data = await getAllJudgingSchedules();
-        console.log("[DEBUG] Received schedules:", data);
         return data;
       } catch (error) {
         devError("All judging schedules fetch error:", error);
@@ -65,8 +61,6 @@ export const useJudgeSchedules = (
   return useQuery({
     queryKey: ["judge-schedules", judgeId],
     queryFn: async () => {
-      console.log("[DEBUG] Fetching judge schedules...");
-
       // Get judgeId if not provided
       const id = judgeId ?? (await getJudgeId());
       if (!id) {
@@ -75,7 +69,6 @@ export const useJudgeSchedules = (
 
       // Use mock data if enabled
       if (USE_MOCK_JUDGING_DATA) {
-        console.log("[DEBUG] Using mock data for judge", id);
         await new Promise((resolve) => setTimeout(resolve, 500));
         const judgeSchedules = MOCK_JUDGING_SCHEDULES.filter(
           (s) => s.judge_id === id
@@ -84,9 +77,7 @@ export const useJudgeSchedules = (
       }
 
       try {
-        console.log("[DEBUG] Calling GET /api/v13/judges/{judge_id}/schedules");
         const response = await getJudgeSchedules(id);
-        console.log("[DEBUG] Received judge schedules:", response.schedules);
         return response.schedules;
       } catch (error) {
         devError("Judge schedules fetch error:", error);
@@ -283,13 +274,11 @@ export const useGenerateJudgingSchedules = () => {
       }
     },
     onSuccess: async () => {
-      console.log("[DEBUG] Generation successful, invalidating queries...");
       // Invalidate all schedule queries to refetch the new data
       await queryClient.invalidateQueries({ queryKey: ["judging-schedules"] });
       await queryClient.invalidateQueries({ queryKey: ["judge-schedules"] });
       // Force refetch
       await queryClient.refetchQueries({ queryKey: ["judging-schedules"] });
-      console.log("[DEBUG] Queries invalidated and refetched");
     },
   });
 };
@@ -310,8 +299,6 @@ export const useJudgeScheduleData = (
     queryKey: ["judge-calendar-schedules"], // Removed selectedEventTypes from key since we ignore it
     queryFn: async () => {
       try {
-        console.log("[DEBUG] Fetching judge's calendar schedules...");
-
         // Get the current judge's ID
         const judgeId = await getJudgeId();
         if (!judgeId) {
@@ -417,12 +404,6 @@ export const useJudgeScheduleData = (
             shiftType: null,
           });
         }
-
-        console.log(
-          "[DEBUG] Consolidated blocks count:",
-          consolidatedBlocks.length
-        );
-        console.log("[DEBUG] First block:", consolidatedBlocks[0]);
         return consolidatedBlocks;
       } catch (error) {
         devError("Judge schedule data fetch error:", error);

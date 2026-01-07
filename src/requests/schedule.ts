@@ -34,38 +34,11 @@ export async function fetchScheduleById(schedule: number): Promise<Schedule> {
       : scheduleEndpoints.hackers.fetchScheduleByID;
 
   const url = baseEndpoint.replace("{id}", schedule.toString());
-  console.log("[DEBUG] fetchScheduleById - URL:", url);
-  console.log("[DEBUG] fetchScheduleById - schedule ID:", schedule);
-  console.log("[DEBUG] fetchScheduleById - userType:", userType);
 
   try {
     const response = await axios.get(url);
-    console.log(
-      "[DEBUG] fetchScheduleById - response status:",
-      response.status
-    );
-    console.log("[DEBUG] fetchScheduleById - response data:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error(
-      "[DEBUG] fetchScheduleById - Full error object:",
-      JSON.stringify(error, null, 2)
-    );
-    console.error("[DEBUG] fetchScheduleById - error.message:", error?.message);
-    console.error("[DEBUG] fetchScheduleById - error.code:", error?.code);
-    console.error("[DEBUG] fetchScheduleById - error.config:", error?.config);
-    console.error(
-      "[DEBUG] fetchScheduleById - error response:",
-      error?.response
-    );
-    console.error(
-      "[DEBUG] fetchScheduleById - error status:",
-      error?.response?.status
-    );
-    console.error(
-      "[DEBUG] fetchScheduleById - error data:",
-      error?.response?.data
-    );
     throw error;
   }
 }
