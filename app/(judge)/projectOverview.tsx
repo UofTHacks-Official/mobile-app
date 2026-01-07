@@ -1,12 +1,13 @@
 import { useTheme } from "@/context/themeContext";
+import { useTimer, computeRemainingSeconds } from "@/context/timerContext";
 import { useProject } from "@/queries/project";
-import { useAllJudgingSchedules } from "@/queries/judging";
+import { useAllJudgingSchedules, useJudgeSchedules } from "@/queries/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, ExternalLink } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -16,16 +17,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ProjectOverview = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const params = useLocalSearchParams();
+  const timerContext = useTimer();
 
   const [pin, setPin] = useState<number | null>(null);
   const [judgeId, setJudgeId] = useState<number | null>(null);
   const [teamId, setTeamId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
+  const [nowTs, setNowTs] = useState(Date.now());
 
   // Load PIN, judge ID, and team ID from params/storage
   useEffect(() => {
@@ -47,15 +51,52 @@ const ProjectOverview = () => {
 
   const { data: project, isLoading, isError } = useProject(pin, teamId);
   const { data: allSchedules } = useAllJudgingSchedules();
+  const {
+    data: judgeSchedules,
+    refetch: refetchJudgeSchedules,
+    isFetching: isFetchingJudgeSchedules,
+  } = useJudgeSchedules(judgeId, !!judgeId);
+
+  // Keep now ticking locally for countdown display
+  useEffect(() => {
+    const id = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Refetch schedules when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      if (refetchJudgeSchedules) {
+        refetchJudgeSchedules();
+      }
+    }, [refetchJudgeSchedules])
+  );
+
+  // Short polling while on this screen to catch newly started rounds
+  useEffect(() => {
+    if (!refetchJudgeSchedules || !judgeId) return;
+    const id = setInterval(() => {
+      refetchJudgeSchedules();
+    }, 5000);
+    return () => clearInterval(id);
+  }, [refetchJudgeSchedules, judgeId]);
+
+  const currentSchedule = useMemo(() => {
+    if (!judgeSchedules || !scheduleId) return null;
+    return judgeSchedules.find((s) => s.judging_schedule_id === scheduleId);
+  }, [judgeSchedules, scheduleId]);
 
   // Calculate round information
   const getRoundInfo = () => {
-    if (!allSchedules || !judgeId || !scheduleId) {
+    const schedulesForJudge =
+      judgeSchedules ||
+      allSchedules?.filter((s) => s.judge_id === judgeId) ||
+      [];
+    if (schedulesForJudge.length === 0 || !scheduleId) {
       return { currentRound: 1, totalRounds: 1 };
     }
 
-    const judgeSchedules = allSchedules.filter((s) => s.judge_id === judgeId);
-    const sortedSchedules = [...judgeSchedules].sort(
+    const sortedSchedules = [...schedulesForJudge].sort(
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
@@ -66,7 +107,7 @@ const ProjectOverview = () => {
 
     return {
       currentRound: currentRound > 0 ? currentRound : 1,
-      totalRounds: judgeSchedules.length,
+      totalRounds: sortedSchedules.length,
     };
   };
 
@@ -78,7 +119,22 @@ const ProjectOverview = () => {
   };
 
   const handleReady = () => {
-    if (!project || !scheduleId) return;
+    if (!project || !scheduleId || !currentSchedule) return;
+
+    const locationName = currentSchedule
+      ? typeof currentSchedule.location === "string"
+        ? currentSchedule.location
+        : currentSchedule.location.location_name
+      : "";
+
+    const roomTimer = locationName
+      ? timerContext.roomTimers[locationName]
+      : undefined;
+
+    // Block if timer hasn't started for this room
+    if (!roomTimer) {
+      return;
+    }
 
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
@@ -95,6 +151,46 @@ const ProjectOverview = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
+
+  const roundInfo = getRoundInfo();
+
+  const locationName = currentSchedule
+    ? typeof currentSchedule.location === "string"
+      ? currentSchedule.location
+      : currentSchedule.location.location_name
+    : "";
+
+  // Hydrate room timer map when schedule has started
+  useEffect(() => {
+    if (!currentSchedule || !currentSchedule.actual_timestamp || !locationName)
+      return;
+    timerContext.upsertRoomTimer(locationName, {
+      actualStart: currentSchedule.actual_timestamp,
+      durationSeconds: currentSchedule.duration * 60,
+    });
+  }, [currentSchedule, locationName, timerContext]);
+
+  const hasStarted = !!currentSchedule?.actual_timestamp;
+  const roomTimer =
+    hasStarted && locationName
+      ? timerContext.roomTimers[locationName]
+      : undefined;
+  const remainingSeconds =
+    roomTimer?.actualStart && roomTimer.durationSeconds
+      ? computeRemainingSeconds(
+          roomTimer.actualStart,
+          roomTimer.durationSeconds,
+          nowTs
+        )
+      : null;
+  const countdownDisplay =
+    remainingSeconds !== null
+      ? `${Math.floor((remainingSeconds || 0) / 60)
+          .toString()
+          .padStart(2, "0")}:${((remainingSeconds || 0) % 60)
+          .toString()
+          .padStart(2, "0")}`
+      : null;
 
   if (isLoading) {
     return (
@@ -154,8 +250,6 @@ const ProjectOverview = () => {
       </SafeAreaView>
     );
   }
-
-  const roundInfo = getRoundInfo();
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
@@ -308,10 +402,12 @@ const ProjectOverview = () => {
         {/* Ready Button */}
         <Pressable
           onPress={handleReady}
+          disabled={!roomTimer}
           className={cn(
             "py-4 rounded-xl mb-8",
             isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
           )}
+          style={{ opacity: !roomTimer ? 0.6 : 1 }}
         >
           <Text
             className={cn(
@@ -322,6 +418,40 @@ const ProjectOverview = () => {
             Ready
           </Text>
         </Pressable>
+        {!roomTimer ? (
+          <Text
+            className={cn(
+              "text-center text-sm font-pp mb-4",
+              themeStyles.secondaryText
+            )}
+          >
+            Waiting for admin to start the timer for this room.
+          </Text>
+        ) : (
+          <View className="items-center mb-4">
+            <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
+              Time remaining for this project
+            </Text>
+            <Text
+              className={cn(
+                "text-2xl font-onest-bold mt-1",
+                themeStyles.primaryText
+              )}
+            >
+              {countdownDisplay}
+            </Text>
+            {isFetchingJudgeSchedules && (
+              <Text
+                className={cn(
+                  "text-xs font-pp mt-1",
+                  themeStyles.secondaryText
+                )}
+              >
+                Syncing latest timer...
+              </Text>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

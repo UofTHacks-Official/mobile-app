@@ -1,4 +1,5 @@
 import { AuthContext } from "@/context/authContext";
+import { TimerProvider } from "@/context/timerContext";
 import { Stack, Redirect } from "expo-router";
 import { useContext } from "react";
 
@@ -16,25 +17,27 @@ export default function JudgeLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen
-        name="projectOverview"
-        options={{
+    <TimerProvider>
+      <Stack
+        screenOptions={{
           headerShown: false,
-          animation: "slide_from_right",
         }}
-      />
-      <Stack.Screen
-        name="scorecard"
-        options={{
-          headerShown: false,
-          animation: "slide_from_right",
-        }}
-      />
-    </Stack>
+      >
+        <Stack.Screen
+          name="projectOverview"
+          options={{
+            headerShown: false,
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="scorecard"
+          options={{
+            headerShown: false,
+            animation: "slide_from_right",
+          }}
+        />
+      </Stack>
+    </TimerProvider>
   );
 }
