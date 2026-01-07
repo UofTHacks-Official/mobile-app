@@ -34,7 +34,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [roomTimers, setRoomTimers] = useState<Record<string, RoomTimer>>({});
 
   const startTimer = (scheduleId: number) => {
-    console.log("[TimerContext] Starting timer for schedule:", scheduleId);
+    // No-op if the same timer is already running
+    if (activeTimerId === scheduleId && isTimerRunning) {
+      setIsPaused(false);
+      setTotalPausedTime(0);
+      setPauseStartTime(null);
+      return;
+    }
+
     setActiveTimerId(scheduleId);
     setIsTimerRunning(true);
     setIsPaused(false);

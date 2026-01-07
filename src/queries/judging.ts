@@ -95,9 +95,13 @@ export const useJudgeSchedules = (
  * Tries cached schedules first to avoid hitting a non-existent detail endpoint.
  * Falls back to the all-schedules endpoint and filters locally.
  * @param judgingScheduleId - The ID of the judging schedule
+ * @param options - Optional settings (e.g., refetchInterval for polling)
  * @returns Query result with judging schedule data
  */
-export const useJudgingScheduleById = (judgingScheduleId: number) => {
+export const useJudgingScheduleById = (
+  judgingScheduleId: number,
+  options?: { refetchInterval?: number }
+) => {
   const queryClient = useQueryClient();
 
   const getCachedSchedule = () => {
@@ -125,6 +129,8 @@ export const useJudgingScheduleById = (judgingScheduleId: number) => {
 
     return undefined;
   };
+
+  const initialData = getCachedSchedule();
 
   return useQuery({
     queryKey: ["judging-schedule", judgingScheduleId],
@@ -164,7 +170,13 @@ export const useJudgingScheduleById = (judgingScheduleId: number) => {
       }
     },
     enabled: !!judgingScheduleId,
-    initialData: getCachedSchedule,
+    initialData,
+    initialDataUpdatedAt: initialData ? Date.now() : undefined,
+    refetchOnMount: initialData ? false : true,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: options?.refetchInterval ?? false,
+    refetchIntervalInBackground: !!options?.refetchInterval,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
@@ -186,6 +198,57 @@ export const useJudgingScheduleById = (judgingScheduleId: number) => {
  */
 export const useStartJudgingTimer = () => {
   const queryClient = useQueryClient();
+
+  const updateScheduleTimestamp = (
+    scheduleId: number,
+    actualTimestamp: string
+  ) => {
+    const applyUpdate = (s?: JudgingScheduleItem) =>
+      s
+        ? {
+            ...s,
+            actual_timestamp: actualTimestamp,
+            updated_at: actualTimestamp,
+          }
+        : s;
+
+    const updateList = (list?: JudgingScheduleItem[]) =>
+      list?.map((s) =>
+        s.judging_schedule_id === scheduleId ? applyUpdate(s)! : s
+      );
+
+    // Individual schedule cache
+    queryClient.setQueryData(
+      ["judging-schedule", scheduleId],
+      (prev?: JudgingScheduleItem) => applyUpdate(prev)
+    );
+
+    // Admin schedules list
+    queryClient.setQueryData(
+      ["judging-schedules"],
+      (prev?: JudgingScheduleItem[]) => updateList(prev)
+    );
+
+    // Judge schedules lists (multiple keys)
+    const judgeSchedules = queryClient.getQueriesData<JudgingScheduleItem[]>({
+      queryKey: ["judge-schedules"],
+      exact: false,
+    });
+    judgeSchedules.forEach(([key, data]) => {
+      queryClient.setQueryData(key, updateList(data));
+    });
+  };
+
+  const mergeSchedules = (
+    list: JudgingScheduleItem[] | undefined,
+    updates: JudgingScheduleItem[]
+  ) => {
+    if (!list) return updates;
+    const map = new Map<number, JudgingScheduleItem>();
+    list.forEach((s) => map.set(s.judging_schedule_id, s));
+    updates.forEach((u) => map.set(u.judging_schedule_id, u));
+    return Array.from(map.values());
+  };
 
   return useMutation({
     mutationFn: async (judgingScheduleId: number) => {
@@ -217,6 +280,12 @@ export const useStartJudgingTimer = () => {
         throw error;
       }
     },
+    // Optimistically mark the schedule as started to avoid UI lag
+    onMutate: (judgingScheduleId) => {
+      const now = new Date().toISOString();
+      updateScheduleTimestamp(judgingScheduleId, now);
+      return { optimisticTimestamp: now };
+    },
     onSuccess: (schedules) => {
       // Update the cache for each schedule returned (all judges in the session)
       schedules.forEach((schedule) => {
@@ -225,9 +294,21 @@ export const useStartJudgingTimer = () => {
           schedule
         );
       });
-      // Also invalidate the all schedules list to reflect the change
-      queryClient.invalidateQueries({ queryKey: ["judging-schedules"] });
-      queryClient.invalidateQueries({ queryKey: ["judge-schedules"] });
+
+      // Update admin schedules list without refetch
+      queryClient.setQueryData(
+        ["judging-schedules"],
+        (prev?: JudgingScheduleItem[]) => mergeSchedules(prev, schedules)
+      );
+
+      // Update judge schedules lists without refetch
+      const judgeSchedules = queryClient.getQueriesData<JudgingScheduleItem[]>({
+        queryKey: ["judge-schedules"],
+        exact: false,
+      });
+      judgeSchedules.forEach(([key, data]) => {
+        queryClient.setQueryData(key, mergeSchedules(data, schedules));
+      });
     },
   });
 };

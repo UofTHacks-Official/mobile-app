@@ -15,7 +15,7 @@ import {
 } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Pause, Play } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -35,7 +35,14 @@ const JudgingTimerScreen = () => {
   const params = useLocalSearchParams();
   const timerContext = useTimer();
 
-  const [activeScheduleId, setActiveScheduleId] = useState<number | null>(null);
+  const initialScheduleId =
+    typeof params.scheduleId === "string"
+      ? parseInt(params.scheduleId, 10) || null
+      : null;
+
+  const [activeScheduleId, setActiveScheduleId] = useState<number | null>(
+    initialScheduleId
+  );
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [currentStage, setCurrentStage] = useState<
@@ -60,12 +67,12 @@ const JudgingTimerScreen = () => {
     if (params.scheduleId && typeof params.scheduleId === "string") {
       const id = parseInt(params.scheduleId, 10);
       if (!isNaN(id) && id > 0) {
-        // Reset all state when loading a new schedule
-        setActiveScheduleId(id);
-        setIsRunning(false);
-        setCurrentStage("pitching");
-        setElapsedTime(0);
-        // Pause tracking is handled in timer context
+        if (activeScheduleId !== id) {
+          setActiveScheduleId(id);
+          setIsRunning(false);
+          setCurrentStage("pitching");
+          setElapsedTime(0);
+        }
       }
     }
   }, [params.scheduleId]);
@@ -74,77 +81,81 @@ const JudgingTimerScreen = () => {
     data: scheduleData,
     isLoading,
     isError,
-  } = useJudgingScheduleById(activeScheduleId || 0);
+  } = useJudgingScheduleById(activeScheduleId || 0, {
+    refetchInterval: activeScheduleId ? 3000 : undefined,
+  });
   const startTimerMutation = useStartJudgingTimer();
 
-  // Fetch all schedules (admin endpoint) to calculate round count
-  // Filter locally by judge_id
-  const { data: allSchedules } = useAllJudgingSchedules(true);
+  // Fetch all schedules to calculate round count (use cached data only; don't refetch here)
+  const { data: allSchedules } = useAllJudgingSchedules(false);
 
   const judgeSchedules = allSchedules?.filter(
     (schedule) => schedule.judge_id === scheduleData?.judge_id
   );
 
+  const sortedJudgeSchedules = useMemo(() => {
+    if (!judgeSchedules) return [];
+    return [...judgeSchedules].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }, [judgeSchedules]);
+
+  const nextSchedule = useMemo(() => {
+    if (!scheduleData || !sortedJudgeSchedules.length) return null;
+    const idx = sortedJudgeSchedules.findIndex(
+      (s) => s.judging_schedule_id === scheduleData.judging_schedule_id
+    );
+    if (idx === -1 || idx + 1 >= sortedJudgeSchedules.length) return null;
+    return sortedJudgeSchedules[idx + 1];
+  }, [scheduleData, sortedJudgeSchedules]);
+
   // Restore timer state when returning to screen or context resets
   useEffect(() => {
-    if (scheduleData && activeScheduleId && scheduleData.actual_timestamp) {
-      // Calculate current elapsed time to determine stage
-      const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
-        ? scheduleData.actual_timestamp
-        : scheduleData.actual_timestamp + "Z";
-      const startTime = new Date(timestampStr).getTime();
-      const now = Date.now();
-      const realElapsed = Math.floor((now - startTime) / 1000);
-      const totalElapsed = realElapsed - timerContext.totalPausedTime;
+    if (!scheduleData || !activeScheduleId) return;
 
-      // Determine current stage based on elapsed time
-      const pitchingDuration = stages.pitching * 60;
-      const qaDuration = stages.qa * 60;
-      const bufferDuration = stages.buffer * 60;
-
-      let newStage: "pitching" | "qa" | "buffer" | "complete";
-      if (totalElapsed < pitchingDuration) {
-        newStage = "pitching";
-      } else if (totalElapsed < pitchingDuration + qaDuration) {
-        newStage = "qa";
-      } else if (
-        totalElapsed <
-        pitchingDuration + qaDuration + bufferDuration
-      ) {
-        newStage = "buffer";
-      } else {
-        newStage = "complete";
-      }
-
-      setCurrentStage(newStage);
-
-      // If timer is already running in context for this schedule, restore running state
-      if (
-        timerContext.isTimerRunning &&
-        timerContext.activeTimerId === activeScheduleId
-      ) {
-        setIsRunning(true);
-        console.log(
-          "[DEBUG] Restored running timer - paused:",
-          timerContext.isPaused,
-          "stage:",
-          newStage
-        );
-      } else if (newStage !== "complete") {
-        // Timer was started (has actual_timestamp) but context was reset
-        // Restore the timer state in both local and context
-        setIsRunning(true);
-        timerContext.startTimer(activeScheduleId);
-        console.log(
-          "[DEBUG] Restored timer after context reset - stage:",
-          newStage
-        );
-      } else {
-        // Timer is complete
-        setIsRunning(false);
-        console.log("[DEBUG] Timer complete - stage:", newStage);
-      }
+    if (!scheduleData.actual_timestamp) {
+      setIsRunning(false);
+      return;
     }
+
+    // Calculate current elapsed time to determine stage
+    const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
+      ? scheduleData.actual_timestamp
+      : scheduleData.actual_timestamp + "Z";
+    const startTime = new Date(timestampStr).getTime();
+    const now = Date.now();
+    const realElapsed = Math.floor((now - startTime) / 1000);
+    const totalElapsed = realElapsed - timerContext.totalPausedTime;
+
+    // Determine current stage based on elapsed time
+    const pitchingDuration = stages.pitching * 60;
+    const qaDuration = stages.qa * 60;
+    const bufferDuration = stages.buffer * 60;
+
+    let newStage: "pitching" | "qa" | "buffer" | "complete";
+    if (totalElapsed < pitchingDuration) {
+      newStage = "pitching";
+    } else if (totalElapsed < pitchingDuration + qaDuration) {
+      newStage = "qa";
+    } else if (totalElapsed < pitchingDuration + qaDuration + bufferDuration) {
+      newStage = "buffer";
+    } else {
+      newStage = "complete";
+    }
+
+    setCurrentStage(newStage);
+
+    const contextSynced =
+      timerContext.isTimerRunning &&
+      timerContext.activeTimerId === activeScheduleId;
+
+    // Ensure context is aligned once actual_timestamp exists
+    if (!contextSynced && newStage !== "complete") {
+      timerContext.startTimer(activeScheduleId);
+    }
+
+    setIsRunning(newStage !== "complete");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     scheduleData,
@@ -215,16 +226,15 @@ const JudgingTimerScreen = () => {
             setCurrentStage("complete");
             setIsRunning(false);
             haptics.notificationAsync(NotificationFeedbackType.Error);
+            timerContext.stopTimer();
             Toast.show({
               type: "success",
               text1: "Session Complete!",
               text2: "All stages finished",
             });
-            // Navigate to Time's Up screen
-            router.replace("/(admin)/timesUp");
           }
         }
-      }, 100);
+      }, 250);
     }
 
     return () => {
@@ -293,28 +303,33 @@ const JudgingTimerScreen = () => {
   const handleStartTimer = async () => {
     if (!activeScheduleId) return;
 
-    try {
-      haptics.impactAsync(ImpactFeedbackStyle.Heavy);
-      await startTimerMutation.mutateAsync(activeScheduleId);
-      setIsRunning(true);
-      setCurrentStage("pitching"); // Reset to first stage
-      setElapsedTime(0);
+    haptics.impactAsync(ImpactFeedbackStyle.Heavy);
 
-      // Update timer context (this also resets pause tracking and sets isPaused to false)
-      timerContext.startTimer(activeScheduleId);
+    // Optimistically start locally for instant UI response
+    setIsRunning(true);
+    setCurrentStage("pitching");
+    setElapsedTime(0);
+    timerContext.startTimer(activeScheduleId);
 
-      Toast.show({
-        type: "success",
-        text1: "Timer Started",
-        text2: "Starting Pitching stage",
-      });
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Failed to Start",
-        text2: error instanceof Error ? error.message : "Unable to start timer",
-      });
-    }
+    startTimerMutation.mutate(activeScheduleId, {
+      onError: (error) => {
+        setIsRunning(false);
+        timerContext.stopTimer();
+        Toast.show({
+          type: "error",
+          text1: "Failed to Start",
+          text2:
+            error instanceof Error ? error.message : "Unable to start timer",
+        });
+      },
+      onSuccess: () => {
+        Toast.show({
+          type: "success",
+          text1: "Timer Started",
+          text2: "Starting Pitching stage",
+        });
+      },
+    });
   };
 
   const handlePauseTimer = () => {
@@ -440,13 +455,6 @@ const JudgingTimerScreen = () => {
     // Calculate offset: at 0% we want full circumference hidden, at 100% we want 0 hidden
     // So offset should decrease as progress increases
     const strokeDashoffset = circumference * (1 - progress / 100);
-
-    console.log("[DEBUG] CircularProgress - progress:", progress);
-    console.log("[DEBUG] CircularProgress - circumference:", circumference);
-    console.log(
-      "[DEBUG] CircularProgress - strokeDashoffset:",
-      strokeDashoffset
-    );
 
     return (
       <View style={{ width: size, height: size, position: "relative" }}>
@@ -725,6 +733,50 @@ const JudgingTimerScreen = () => {
                         </Text>
                       </>
                     )}
+                  </Pressable>
+                )}
+
+                {/* Next round navigation */}
+                {currentStage === "complete" && (
+                  <Pressable
+                    onPress={() => {
+                      if (!nextSchedule) return;
+                      haptics.impactAsync(ImpactFeedbackStyle.Medium);
+                      timerContext.stopTimer();
+                      setIsRunning(false);
+                      setCurrentStage("pitching");
+                      setElapsedTime(0);
+                      setActiveScheduleId(nextSchedule.judging_schedule_id);
+                      router.replace({
+                        pathname: "/(admin)/judgingTimer",
+                        params: {
+                          scheduleId: nextSchedule.judging_schedule_id,
+                        },
+                      });
+                    }}
+                    disabled={!nextSchedule}
+                    className={cn(
+                      "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2 mt-4",
+                      nextSchedule
+                        ? isDark
+                          ? "bg-[#75EDEF]"
+                          : "bg-[#132B38]"
+                        : "bg-gray-400"
+                    )}
+                    style={{ opacity: nextSchedule ? 1 : 0.6 }}
+                  >
+                    <Text
+                      className={cn(
+                        "text-lg font-onest-bold",
+                        nextSchedule
+                          ? isDark
+                            ? "text-black"
+                            : "text-white"
+                          : "text-white"
+                      )}
+                    >
+                      {nextSchedule ? "Move to Next Round" : "No More Rounds"}
+                    </Text>
                   </Pressable>
                 )}
               </>
