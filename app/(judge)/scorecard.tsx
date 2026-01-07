@@ -7,14 +7,10 @@ import { useJudgeSchedules } from "@/queries/judging";
 import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
-import {
-  haptics,
-  ImpactFeedbackStyle,
-  NotificationFeedbackType,
-} from "@/utils/haptics";
+import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -55,7 +51,6 @@ const Scorecard = () => {
   });
 
   const submitScoreMutation = useSubmitScore();
-  const warnedAboutDeadline = useRef(false);
 
   // Load data from params/storage
   useEffect(() => {
@@ -81,7 +76,6 @@ const Scorecard = () => {
   // Reset submission state when viewing a new schedule
   useEffect(() => {
     setHasSubmitted(false);
-    warnedAboutDeadline.current = false;
   }, [scheduleId]);
 
   const { data: project, isLoading } = useProject(pin, teamId);
@@ -176,31 +170,6 @@ const Scorecard = () => {
         )
       : null;
 
-  // Warn near deadline if required fields are empty
-  useEffect(() => {
-    if (
-      remainingSeconds === null ||
-      remainingSeconds > 60 ||
-      warnedAboutDeadline.current
-    ) {
-      return;
-    }
-
-    const missingFields: string[] = [];
-    if (scores.design === 0) missingFields.push("Design");
-    if (scores.technology === 0) missingFields.push("Technicality");
-    if (scores.pitching === 0) missingFields.push("Pitching");
-
-    if (missingFields.length > 0) {
-      warnedAboutDeadline.current = true;
-      Toast.show({
-        type: "info",
-        text1: "1 minute remaining",
-        text2: `Add scores for: ${missingFields.join(", ")}`,
-      });
-    }
-  }, [remainingSeconds, scores.design, scores.technology, scores.pitching]);
-
   // Auto-submit when timer hits zero and not already submitted
   useEffect(() => {
     if (
@@ -226,37 +195,6 @@ const Scorecard = () => {
   const submitScores = async (isAuto: boolean) => {
     if (!project || !projectId || hasSubmitted) return;
 
-    const missingFields: string[] = [];
-    if (scores.design === 0) missingFields.push("Design");
-    if (scores.technology === 0) missingFields.push("Technicality");
-    if (scores.pitching === 0) missingFields.push("Pitching");
-
-    if (missingFields.length > 0 && !isAuto) {
-      haptics.notificationAsync(NotificationFeedbackType.Warning);
-      Alert.alert(
-        "Missing Required Scores",
-        `Please provide scores for the following required fields:\n\n${missingFields.join(", ")}\n\nThese fields must have a minimum score of 1.`,
-        [
-          {
-            text: "OK",
-            onPress: () => haptics.impactAsync(ImpactFeedbackStyle.Light),
-          },
-        ]
-      );
-      return;
-    }
-
-    // For auto-submit, if required fields are missing, skip submit but lock UI
-    if (missingFields.length > 0 && isAuto) {
-      setHasSubmitted(true);
-      Toast.show({
-        type: "info",
-        text1: "Time's up",
-        text2: "Submission skipped due to missing required scores.",
-      });
-      return;
-    }
-
     try {
       if (!isAuto) {
         haptics.impactAsync(ImpactFeedbackStyle.Heavy);
@@ -264,12 +202,12 @@ const Scorecard = () => {
 
       const submissionData = {
         project_id: projectId,
-        design: Math.max(1, scores.design),
+        design: scores.design,
         completion: scores.completion,
         theme_relevance: scores.theme_relevance,
         idea_innovation: scores.idea_innovation,
-        technicality: Math.max(1, scores.technology),
-        pitching: Math.max(1, scores.pitching),
+        technicality: scores.technology,
+        pitching: scores.pitching,
         time: scores.time_management,
       };
 
