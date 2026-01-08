@@ -51,14 +51,6 @@ const JudgingTimerScreen = () => {
 
   // Note: Pause tracking is now handled in timer context for persistence across screen exits
 
-  // Timer stages configuration (in minutes)
-  // TODO: These should eventually come from backend
-  const stages = {
-    pitching: 4,
-    qa: 2,
-    buffer: 1,
-  };
-
   const formatLocation = (location: JudgingScheduleItem["location"]) =>
     typeof location === "string" ? location : location.location_name;
 
@@ -85,6 +77,30 @@ const JudgingTimerScreen = () => {
     refetchInterval: activeScheduleId ? 3000 : undefined,
   });
   const startTimerMutation = useStartJudgingTimer();
+
+  // Calculate timer stages dynamically based on total duration
+  // All judging rounds: 1 min buffer + 1 min Q&A + remaining time for pitching
+  const calculateStages = (
+    totalDuration: number
+  ): { pitching: number; qa: number; buffer: number } => {
+    const bufferMinutes = 1;
+    const qaMinutes = 1;
+    const pitchingMinutes = Math.max(
+      totalDuration - bufferMinutes - qaMinutes,
+      0
+    );
+
+    return {
+      pitching: pitchingMinutes,
+      qa: qaMinutes,
+      buffer: bufferMinutes,
+    };
+  };
+
+  // Get stages based on schedule data or use defaults
+  const stages = scheduleData
+    ? calculateStages(scheduleData.duration)
+    : { pitching: 4, qa: 1, buffer: 1 }; // Fallback defaults
 
   // Fetch all schedules to calculate round count (use cached data only; don't refetch here)
   const { data: allSchedules } = useAllJudgingSchedules(false);
