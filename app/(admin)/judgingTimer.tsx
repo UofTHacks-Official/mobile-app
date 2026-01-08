@@ -44,7 +44,7 @@ const JudgingTimerScreen = () => {
   const [activeScheduleId, setActiveScheduleId] = useState<number | null>(
     initialScheduleId
   );
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [currentStage, setCurrentStage] = useState<
     "pitching" | "qa" | "buffer" | "complete"
@@ -64,7 +64,7 @@ const JudgingTimerScreen = () => {
           setActiveScheduleId(id);
           setIsRunning(false);
           setCurrentStage("pitching");
-          setElapsedTime(0);
+          setRemainingTime(0);
         }
       }
     }
@@ -160,72 +160,31 @@ const JudgingTimerScreen = () => {
     return sortedJudgeSchedules[idx + 1];
   }, [scheduleData, sortedJudgeSchedules]);
 
-  // Restore timer state when returning to screen or context resets
+  // Initialize timer when schedule has started
   useEffect(() => {
     if (!scheduleData || !activeScheduleId) return;
 
     if (!scheduleData.actual_timestamp) {
       setIsRunning(false);
+      setRemainingTime(0);
       return;
     }
 
-    // Calculate current elapsed time to determine stage
-    const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
-      ? scheduleData.actual_timestamp
-      : scheduleData.actual_timestamp + "Z";
-    const startTime = new Date(timestampStr).getTime();
-    const now = Date.now();
-    const realElapsed = Math.floor((now - startTime) / 1000);
-    const totalElapsed = realElapsed - timerContext.totalPausedTime;
-
-    console.log("[DEBUG] Timer restore calculation:", {
-      actual_timestamp: scheduleData.actual_timestamp,
-      startTimeMs: startTime,
-      nowMs: now,
-      realElapsedSeconds: realElapsed,
-      totalPausedTime: timerContext.totalPausedTime,
-      totalElapsedSeconds: totalElapsed,
-    });
-
-    // Determine current stage based on elapsed time
-    const pitchingDuration = stages.pitching * 60;
-    const qaDuration = stages.qa * 60;
-    const bufferDuration = stages.buffer * 60;
-
-    let newStage: "pitching" | "qa" | "buffer" | "complete";
-    if (totalElapsed < pitchingDuration) {
-      newStage = "pitching";
-    } else if (totalElapsed < pitchingDuration + qaDuration) {
-      newStage = "qa";
-    } else if (totalElapsed < pitchingDuration + qaDuration + bufferDuration) {
-      newStage = "buffer";
-    } else {
-      newStage = "complete";
-    }
-
-    setCurrentStage(newStage);
-
+    // Timer has been started - sync context if needed
     const contextSynced =
       timerContext.isTimerRunning &&
       timerContext.activeTimerId === activeScheduleId;
 
-    // Ensure context is aligned once actual_timestamp exists
-    if (!contextSynced && newStage !== "complete") {
+    if (!contextSynced) {
       timerContext.startTimer(activeScheduleId);
+      setIsRunning(true);
+      setCurrentStage("pitching");
+      // Initialize remaining time to pitching duration
+      const pitchingDurationSeconds = stages.pitching * 60;
+      setRemainingTime(pitchingDurationSeconds);
     }
-
-    setIsRunning(newStage !== "complete");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    scheduleData,
-    activeScheduleId,
-    timerContext.isTimerRunning,
-    timerContext.activeTimerId,
-    timerContext.totalPausedTime,
-    stages.pitching,
-    stages.qa,
-    stages.buffer,
-  ]);
+  }, [scheduleData?.actual_timestamp, activeScheduleId]);
 
   // Get current stage duration
   const getCurrentStageDuration = () => {
@@ -233,67 +192,60 @@ const JudgingTimerScreen = () => {
     return stages[currentStage] * 60; // Convert to seconds
   };
 
-  // Timer logic with stage transitions
+  // Timer countdown logic - counts down from duration
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && scheduleData?.actual_timestamp) {
-      // Add 'Z' suffix if not present to treat as UTC
-      const timestampStr = scheduleData.actual_timestamp.endsWith("Z")
-        ? scheduleData.actual_timestamp
-        : scheduleData.actual_timestamp + "Z";
-      const startTime = new Date(timestampStr).getTime();
-
       interval = setInterval(() => {
-        // Only update elapsed time and check transitions if not paused
+        // Only update remaining time if not paused
         if (!timerContext.isPaused) {
-          const now = Date.now();
-          const realElapsed = Math.floor((now - startTime) / 1000);
-          // Subtract total paused time from context to get actual elapsed time
-          const totalElapsed = realElapsed - timerContext.totalPausedTime;
-          setElapsedTime(totalElapsed);
+          setRemainingTime((prev) => {
+            const newRemaining = Math.max(prev - 1, 0); // Decrement by 1 second
 
-          // Calculate cumulative stage durations
-          const pitchingDuration = stages.pitching * 60;
-          const qaDuration = stages.qa * 60;
-          const bufferDuration = stages.buffer * 60;
+            // Check if current stage has ended (remaining time hit 0)
+            if (newRemaining === 0) {
+              // Transition to next stage
+              if (currentStage === "pitching") {
+                setCurrentStage("qa");
+                const qaDuration = stages.qa * 60;
+                setRemainingTime(qaDuration);
+                haptics.notificationAsync(NotificationFeedbackType.Success);
+                Toast.show({
+                  type: "success",
+                  text1: "Q&A Time",
+                  text2: "Pitching complete, starting Q&A",
+                });
+                return qaDuration;
+              } else if (currentStage === "qa") {
+                setCurrentStage("buffer");
+                const bufferDuration = stages.buffer * 60;
+                setRemainingTime(bufferDuration);
+                haptics.notificationAsync(NotificationFeedbackType.Success);
+                Toast.show({
+                  type: "success",
+                  text1: "Buffer Time",
+                  text2: "Q&A complete, starting buffer",
+                });
+                return bufferDuration;
+              } else if (currentStage === "buffer") {
+                setCurrentStage("complete");
+                setIsRunning(false);
+                haptics.notificationAsync(NotificationFeedbackType.Error);
+                timerContext.stopTimer();
+                Toast.show({
+                  type: "success",
+                  text1: "Session Complete!",
+                  text2: "All stages finished",
+                });
+                return 0;
+              }
+            }
 
-          // Auto-transition between stages
-          if (currentStage === "pitching" && totalElapsed >= pitchingDuration) {
-            setCurrentStage("qa");
-            haptics.notificationAsync(NotificationFeedbackType.Success);
-            Toast.show({
-              type: "success",
-              text1: "Q&A Time",
-              text2: "Pitching complete, starting Q&A",
-            });
-          } else if (
-            currentStage === "qa" &&
-            totalElapsed >= pitchingDuration + qaDuration
-          ) {
-            setCurrentStage("buffer");
-            haptics.notificationAsync(NotificationFeedbackType.Success);
-            Toast.show({
-              type: "success",
-              text1: "Buffer Time",
-              text2: "Q&A complete, starting buffer",
-            });
-          } else if (
-            currentStage === "buffer" &&
-            totalElapsed >= pitchingDuration + qaDuration + bufferDuration
-          ) {
-            setCurrentStage("complete");
-            setIsRunning(false);
-            haptics.notificationAsync(NotificationFeedbackType.Error);
-            timerContext.stopTimer();
-            Toast.show({
-              type: "success",
-              text1: "Session Complete!",
-              text2: "All stages finished",
-            });
-          }
+            return newRemaining;
+          });
         }
-      }, 250);
+      }, 1000); // Update every 1 second
     }
 
     return () => {
@@ -302,12 +254,10 @@ const JudgingTimerScreen = () => {
   }, [
     isRunning,
     timerContext.isPaused,
-    scheduleData?.actual_timestamp,
     currentStage,
-    timerContext.totalPausedTime,
-    stages.pitching,
-    stages.qa,
-    stages.buffer,
+    stages,
+    scheduleData?.actual_timestamp,
+    timerContext,
   ]);
 
   const formatTime = (seconds: number) => {
@@ -316,47 +266,27 @@ const JudgingTimerScreen = () => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Calculate elapsed time within current stage
-  const getStageElapsedTime = () => {
-    const pitchingDuration = stages.pitching * 60;
-    const qaDuration = stages.qa * 60;
-
-    if (currentStage === "pitching") {
-      return elapsedTime;
-    } else if (currentStage === "qa") {
-      return elapsedTime - pitchingDuration;
-    } else if (currentStage === "buffer") {
-      return elapsedTime - pitchingDuration - qaDuration;
-    }
-    return 0;
-  };
-
   // Calculate progress percentage for current stage (fills up as time progresses)
   const getProgress = () => {
-    const stageElapsed = getStageElapsedTime();
     const stageDuration = getCurrentStageDuration();
     if (stageDuration === 0) return 100;
+    // Calculate how much time has elapsed (full duration minus remaining)
+    const elapsed = stageDuration - remainingTime;
     // Return elapsed time as percentage (0% at start, 100% at end)
-    return Math.min((stageElapsed / stageDuration) * 100, 100);
+    return Math.min((elapsed / stageDuration) * 100, 100);
   };
 
-  // Get time remaining in current stage
+  // Get time remaining in current stage (just return the state variable)
   const getTimeRemaining = () => {
-    const stageElapsed = getStageElapsedTime();
-    const stageDuration = getCurrentStageDuration();
-    const remaining = stageDuration - stageElapsed;
-
     // Debug logging
-    if (elapsedTime > 0 && elapsedTime % 60 === 0) {
+    if (remainingTime > 0 && remainingTime % 60 === 0) {
       console.log("[DEBUG] Timer calculation:");
       console.log("  Current stage:", currentStage);
-      console.log("  Total elapsed:", elapsedTime, "seconds");
-      console.log("  Stage elapsed:", stageElapsed, "seconds");
-      console.log("  Stage duration:", stageDuration, "seconds");
-      console.log("  Remaining:", remaining, "seconds");
+      console.log("  Remaining:", remainingTime, "seconds");
+      console.log("  Stage duration:", getCurrentStageDuration(), "seconds");
     }
 
-    return Math.max(remaining, 0);
+    return remainingTime;
   };
 
   const handleStartTimer = async () => {
@@ -367,7 +297,8 @@ const JudgingTimerScreen = () => {
     // Optimistically start locally for instant UI response
     setIsRunning(true);
     setCurrentStage("pitching");
-    setElapsedTime(0);
+    const pitchingDurationSeconds = stages.pitching * 60;
+    setRemainingTime(pitchingDurationSeconds);
     timerContext.startTimer(activeScheduleId);
 
     // Use room-based endpoint to trigger WebSocket broadcast
@@ -813,7 +744,7 @@ const JudgingTimerScreen = () => {
                       timerContext.stopTimer();
                       setIsRunning(false);
                       setCurrentStage("pitching");
-                      setElapsedTime(0);
+                      setRemainingTime(0);
                       setActiveScheduleId(nextSchedule.judging_schedule_id);
                       router.replace({
                         pathname: "/(admin)/judgingTimer",
