@@ -1,6 +1,6 @@
 // Judge types based on API documentation
 
-import { JudgingLocation } from "./judging";
+import { JudgingScheduleItem } from "./judging";
 export interface Judge {
   judge_id: number;
   judge_name: string;
@@ -50,17 +50,7 @@ export interface JudgeRegisterResponse {
 }
 
 export interface JudgeSchedulesResponse {
-  schedules: {
-    judging_schedule_id: number;
-    team_id: number;
-    judge_id: number;
-    timestamp: string;
-    actual_timestamp: string | null;
-    duration: number;
-    location: JudgingLocation;
-    created_at: string;
-    updated_at: string;
-  }[];
+  schedules: JudgingScheduleItem[];
 }
 
 export interface SavedHackerActionResponse {

@@ -1,12 +1,15 @@
 import { ScoringSlider } from "@/components/ScoringSlider";
 import { useTheme } from "@/context/themeContext";
-import { useTimer, computeRemainingSeconds } from "@/context/timerContext";
-import { useProject } from "@/queries/project";
+import {
+  computeRemainingSecondsFromStart,
+  computeRemainingSecondsFromTimer,
+  useTimer,
+} from "@/context/timerContext";
 import { useSubmitScore } from "@/queries/scoring";
 import { useJudgeSchedules } from "@/queries/judging";
 import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
+import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
@@ -30,10 +33,7 @@ const Scorecard = () => {
   const params = useLocalSearchParams();
   const timerContext = useTimer();
 
-  const [pin, setPin] = useState<number | null>(null);
   const [judgeId, setJudgeId] = useState<number | null>(null);
-  const [projectId, setProjectId] = useState<number | null>(null);
-  const [teamId, setTeamId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [showAllTags, setShowAllTags] = useState(false);
@@ -55,17 +55,9 @@ const Scorecard = () => {
   // Load data from params/storage
   useEffect(() => {
     const loadData = async () => {
-      const storedPin = await getSponsorPin();
       const storedJudgeId = await getJudgeId();
-      setPin(storedPin);
       setJudgeId(storedJudgeId);
 
-      if (params.projectId && typeof params.projectId === "string") {
-        setProjectId(parseInt(params.projectId));
-      }
-      if (params.teamId && typeof params.teamId === "string") {
-        setTeamId(parseInt(params.teamId));
-      }
       if (params.scheduleId && typeof params.scheduleId === "string") {
         setScheduleId(parseInt(params.scheduleId));
       }
@@ -78,11 +70,12 @@ const Scorecard = () => {
     setHasSubmitted(false);
   }, [scheduleId]);
 
-  const { data: project, isLoading } = useProject(pin, teamId);
   const {
     data: judgeSchedules,
     refetch: refetchJudgeSchedules,
     isFetching: isFetchingJudgeSchedules,
+    isLoading: isLoadingJudgeSchedules,
+    isError: isJudgeSchedulesError,
   } = useJudgeSchedules(judgeId, !!judgeId);
 
   // Keep now ticking locally for countdown/auto-submit
@@ -100,34 +93,45 @@ const Scorecard = () => {
     }, [refetchJudgeSchedules])
   );
 
-  // Short polling while on this screen to catch newly started rounds
-  useEffect(() => {
-    if (!refetchJudgeSchedules || !judgeId) return;
-    const id = setInterval(() => {
-      refetchJudgeSchedules();
-    }, 5000);
-    return () => clearInterval(id);
-  }, [refetchJudgeSchedules, judgeId]);
-
   const currentSchedule = useMemo(() => {
     if (!judgeSchedules || !scheduleId) return null;
     return judgeSchedules.find((s) => s.judging_schedule_id === scheduleId);
   }, [judgeSchedules, scheduleId]);
+
+  const project = currentSchedule?.team?.project;
+  const projectId = useMemo(() => {
+    if (project?.project_id) return project.project_id;
+    if (params.projectId && typeof params.projectId === "string") {
+      return parseInt(params.projectId);
+    }
+    return null;
+  }, [params.projectId, project?.project_id]);
 
   const locationName = currentSchedule
     ? typeof currentSchedule.location === "string"
       ? currentSchedule.location
       : currentSchedule.location.location_name
     : "";
-  const hasStarted = !!currentSchedule?.actual_timestamp;
-
   // Hydrate room timer map when schedule has started
   useEffect(() => {
     if (!currentSchedule || !currentSchedule.actual_timestamp || !locationName)
       return;
+    const durationSeconds = currentSchedule.duration * 60;
+    const now = Date.now();
+    const remainingSeconds = computeRemainingSecondsFromStart(
+      currentSchedule.actual_timestamp,
+      durationSeconds,
+      now
+    );
+
     timerContext.upsertRoomTimer(locationName, {
       actualStart: currentSchedule.actual_timestamp,
-      durationSeconds: currentSchedule.duration * 60,
+      durationSeconds,
+      remainingSeconds,
+      lastSyncedAt: now,
+      status: remainingSeconds > 0 ? "running" : "stopped",
+      judgingScheduleId: currentSchedule.judging_schedule_id,
+      teamId: currentSchedule.team_id,
     });
   }, [currentSchedule, locationName, timerContext]);
 
@@ -156,19 +160,23 @@ const Scorecard = () => {
     };
   };
 
-  const roomTimer =
-    hasStarted && locationName
-      ? timerContext.roomTimers[locationName]
-      : undefined;
-
-  const remainingSeconds =
-    roomTimer?.actualStart && roomTimer.durationSeconds
-      ? computeRemainingSeconds(
-          roomTimer.actualStart,
-          roomTimer.durationSeconds,
-          nowTs
-        )
-      : null;
+  const roomTimer = locationName
+    ? timerContext.roomTimers[locationName]
+    : undefined;
+  const remainingSeconds = computeRemainingSecondsFromTimer(roomTimer, nowTs);
+  const timerStatusLabel =
+    roomTimer?.status === "paused"
+      ? "Timer paused by admin"
+      : roomTimer?.status === "stopped"
+        ? "Timer ended by admin"
+        : null;
+  const canEditScores =
+    !!roomTimer && roomTimer.status === "running" && !hasSubmitted;
+  const submitDisabled =
+    submitScoreMutation.isPending ||
+    hasSubmitted ||
+    !roomTimer ||
+    roomTimer.status !== "running";
 
   // Auto-submit when timer hits zero and not already submitted
   useEffect(() => {
@@ -189,7 +197,7 @@ const Scorecard = () => {
     criterion: keyof ScoringCriteria,
     value: number
   ) => {
-    if (!roomTimer || hasSubmitted) return;
+    if (!canEditScores) return;
     setScores((prev) => ({ ...prev, [criterion]: value }));
   };
   const submitScores = async (isAuto: boolean) => {
@@ -288,7 +296,14 @@ const Scorecard = () => {
   };
 
   const handleSubmit = () => {
-    if (!project || !projectId || !roomTimer || hasSubmitted) return;
+    if (
+      !project ||
+      !projectId ||
+      !roomTimer ||
+      roomTimer.status !== "running" ||
+      hasSubmitted
+    )
+      return;
 
     Alert.alert(
       "Submit Scores?",
@@ -312,7 +327,7 @@ const Scorecard = () => {
     router.back();
   };
 
-  if (isLoading || !project) {
+  if (isLoadingJudgeSchedules) {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 justify-center items-center">
@@ -325,6 +340,47 @@ const Scorecard = () => {
           >
             Loading scorecard...
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isJudgeSchedulesError || !currentSchedule || !project || !projectId) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Project Not Found
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            Unable to load project details. Please try again.
+          </Text>
+          <Pressable
+            onPress={handleGoBack}
+            className={cn(
+              "mt-6 px-6 py-3 rounded-xl",
+              isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+            )}
+          >
+            <Text
+              className={cn(
+                "text-base font-onest-bold",
+                isDark ? "text-black" : "text-white"
+              )}
+            >
+              Go Back
+            </Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -390,6 +446,13 @@ const Scorecard = () => {
           ) : (
             <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
               Waiting for admin to start the timer for this room.
+            </Text>
+          )}
+          {timerStatusLabel && (
+            <Text
+              className={cn("text-xs font-pp mt-1", themeStyles.secondaryText)}
+            >
+              {timerStatusLabel}
             </Text>
           )}
           {hasSubmitted && (
@@ -543,23 +606,20 @@ const Scorecard = () => {
             onChangeText={setNotes}
             multiline
             textAlignVertical="top"
-            editable={!!roomTimer && !hasSubmitted}
+            editable={canEditScores}
           />
         </View>
 
         {/* Submit Button */}
         <Pressable
           onPress={handleSubmit}
-          disabled={submitScoreMutation.isPending || hasSubmitted || !roomTimer}
+          disabled={submitDisabled}
           className={cn(
             "py-4 rounded-xl mb-8",
             isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
           )}
           style={{
-            opacity:
-              submitScoreMutation.isPending || hasSubmitted || !roomTimer
-                ? 0.6
-                : 1,
+            opacity: submitDisabled ? 0.6 : 1,
           }}
         >
           <Text

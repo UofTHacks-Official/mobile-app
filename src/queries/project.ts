@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProjectByTeamId, getProjectsByPin } from "@/requests/project";
+import { getProjectByTeamId, getProjectsForJudge } from "@/requests/project";
 
 /**
- * Hook to fetch all projects by sponsor PIN
+ * Hook to fetch all projects assigned to a judge (via schedules)
  */
-export const useProjects = (pin: number | null) => {
+export const useProjects = (judgeId: number | null) => {
   return useQuery({
-    queryKey: ["projects", pin],
-    queryFn: () => getProjectsByPin(pin!),
-    enabled: !!pin,
+    queryKey: ["projects", judgeId],
+    queryFn: () => getProjectsForJudge(judgeId!),
+    enabled: !!judgeId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 2, // Retry twice on failure
@@ -17,13 +17,13 @@ export const useProjects = (pin: number | null) => {
 };
 
 /**
- * Hook to fetch a specific project by team_id
+ * Hook to fetch a specific project by team_id for a judge
  */
-export const useProject = (pin: number | null, teamId: number | null) => {
+export const useProject = (judgeId: number | null, teamId: number | null) => {
   return useQuery({
-    queryKey: ["project", pin, teamId],
-    queryFn: () => getProjectByTeamId(pin!, teamId!),
-    enabled: !!pin && !!teamId,
+    queryKey: ["project", judgeId, teamId],
+    queryFn: () => getProjectByTeamId(judgeId!, teamId!),
+    enabled: !!judgeId && !!teamId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 2, // Retry twice on failure

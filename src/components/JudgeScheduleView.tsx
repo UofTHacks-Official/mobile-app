@@ -1,12 +1,10 @@
 import { useTheme } from "@/context/themeContext";
-import { useProjects } from "@/queries/project";
 import { JudgingScheduleItem } from "@/types/judging";
 import { Project } from "@/types/project";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { getSponsorPin } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 interface ProjectCardProps {
@@ -76,24 +74,17 @@ interface JudgeScheduleViewProps {
 export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
-  const [pin, setPin] = useState<number | null>(null);
-
-  useEffect(() => {
-    const loadPin = async () => {
-      const storedPin = await getSponsorPin();
-      setPin(storedPin);
-    };
-    loadPin();
-  }, []);
-
-  // Fetch ALL projects once instead of per-card
-  const { data: projectsResponse } = useProjects(pin);
 
   // Create a map of teamId -> project for quick lookup
   const projectsMap = useMemo(() => {
-    if (!projectsResponse?.projects) return new Map();
-    return new Map(projectsResponse.projects.map((p) => [p.team_id, p]));
-  }, [projectsResponse]);
+    const map = new Map<number, Project>();
+    schedules.forEach((schedule) => {
+      if (schedule.team?.project) {
+        map.set(schedule.team.project.team_id, schedule.team.project);
+      }
+    });
+    return map;
+  }, [schedules]);
 
   // Sort schedules by timestamp
   const sortedSchedules = [...schedules].sort(
@@ -105,7 +96,7 @@ export const JudgeScheduleView = ({ schedules }: JudgeScheduleViewProps) => {
     schedules.length > 0 ? getLocationName(schedules[0].location) : "";
   const firstProject =
     schedules.length > 0 ? projectsMap.get(schedules[0].team_id) : undefined;
-  const category = firstProject?.categories[0] || "General";
+  const category = firstProject?.categories?.[0] || "General";
 
   return (
     <View>

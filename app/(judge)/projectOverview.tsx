@@ -1,9 +1,12 @@
 import { useTheme } from "@/context/themeContext";
-import { useTimer, computeRemainingSeconds } from "@/context/timerContext";
-import { useProject } from "@/queries/project";
+import {
+  useTimer,
+  computeRemainingSecondsFromStart,
+  computeRemainingSecondsFromTimer,
+} from "@/context/timerContext";
 import { useAllJudgingSchedules, useJudgeSchedules } from "@/queries/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { getSponsorPin, getJudgeId } from "@/utils/tokens/secureStorage";
+import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, ExternalLink } from "lucide-react-native";
@@ -25,23 +28,16 @@ const ProjectOverview = () => {
   const params = useLocalSearchParams();
   const timerContext = useTimer();
 
-  const [pin, setPin] = useState<number | null>(null);
   const [judgeId, setJudgeId] = useState<number | null>(null);
-  const [teamId, setTeamId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
   const [nowTs, setNowTs] = useState(Date.now());
 
-  // Load PIN, judge ID, and team ID from params/storage
+  // Load judge ID and schedule ID from params/storage
   useEffect(() => {
     const loadData = async () => {
-      const storedPin = await getSponsorPin();
       const storedJudgeId = await getJudgeId();
-      setPin(storedPin);
       setJudgeId(storedJudgeId);
 
-      if (params.teamId && typeof params.teamId === "string") {
-        setTeamId(parseInt(params.teamId));
-      }
       if (params.scheduleId && typeof params.scheduleId === "string") {
         setScheduleId(parseInt(params.scheduleId));
       }
@@ -49,12 +45,13 @@ const ProjectOverview = () => {
     loadData();
   }, [params]);
 
-  const { data: project, isLoading, isError } = useProject(pin, teamId);
   const { data: allSchedules } = useAllJudgingSchedules();
   const {
     data: judgeSchedules,
     refetch: refetchJudgeSchedules,
     isFetching: isFetchingJudgeSchedules,
+    isLoading: isLoadingJudgeSchedules,
+    isError: isJudgeSchedulesError,
   } = useJudgeSchedules(judgeId, !!judgeId);
 
   // Keep now ticking locally for countdown display
@@ -72,19 +69,12 @@ const ProjectOverview = () => {
     }, [refetchJudgeSchedules])
   );
 
-  // Short polling while on this screen to catch newly started rounds
-  useEffect(() => {
-    if (!refetchJudgeSchedules || !judgeId) return;
-    const id = setInterval(() => {
-      refetchJudgeSchedules();
-    }, 5000);
-    return () => clearInterval(id);
-  }, [refetchJudgeSchedules, judgeId]);
-
   const currentSchedule = useMemo(() => {
     if (!judgeSchedules || !scheduleId) return null;
     return judgeSchedules.find((s) => s.judging_schedule_id === scheduleId);
   }, [judgeSchedules, scheduleId]);
+
+  const project = currentSchedule?.team?.project;
 
   // Calculate round information
   const getRoundInfo = () => {
@@ -119,20 +109,12 @@ const ProjectOverview = () => {
   };
 
   const handleReady = () => {
-    if (!project || !scheduleId || !currentSchedule) return;
+    if (!project || !scheduleId || !currentSchedule || !locationName) return;
 
-    const locationName = currentSchedule
-      ? typeof currentSchedule.location === "string"
-        ? currentSchedule.location
-        : currentSchedule.location.location_name
-      : "";
+    const roomTimer = timerContext.roomTimers[locationName];
 
-    const roomTimer = locationName
-      ? timerContext.roomTimers[locationName]
-      : undefined;
-
-    // Block if timer hasn't started for this room
-    if (!roomTimer) {
+    // Block if timer hasn't started or was stopped for this room
+    if (!roomTimer || roomTimer.status === "stopped") {
       return;
     }
 
@@ -164,25 +146,36 @@ const ProjectOverview = () => {
   useEffect(() => {
     if (!currentSchedule || !currentSchedule.actual_timestamp || !locationName)
       return;
+    const durationSeconds = currentSchedule.duration * 60;
+    const now = Date.now();
+    const remainingSeconds = computeRemainingSecondsFromStart(
+      currentSchedule.actual_timestamp,
+      durationSeconds,
+      now
+    );
+
     timerContext.upsertRoomTimer(locationName, {
       actualStart: currentSchedule.actual_timestamp,
-      durationSeconds: currentSchedule.duration * 60,
+      durationSeconds,
+      remainingSeconds,
+      lastSyncedAt: now,
+      status: remainingSeconds > 0 ? "running" : "stopped",
+      judgingScheduleId: currentSchedule.judging_schedule_id,
+      teamId: currentSchedule.team_id,
     });
   }, [currentSchedule, locationName, timerContext]);
 
-  const hasStarted = !!currentSchedule?.actual_timestamp;
-  const roomTimer =
-    hasStarted && locationName
-      ? timerContext.roomTimers[locationName]
-      : undefined;
-  const remainingSeconds =
-    roomTimer?.actualStart && roomTimer.durationSeconds
-      ? computeRemainingSeconds(
-          roomTimer.actualStart,
-          roomTimer.durationSeconds,
-          nowTs
-        )
-      : null;
+  const roomTimer = locationName
+    ? timerContext.roomTimers[locationName]
+    : undefined;
+  const remainingSeconds = computeRemainingSecondsFromTimer(roomTimer, nowTs);
+  const readyDisabled = !roomTimer || roomTimer.status === "stopped";
+  const timerStatusLabel =
+    roomTimer?.status === "paused"
+      ? "Timer paused by admin"
+      : roomTimer?.status === "stopped"
+        ? "Timer ended by admin"
+        : null;
   const countdownDisplay =
     remainingSeconds !== null
       ? `${Math.floor((remainingSeconds || 0) / 60)
@@ -192,7 +185,7 @@ const ProjectOverview = () => {
           .padStart(2, "0")}`
       : null;
 
-  if (isLoading) {
+  if (isLoadingJudgeSchedules) {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 justify-center items-center">
@@ -210,7 +203,7 @@ const ProjectOverview = () => {
     );
   }
 
-  if (isError || !project) {
+  if (isJudgeSchedulesError || !currentSchedule || !project) {
     return (
       <SafeAreaView className={cn("flex-1", themeStyles.background)}>
         <View className="flex-1 justify-center items-center px-6">
@@ -402,12 +395,12 @@ const ProjectOverview = () => {
         {/* Ready Button */}
         <Pressable
           onPress={handleReady}
-          disabled={!roomTimer}
+          disabled={readyDisabled}
           className={cn(
             "py-4 rounded-xl mb-8",
             isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
           )}
-          style={{ opacity: !roomTimer ? 0.6 : 1 }}
+          style={{ opacity: readyDisabled ? 0.6 : 1 }}
         >
           <Text
             className={cn(
@@ -440,6 +433,16 @@ const ProjectOverview = () => {
             >
               {countdownDisplay}
             </Text>
+            {timerStatusLabel && (
+              <Text
+                className={cn(
+                  "text-xs font-pp mt-1",
+                  themeStyles.secondaryText
+                )}
+              >
+                {timerStatusLabel}
+              </Text>
+            )}
             {isFetchingJudgeSchedules && (
               <Text
                 className={cn(

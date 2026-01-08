@@ -1,8 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
+export type TimerStatus = "running" | "paused" | "stopped";
+
 export interface RoomTimer {
-  actualStart: string;
+  actualStart: string | null;
   durationSeconds: number;
+  remainingSeconds: number;
+  lastSyncedAt: number;
+  status: TimerStatus;
+  judgingScheduleId?: number;
+  teamId?: number;
 }
 
 interface TimerContextType {
@@ -74,18 +81,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const upsertRoomTimer = (room: string, timer: RoomTimer) => {
-    setRoomTimers((prev) => {
-      const existing = prev[room];
-      // Avoid unnecessary updates if nothing changed
-      if (
-        existing &&
-        existing.actualStart === timer.actualStart &&
-        existing.durationSeconds === timer.durationSeconds
-      ) {
-        return prev;
-      }
-      return { ...prev, [room]: timer };
-    });
+    setRoomTimers((prev) => ({ ...prev, [room]: timer }));
   };
 
   const clearRoomTimer = (room: string) => {
@@ -131,15 +127,14 @@ export const useTimer = () => {
 };
 
 /**
- * Helper to compute remaining seconds given an actual start timestamp and duration.
- * Falls back to 0 when start is invalid.
+ * Compute remaining seconds from a known start timestamp + duration.
  */
-export const computeRemainingSeconds = (
-  actualTimestamp: string,
+export const computeRemainingSecondsFromStart = (
+  actualTimestamp: string | null,
   durationSeconds: number,
   nowMs: number = Date.now()
-) => {
-  if (!actualTimestamp) return 0;
+): number => {
+  if (!actualTimestamp || !durationSeconds) return 0;
   const timestampStr = actualTimestamp.endsWith("Z")
     ? actualTimestamp
     : actualTimestamp + "Z";
@@ -147,4 +142,22 @@ export const computeRemainingSeconds = (
   if (Number.isNaN(startMs)) return 0;
   const elapsedSeconds = Math.floor((nowMs - startMs) / 1000);
   return Math.max(durationSeconds - elapsedSeconds, 0);
+};
+
+/**
+ * Compute remaining seconds from a RoomTimer snapshot.
+ * - running: count down from the last synced remaining value
+ * - paused: freeze at last known remaining
+ * - stopped: return 0
+ */
+export const computeRemainingSecondsFromTimer = (
+  timer?: RoomTimer,
+  nowMs: number = Date.now()
+): number | null => {
+  if (!timer) return null;
+  if (timer.status === "stopped") return 0;
+  if (timer.status === "paused") return timer.remainingSeconds;
+
+  const elapsedSinceSync = Math.floor((nowMs - timer.lastSyncedAt) / 1000);
+  return Math.max(timer.remainingSeconds - elapsedSinceSync, 0);
 };

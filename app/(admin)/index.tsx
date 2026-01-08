@@ -23,11 +23,7 @@ import {
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import {
-  getUserType,
-  getJudgeId,
-  getSponsorPin,
-} from "@/utils/tokens/secureStorage";
+import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
 import { PlatformSafeArea } from "@/components/common/PlatformSafeArea";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -36,7 +32,6 @@ import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
 import { useJudgeSchedules } from "@/queries/judging";
-import { useProjects } from "@/queries/project";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -430,16 +425,13 @@ const UpcomingEvents = ({
   const isJudge = userType === "judge";
   const isVolunteer = userType === "volunteer";
   const [judgeId, setJudgeId] = useState<number | null>(null);
-  const [pin, setPin] = useState<number | null>(null);
 
-  // Get judge ID and PIN for filtering
+  // Get judge ID for filtering
   useEffect(() => {
     if (isJudge) {
       const loadData = async () => {
         const id = await getJudgeId();
-        const sponsorPin = await getSponsorPin();
         setJudgeId(id);
-        setPin(sponsorPin);
       };
       loadData();
     }
@@ -456,15 +448,6 @@ const UpcomingEvents = ({
     judgeId,
     userType !== null && isJudge
   );
-
-  // Fetch projects for judges to display project names
-  const { data: projectsResponse } = useProjects(isJudge ? pin : null);
-
-  // Create a map of teamId -> project for quick lookup
-  const projectsMap = useMemo(() => {
-    if (!projectsResponse?.projects) return new Map();
-    return new Map(projectsResponse.projects.map((p) => [p.team_id, p]));
-  }, [projectsResponse]);
 
   // Get current time - updates every minute
   const currentTime = useCurrentTime();
@@ -485,7 +468,7 @@ const UpcomingEvents = ({
 
       // Map each schedule to an event with project info
       return sorted.slice(0, 10).map((schedule) => {
-        const project = projectsMap.get(schedule.team_id);
+        const project = schedule.team?.project;
         const endTime = new Date(
           new Date(schedule.timestamp).getTime() + schedule.duration * 60000
         );
@@ -518,7 +501,7 @@ const UpcomingEvents = ({
         })
         .slice(0, 10);
     }
-  }, [isJudge, judgeSchedules, hackerSchedules, currentTime, projectsMap]);
+  }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
