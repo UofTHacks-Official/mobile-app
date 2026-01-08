@@ -156,6 +156,11 @@ const JudgingLocationScreen = () => {
     return "completed";
   };
 
+  // Find currently running timer (in-progress schedule)
+  const runningTimer = sortedSchedules?.find(
+    (event) => getEventStatus(event) === "in-progress"
+  );
+
   // Filter schedules based on selected filter
   const filteredSchedules = sortedSchedules?.filter((event) => {
     if (filter === "all") return true;
@@ -318,6 +323,21 @@ const JudgingLocationScreen = () => {
               Temporary test data is enabled. Set USE_MOCK_JUDGING_DATA to false
               in mockJudgingData.ts to use real backend data.
             </Text>
+          </View>
+        )}
+
+        {/* Currently Running Timer - Show at top for better UX */}
+        {!isJudge && runningTimer && (
+          <View className="mb-4">
+            <Text
+              className={cn(
+                "text-lg font-onest-bold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Currently Running
+            </Text>
+            <JudgingEventCard event={runningTimer} />
           </View>
         )}
 

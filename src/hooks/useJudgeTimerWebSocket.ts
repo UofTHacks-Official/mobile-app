@@ -126,7 +126,11 @@ export const useJudgeTimerWebSocket = () => {
 
   const handleTimerAction = useCallback(
     (data: JudgeSocketMessage["data"]) => {
-      if (!data?.action) return;
+      console.log("[DEBUG] handleTimerAction called with data:", data);
+      if (!data?.action) {
+        console.log("[DEBUG] No action in data, returning");
+        return;
+      }
       const nowMs = Date.now();
       const scheduleId = data.judging_schedule_id;
       const durationMeta = scheduleId
@@ -135,7 +139,17 @@ export const useJudgeTimerWebSocket = () => {
       const room =
         data.room || durationMeta?.room || data.team_id?.toString() || "";
 
+      console.log(
+        "[DEBUG] Determined room:",
+        room,
+        "scheduleId:",
+        scheduleId,
+        "durationMeta:",
+        durationMeta
+      );
+
       if (!room) {
+        console.warn("[DEBUG] No room found, returning");
         devWarn(
           "[JudgeTimerWebSocket] Received timer event without room",
           data
@@ -143,19 +157,20 @@ export const useJudgeTimerWebSocket = () => {
         return;
       }
 
-      if (!durationMeta?.durationSeconds) {
+      const existing = roomTimersRef.current[room];
+
+      // If we don't have duration metadata yet, trigger a refetch but still process the event
+      if (!durationMeta?.durationSeconds && !existing?.durationSeconds) {
         devWarn(
           "[JudgeTimerWebSocket] Missing duration for schedule; refetching schedules"
         );
         refetchJudgeSchedules?.();
-        return;
       }
 
-      const existing = roomTimersRef.current[room];
       const baseTimer: RoomTimer = {
         actualStart: data.timestamp ?? existing?.actualStart ?? null,
         durationSeconds:
-          existing?.durationSeconds ?? durationMeta?.durationSeconds,
+          existing?.durationSeconds ?? durationMeta?.durationSeconds ?? 300, // 5 min fallback
         remainingSeconds: existing?.remainingSeconds ?? 0,
         lastSyncedAt: nowMs,
         status: existing?.status ?? "stopped",
@@ -173,13 +188,24 @@ export const useJudgeTimerWebSocket = () => {
                   baseTimer.durationSeconds,
                   nowMs
                 );
-          upsertRoomTimer(room, {
+          const timerData = {
             ...baseTimer,
             actualStart: data.timestamp ?? baseTimer.actualStart,
             remainingSeconds,
             lastSyncedAt: nowMs,
-            status: "running",
+            status: "running" as TimerStatus,
+          };
+          console.log(
+            `[DEBUG] ✅ STARTING TIMER for room "${room}":`,
+            timerData
+          );
+          devLog(`[JudgeTimerWebSocket] Starting timer for room ${room}:`, {
+            scheduleId,
+            timestamp: data.timestamp,
+            durationSeconds: baseTimer.durationSeconds,
+            remainingSeconds,
           });
+          upsertRoomTimer(room, timerData);
           break;
         }
         case "pause_timer": {
@@ -226,14 +252,26 @@ export const useJudgeTimerWebSocket = () => {
             ? JSON.parse(event.data)
             : (event.data as any);
 
+        console.log(
+          "[DEBUG] WebSocket message received:",
+          JSON.stringify(parsed, null, 2)
+        );
+        devLog("[JudgeTimerWebSocket] Received message:", parsed);
+
         if (parsed?.type === "judge") {
+          console.log(
+            "[DEBUG] Processing judge message with action:",
+            parsed.data?.action
+          );
           handleTimerAction(parsed.data);
           return;
         }
 
         // Allow announcements or other types to be added later
+        console.log("[DEBUG] Ignoring non-judge message type:", parsed?.type);
         devLog("[JudgeTimerWebSocket] Ignoring non-judge message", parsed);
       } catch (error) {
+        console.error("[DEBUG] Failed to parse WebSocket message:", error);
         devError("[JudgeTimerWebSocket] Failed to parse message", error);
       }
     },
@@ -255,6 +293,7 @@ export const useJudgeTimerWebSocket = () => {
     setConnectionState("connecting");
 
     socket.onopen = () => {
+      console.log("[DEBUG] WebSocket CONNECTED successfully to:", url);
       devLog("[JudgeTimerWebSocket] Connected");
       setConnectionState("open");
       reconnectAttemptRef.current = 0;
@@ -282,6 +321,12 @@ export const useJudgeTimerWebSocket = () => {
   ]);
 
   useEffect(() => {
+    console.log(
+      "[DEBUG] WebSocket setup - featureEnabled:",
+      featureEnabled,
+      "judgeId:",
+      judgeId
+    );
     if (!featureEnabled || !judgeId) return;
     connect();
 

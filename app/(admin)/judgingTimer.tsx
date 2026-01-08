@@ -3,6 +3,7 @@ import { useTimer } from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
+  useStartJudgingTimerByRoom,
   useAllJudgingSchedules,
 } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
@@ -77,6 +78,39 @@ const JudgingTimerScreen = () => {
     refetchInterval: activeScheduleId ? 3000 : undefined,
   });
   const startTimerMutation = useStartJudgingTimer();
+  const startTimerByRoomMutation = useStartJudgingTimerByRoom();
+
+  // Log duration from backend
+  useEffect(() => {
+    if (scheduleData) {
+      console.log("[DEBUG] Schedule data from backend:", {
+        judging_schedule_id: scheduleData.judging_schedule_id,
+        duration: scheduleData.duration,
+        durationInMinutes: scheduleData.duration,
+        timestamp: scheduleData.timestamp,
+        actual_timestamp: scheduleData.actual_timestamp,
+      });
+
+      const calculatedStages = calculateStages(scheduleData.duration);
+      console.log("[DEBUG] Calculated stages:", {
+        pitching: calculatedStages.pitching,
+        qa: calculatedStages.qa,
+        buffer: calculatedStages.buffer,
+        total:
+          calculatedStages.pitching +
+          calculatedStages.qa +
+          calculatedStages.buffer,
+        pitchingSeconds: calculatedStages.pitching * 60,
+        qaSeconds: calculatedStages.qa * 60,
+        bufferSeconds: calculatedStages.buffer * 60,
+        totalSeconds:
+          (calculatedStages.pitching +
+            calculatedStages.qa +
+            calculatedStages.buffer) *
+          60,
+      });
+    }
+  }, [scheduleData]);
 
   // Calculate timer stages dynamically based on total duration
   // All judging rounds: 1 min buffer + 1 min Q&A + remaining time for pitching
@@ -143,6 +177,15 @@ const JudgingTimerScreen = () => {
     const now = Date.now();
     const realElapsed = Math.floor((now - startTime) / 1000);
     const totalElapsed = realElapsed - timerContext.totalPausedTime;
+
+    console.log("[DEBUG] Timer restore calculation:", {
+      actual_timestamp: scheduleData.actual_timestamp,
+      startTimeMs: startTime,
+      nowMs: now,
+      realElapsedSeconds: realElapsed,
+      totalPausedTime: timerContext.totalPausedTime,
+      totalElapsedSeconds: totalElapsed,
+    });
 
     // Determine current stage based on elapsed time
     const pitchingDuration = stages.pitching * 60;
@@ -317,7 +360,7 @@ const JudgingTimerScreen = () => {
   };
 
   const handleStartTimer = async () => {
-    if (!activeScheduleId) return;
+    if (!activeScheduleId || !scheduleData) return;
 
     haptics.impactAsync(ImpactFeedbackStyle.Heavy);
 
@@ -327,25 +370,34 @@ const JudgingTimerScreen = () => {
     setElapsedTime(0);
     timerContext.startTimer(activeScheduleId);
 
-    startTimerMutation.mutate(activeScheduleId, {
-      onError: (error) => {
-        setIsRunning(false);
-        timerContext.stopTimer();
-        Toast.show({
-          type: "error",
-          text1: "Failed to Start",
-          text2:
-            error instanceof Error ? error.message : "Unable to start timer",
-        });
-      },
-      onSuccess: () => {
-        Toast.show({
-          type: "success",
-          text1: "Timer Started",
-          text2: "Starting Pitching stage",
-        });
-      },
-    });
+    // Use room-based endpoint to trigger WebSocket broadcast
+    const room = formatLocation(scheduleData.location);
+    const timestamp = scheduleData.timestamp;
+
+    console.log("[DEBUG] Starting timer by room:", room, "at time:", timestamp);
+
+    startTimerByRoomMutation.mutate(
+      { room, timestamp },
+      {
+        onError: (error) => {
+          setIsRunning(false);
+          timerContext.stopTimer();
+          Toast.show({
+            type: "error",
+            text1: "Failed to Start",
+            text2:
+              error instanceof Error ? error.message : "Unable to start timer",
+          });
+        },
+        onSuccess: () => {
+          Toast.show({
+            type: "success",
+            text1: "Timer Started",
+            text2: "Starting Pitching stage",
+          });
+        },
+      }
+    );
   };
 
   const handlePauseTimer = () => {
@@ -636,9 +688,9 @@ const JudgingTimerScreen = () => {
                     "px-12 py-4 rounded-2xl flex-row items-center justify-center",
                     isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
                   )}
-                  disabled={startTimerMutation.isPending}
+                  disabled={startTimerByRoomMutation.isPending}
                   style={{
-                    opacity: startTimerMutation.isPending ? 0.6 : 1,
+                    opacity: startTimerByRoomMutation.isPending ? 0.6 : 1,
                   }}
                 >
                   <Play size={24} color={isDark ? "#000" : "#fff"} />
@@ -648,7 +700,7 @@ const JudgingTimerScreen = () => {
                       isDark ? "text-black" : "text-white"
                     )}
                   >
-                    {startTimerMutation.isPending
+                    {startTimerByRoomMutation.isPending
                       ? "Starting..."
                       : "Start Timer"}
                   </Text>

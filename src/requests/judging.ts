@@ -47,6 +47,7 @@ export const getJudgingScheduleById = async (
 export const startJudgingTimer = async (
   judgingScheduleId: number
 ): Promise<JudgingScheduleItem[]> => {
+  console.log("[DEBUG] Starting timer for schedule ID:", judgingScheduleId);
   const response = await axiosInstance.post<{
     schedules: JudgingScheduleItem[];
   }>(
@@ -55,6 +56,7 @@ export const startJudgingTimer = async (
       judgingScheduleId.toString()
     )
   );
+  console.log("[DEBUG] Start timer response:", response.data);
   return response.data.schedules;
 };
 

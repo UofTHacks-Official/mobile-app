@@ -112,28 +112,9 @@ const Scorecard = () => {
       ? currentSchedule.location
       : currentSchedule.location.location_name
     : "";
-  // Hydrate room timer map when schedule has started
-  useEffect(() => {
-    if (!currentSchedule || !currentSchedule.actual_timestamp || !locationName)
-      return;
-    const durationSeconds = currentSchedule.duration * 60;
-    const now = Date.now();
-    const remainingSeconds = computeRemainingSecondsFromStart(
-      currentSchedule.actual_timestamp,
-      durationSeconds,
-      now
-    );
 
-    timerContext.upsertRoomTimer(locationName, {
-      actualStart: currentSchedule.actual_timestamp,
-      durationSeconds,
-      remainingSeconds,
-      lastSyncedAt: now,
-      status: remainingSeconds > 0 ? "running" : "stopped",
-      judgingScheduleId: currentSchedule.judging_schedule_id,
-      teamId: currentSchedule.team_id,
-    });
-  }, [currentSchedule, locationName, timerContext]);
+  // Note: Room timer is now managed by WebSocket listener (useJudgeTimerWebSocket)
+  // No need to hydrate here - the WebSocket will update roomTimers in real-time
 
   // Calculate total score
   const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0);
