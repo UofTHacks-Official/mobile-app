@@ -4,6 +4,8 @@ import {
   useJudgingScheduleById,
   useStartJudgingTimer,
   useStartJudgingTimerByRoom,
+  usePauseJudgingTimerByRoom,
+  useStopJudgingTimerByRoom,
   useAllJudgingSchedules,
 } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
@@ -79,6 +81,8 @@ const JudgingTimerScreen = () => {
   });
   const startTimerMutation = useStartJudgingTimer();
   const startTimerByRoomMutation = useStartJudgingTimerByRoom();
+  const pauseTimerByRoomMutation = usePauseJudgingTimerByRoom();
+  const stopTimerByRoomMutation = useStopJudgingTimerByRoom();
 
   // Log duration from backend
   useEffect(() => {
@@ -332,9 +336,14 @@ const JudgingTimerScreen = () => {
   };
 
   const handlePauseTimer = () => {
+    if (!scheduleData) return;
+
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
+    const room = formatLocation(scheduleData.location);
+    const timestamp = scheduleData.timestamp;
+
     if (timerContext.isPaused) {
-      // Resuming - calculate how long we were paused and add to total
+      // Resuming - optimistically update local state
       if (timerContext.pauseStartTime !== null) {
         const now = Date.now();
         const pauseDuration = Math.floor(
@@ -355,12 +364,57 @@ const JudgingTimerScreen = () => {
         );
       }
       timerContext.resumeTimer();
+
+      // Broadcast resume via WebSocket by calling start-timer endpoint
+      // (Resume is same as start - it continues from current remaining time)
+      startTimerByRoomMutation.mutate(
+        { room, timestamp },
+        {
+          onError: (error) => {
+            Toast.show({
+              type: "error",
+              text1: "Resume Failed",
+              text2:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to resume timer",
+            });
+          },
+        }
+      );
     } else {
-      // Pausing - record when we paused
+      // Pausing - optimistically update local state
       timerContext.setPauseStartTime(Date.now());
       timerContext.pauseTimer();
 
       console.log("[DEBUG] Paused at:", Date.now());
+
+      // Broadcast pause via WebSocket
+      pauseTimerByRoomMutation.mutate(
+        { room, timestamp },
+        {
+          onError: (error) => {
+            // Revert local state if API call fails
+            timerContext.resumeTimer();
+            timerContext.setPauseStartTime(null);
+            Toast.show({
+              type: "error",
+              text1: "Pause Failed",
+              text2:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to pause timer",
+            });
+          },
+          onSuccess: (data) => {
+            Toast.show({
+              type: "success",
+              text1: "Timer Paused",
+              text2: `${data.judges_notified} judge(s) notified`,
+            });
+          },
+        }
+      );
     }
   };
 

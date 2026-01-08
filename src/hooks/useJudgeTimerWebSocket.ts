@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   RoomTimer,
+  TimerStatus,
   computeRemainingSecondsFromStart,
   computeRemainingSecondsFromTimer,
   useTimer,

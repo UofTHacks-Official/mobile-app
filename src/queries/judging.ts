@@ -3,6 +3,8 @@ import {
   getAllJudgingSchedules,
   startJudgingTimer,
   startJudgingTimerByRoom,
+  pauseJudgingTimerByRoom,
+  stopJudgingTimerByRoom,
 } from "@/requests/judging";
 import { getJudgeSchedules } from "@/requests/judge";
 import { devError } from "@/utils/logger";
@@ -374,6 +376,58 @@ export const useStartJudgingTimerByRoom = () => {
       // Also invalidate the all schedules list to reflect the change
       queryClient.invalidateQueries({ queryKey: ["judging-schedules"] });
       queryClient.invalidateQueries({ queryKey: ["judge-schedules"] });
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for pausing timers by room
+ * Pauses the judging timer for all sessions in a room at a specific time
+ * Broadcasts pause event via WebSocket to all judges in the room
+ * @returns Mutation result for pausing timers
+ */
+export const usePauseJudgingTimerByRoom = () => {
+  return useMutation({
+    mutationFn: async ({
+      room,
+      timestamp,
+    }: {
+      room: string;
+      timestamp: string;
+    }) => {
+      try {
+        const data = await pauseJudgingTimerByRoom(room, timestamp);
+        return data;
+      } catch (error) {
+        devError("Pause judging timer by room error:", error);
+        throw error;
+      }
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for stopping timers by room
+ * Stops the judging timer for all sessions in a room at a specific time
+ * Broadcasts stop event via WebSocket to all judges in the room
+ * @returns Mutation result for stopping timers
+ */
+export const useStopJudgingTimerByRoom = () => {
+  return useMutation({
+    mutationFn: async ({
+      room,
+      timestamp,
+    }: {
+      room: string;
+      timestamp: string;
+    }) => {
+      try {
+        const data = await stopJudgingTimerByRoom(room, timestamp);
+        return data;
+      } catch (error) {
+        devError("Stop judging timer by room error:", error);
+        throw error;
+      }
     },
   });
 };

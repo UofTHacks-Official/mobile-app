@@ -7,6 +7,8 @@ export const judgingEndpoints = {
   START_JUDGING_TIMER:
     "/api/v13/admins/judging/{judging_schedule_id}/start-timer",
   START_TIMER_BY_ROOM: "/api/v13/admins/judging/start-timer-by-room",
+  PAUSE_TIMER_BY_ROOM: "/api/v13/admins/judging/pause-timer-by-room",
+  STOP_TIMER_BY_ROOM: "/api/v13/admins/judging/stop-timer-by-room",
   GENERATE_SCHEDULES: "/api/v13/judging/generate-from-db",
 };
 
@@ -77,6 +79,48 @@ export const startJudgingTimerByRoom = async (
     timestamp,
   });
   return response.data.schedules;
+};
+
+/**
+ * Pauses judging timers for all sessions in a room at a specific time
+ * Broadcasts pause event via WebSocket to all judges in the room
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Current timestamp in ISO 8601 format
+ * @returns Success message with number of judges notified
+ */
+export const pauseJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<{ message: string; judges_notified: number }> => {
+  const response = await axiosInstance.post<{
+    message: string;
+    judges_notified: number;
+  }>(judgingEndpoints.PAUSE_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
+  return response.data;
+};
+
+/**
+ * Stops judging timers for all sessions in a room at a specific time
+ * Broadcasts stop event via WebSocket to all judges in the room
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Current timestamp in ISO 8601 format
+ * @returns Success message with number of judges notified
+ */
+export const stopJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<{ message: string; judges_notified: number }> => {
+  const response = await axiosInstance.post<{
+    message: string;
+    judges_notified: number;
+  }>(judgingEndpoints.STOP_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
+  return response.data;
 };
 
 /**
