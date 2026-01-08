@@ -510,7 +510,7 @@ const Scorecard = () => {
         {/* Scoring Sliders */}
         <View className="mb-6">
           <ScoringSlider
-            label="Design *"
+            label="Design"
             value={scores.design}
             onChange={(val) => handleScoreChange("design", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.design}
@@ -546,7 +546,7 @@ const Scorecard = () => {
             disabled={isSliderDisabled}
           />
           <ScoringSlider
-            label="Technicality *"
+            label="Technicality"
             value={scores.technology}
             onChange={(val) => handleScoreChange("technology", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.technology}
@@ -555,7 +555,7 @@ const Scorecard = () => {
             disabled={isSliderDisabled}
           />
           <ScoringSlider
-            label="Pitching *"
+            label="Pitching"
             value={scores.pitching}
             onChange={(val) => handleScoreChange("pitching", val)}
             criteriaInfo={SCORING_CRITERIA_INFO.pitching}
