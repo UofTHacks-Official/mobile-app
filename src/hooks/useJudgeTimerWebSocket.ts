@@ -180,14 +180,12 @@ export const useJudgeTimerWebSocket = () => {
 
       switch (data.action) {
         case "start_timer": {
+          // If resuming from pause, keep the remaining time
+          // Otherwise, start fresh with full duration
           const remainingSeconds =
             existing?.status === "paused"
               ? existing.remainingSeconds
-              : deriveRemainingFromStartOrDuration(
-                  data.timestamp ?? existing?.actualStart,
-                  baseTimer.durationSeconds,
-                  nowMs
-                );
+              : baseTimer.durationSeconds;
           const timerData = {
             ...baseTimer,
             actualStart: data.timestamp ?? baseTimer.actualStart,
