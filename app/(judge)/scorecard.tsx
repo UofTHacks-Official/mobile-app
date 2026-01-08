@@ -153,6 +153,7 @@ const Scorecard = () => {
         : null;
   const canEditScores =
     !!roomTimer && roomTimer.status === "running" && !hasSubmitted;
+  const isSliderDisabled = !canEditScores; // Lock sliders when timer is paused/stopped or scores are submitted
   const submitDisabled =
     submitScoreMutation.isPending ||
     hasSubmitted ||
@@ -515,6 +516,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.design}
             min={0}
             max={3}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Completion"
@@ -523,6 +525,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.completion}
             min={0}
             max={4}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Theme Relevance"
@@ -531,6 +534,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.theme_relevance}
             min={0}
             max={3}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Idea & Innovation"
@@ -539,6 +543,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.idea_innovation}
             min={0}
             max={5}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Technicality *"
@@ -547,6 +552,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.technology}
             min={0}
             max={5}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Pitching *"
@@ -555,6 +561,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.pitching}
             min={0}
             max={5}
+            disabled={isSliderDisabled}
           />
           <ScoringSlider
             label="Time"
@@ -563,6 +570,7 @@ const Scorecard = () => {
             criteriaInfo={SCORING_CRITERIA_INFO.time_management}
             min={0}
             max={2}
+            disabled={isSliderDisabled}
           />
         </View>
 

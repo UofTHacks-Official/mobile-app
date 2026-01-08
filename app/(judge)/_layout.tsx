@@ -30,6 +30,7 @@ export default function JudgeLayout() {
           options={{
             headerShown: false,
             animation: "slide_from_right",
+            gestureEnabled: false,
           }}
         />
         <Stack.Screen
@@ -37,6 +38,7 @@ export default function JudgeLayout() {
           options={{
             headerShown: false,
             animation: "slide_from_right",
+            gestureEnabled: false,
           }}
         />
       </Stack>
