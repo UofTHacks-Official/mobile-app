@@ -17,7 +17,7 @@ type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error";
 interface JudgeSocketMessage {
   type?: string;
   data?: {
-    action?: "start_timer" | "pause_timer" | "stop_timer";
+    action?: "start_timer" | "pause_timer" | "resume_timer" | "stop_timer";
     room?: string;
     judging_schedule_id?: number;
     team_id?: number;
@@ -181,12 +181,8 @@ export const useJudgeTimerWebSocket = () => {
 
       switch (data.action) {
         case "start_timer": {
-          // If resuming from pause, keep the remaining time
-          // Otherwise, start fresh with full duration
-          const remainingSeconds =
-            existing?.status === "paused"
-              ? existing.remainingSeconds
-              : baseTimer.durationSeconds;
+          // Starting fresh - use full duration
+          const remainingSeconds = baseTimer.durationSeconds;
           const timerData = {
             ...baseTimer,
             actualStart: data.timestamp ?? baseTimer.actualStart,
@@ -207,6 +203,28 @@ export const useJudgeTimerWebSocket = () => {
           upsertRoomTimer(room, timerData);
           break;
         }
+        case "resume_timer": {
+          // Resuming from pause - keep the remaining time
+          const remainingSeconds =
+            existing?.remainingSeconds ?? baseTimer.durationSeconds;
+          const timerData = {
+            ...baseTimer,
+            actualStart: existing?.actualStart ?? data.timestamp ?? null,
+            remainingSeconds,
+            lastSyncedAt: nowMs,
+            status: "running" as TimerStatus,
+          };
+          console.log(
+            `[DEBUG] ✅ RESUMING TIMER for room "${room}":`,
+            timerData
+          );
+          devLog(`[JudgeTimerWebSocket] Resuming timer for room ${room}:`, {
+            scheduleId,
+            remainingSeconds,
+          });
+          upsertRoomTimer(room, timerData);
+          break;
+        }
         case "pause_timer": {
           const remainingSeconds =
             computeRemainingSecondsFromTimer(existing, nowMs) ??
@@ -216,6 +234,11 @@ export const useJudgeTimerWebSocket = () => {
               nowMs
             );
 
+          console.log(
+            `[DEBUG] ⏸️ PAUSING TIMER for room "${room}":`,
+            remainingSeconds,
+            "seconds remaining"
+          );
           upsertRoomTimer(room, {
             ...baseTimer,
             remainingSeconds,
@@ -225,6 +248,7 @@ export const useJudgeTimerWebSocket = () => {
           break;
         }
         case "stop_timer": {
+          console.log(`[DEBUG] ⏹️ STOPPING TIMER for room "${room}"`);
           upsertRoomTimer(room, {
             ...baseTimer,
             remainingSeconds: 0,

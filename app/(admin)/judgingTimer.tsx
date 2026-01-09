@@ -1,10 +1,13 @@
 import { useTheme } from "@/context/themeContext";
-import { useTimer } from "@/context/timerContext";
+import {
+  computeRemainingSecondsFromTimer,
+  useTimer,
+} from "@/context/timerContext";
 import {
   useJudgingScheduleById,
   useStartJudgingTimer,
   useStartJudgingTimerByRoom,
-  usePauseJudgingTimerByRoom,
+  useTogglePauseJudgingTimerByRoom,
   useStopJudgingTimerByRoom,
   useAllJudgingSchedules,
 } from "@/queries/judging";
@@ -18,7 +21,7 @@ import {
 } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Pause, Play } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -46,11 +49,13 @@ const JudgingTimerScreen = () => {
   const [activeScheduleId, setActiveScheduleId] = useState<number | null>(
     initialScheduleId
   );
-  const [remainingTime, setRemainingTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   const [currentStage, setCurrentStage] = useState<
     "pitching" | "qa" | "buffer" | "complete"
   >("pitching");
+  const previousStageRef = useRef<"pitching" | "qa" | "buffer" | "complete">(
+    "pitching"
+  );
+  const [now, setNow] = useState(Date.now());
 
   // Note: Pause tracking is now handled in timer context for persistence across screen exits
 
@@ -64,13 +69,12 @@ const JudgingTimerScreen = () => {
       if (!isNaN(id) && id > 0) {
         if (activeScheduleId !== id) {
           setActiveScheduleId(id);
-          setIsRunning(false);
           setCurrentStage("pitching");
-          setRemainingTime(0);
+          previousStageRef.current = "pitching";
         }
       }
     }
-  }, [params.scheduleId]);
+  }, [params.scheduleId, activeScheduleId]);
 
   const {
     data: scheduleData,
@@ -81,7 +85,7 @@ const JudgingTimerScreen = () => {
   });
   const startTimerMutation = useStartJudgingTimer();
   const startTimerByRoomMutation = useStartJudgingTimerByRoom();
-  const pauseTimerByRoomMutation = usePauseJudgingTimerByRoom();
+  const togglePauseTimerByRoomMutation = useTogglePauseJudgingTimerByRoom();
   const stopTimerByRoomMutation = useStopJudgingTimerByRoom();
 
   // Log duration from backend
@@ -140,6 +144,89 @@ const JudgingTimerScreen = () => {
     ? calculateStages(scheduleData.duration)
     : { pitching: 4, qa: 1, buffer: 1 }; // Fallback defaults
 
+  // Get the room name to look up the timer in context
+  const roomName = scheduleData ? formatLocation(scheduleData.location) : null;
+  const roomTimer = roomName ? timerContext.roomTimers[roomName] : undefined;
+
+  // Total duration in seconds (shared across helpers)
+  const totalDurationSeconds =
+    (stages.pitching + stages.qa + stages.buffer) * 60;
+
+  // Get total remaining seconds - SAME AS JUDGE SIDE
+  const getTotalRemaining = (): number => {
+    // Always clamp to total duration to avoid runaway values if the start time is in the future
+    const clampRemaining = (remaining: number) =>
+      Math.max(Math.min(remaining, totalDurationSeconds), 0);
+
+    // If we have a roomTimer, use it (same as judge side)
+    if (roomTimer) {
+      if (roomTimer.status === "stopped") return 0;
+      if (roomTimer.status === "paused") return roomTimer.remainingSeconds;
+
+      // Status is "running" - calculate elapsed since last sync
+      const elapsedSinceSync = Math.floor(
+        (now - roomTimer.lastSyncedAt) / 1000
+      );
+      return clampRemaining(roomTimer.remainingSeconds - elapsedSinceSync);
+    }
+
+    // Fallback: calculate from actual_timestamp if no roomTimer
+    if (!scheduleData?.actual_timestamp) return totalDurationSeconds;
+    const startMs = new Date(scheduleData.actual_timestamp).getTime();
+    if (Number.isNaN(startMs)) return totalDurationSeconds;
+
+    // If the backend timestamp is in the future, treat elapsed as 0 so we don't add
+    // the "time until start" to the countdown (which was causing 13k+ minute timers)
+    const elapsed = Math.max(Math.floor((now - startMs) / 1000), 0);
+    return clampRemaining(totalDurationSeconds - elapsed);
+  };
+
+  const totalRemaining = getTotalRemaining();
+
+  // UI ONLY: Determine which stage label to show based on remaining time
+  // Buffer (1 min) = last 60 seconds
+  // QA (1 min) = 60-120 seconds remaining
+  // Pitching = everything else
+  const getCurrentStageFromRemaining = (
+    remaining: number
+  ): "pitching" | "qa" | "buffer" | "complete" => {
+    if (remaining === 0) return "complete";
+
+    const bufferDuration = stages.buffer * 60; // 60 seconds
+    const qaDuration = stages.qa * 60; // 60 seconds
+
+    // Last 60 seconds = buffer
+    if (remaining <= bufferDuration) return "buffer";
+
+    // 60-120 seconds remaining = qa
+    if (remaining <= bufferDuration + qaDuration) return "qa";
+
+    // Everything else = pitching
+    return "pitching";
+  };
+
+  // UI ONLY: Get the display time for current stage
+  const getStageDisplayTime = (
+    remaining: number,
+    stage: "pitching" | "qa" | "buffer" | "complete"
+  ): number => {
+    if (stage === "complete") return 0;
+
+    const bufferDuration = stages.buffer * 60;
+    const qaDuration = stages.qa * 60;
+
+    if (stage === "buffer") {
+      // Show countdown from 60 to 0
+      return remaining;
+    } else if (stage === "qa") {
+      // Show countdown from 60 to 0 (subtract buffer duration)
+      return remaining - bufferDuration;
+    } else {
+      // Pitching: show countdown from total - 120 to 0 (subtract qa + buffer)
+      return remaining - (bufferDuration + qaDuration);
+    }
+  };
+
   // Fetch all schedules to calculate round count (use cached data only; don't refetch here)
   const { data: allSchedules } = useAllJudgingSchedules(false);
 
@@ -164,105 +251,56 @@ const JudgingTimerScreen = () => {
     return sortedJudgeSchedules[idx + 1];
   }, [scheduleData, sortedJudgeSchedules]);
 
-  // Initialize timer when schedule has started
+  // Tick to update the display while a timer source exists
   useEffect(() => {
-    if (!scheduleData || !activeScheduleId) return;
+    const hasTimerSource = !!roomTimer || !!scheduleData?.actual_timestamp;
+    if (!hasTimerSource) return;
 
-    if (!scheduleData.actual_timestamp) {
-      setIsRunning(false);
-      setRemainingTime(0);
-      return;
-    }
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 100); // Update every 100ms for smooth countdown
 
-    // Timer has been started - sync context if needed
-    const contextSynced =
-      timerContext.isTimerRunning &&
-      timerContext.activeTimerId === activeScheduleId;
+    return () => clearInterval(interval);
+  }, [roomTimer, scheduleData?.actual_timestamp]);
 
-    if (!contextSynced) {
-      timerContext.startTimer(activeScheduleId);
-      setIsRunning(true);
-      setCurrentStage("pitching");
-      // Initialize remaining time to pitching duration
-      const pitchingDurationSeconds = stages.pitching * 60;
-      setRemainingTime(pitchingDurationSeconds);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scheduleData?.actual_timestamp, activeScheduleId]);
-
-  // Get current stage duration
-  const getCurrentStageDuration = () => {
-    if (currentStage === "complete") return 0;
-    return stages[currentStage] * 60; // Convert to seconds
-  };
-
-  // Timer countdown logic - counts down from duration
+  // Update current stage based on total remaining
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isRunning && scheduleData?.actual_timestamp) {
-      interval = setInterval(() => {
-        // Only update remaining time if not paused
-        if (!timerContext.isPaused) {
-          setRemainingTime((prev) => {
-            const newRemaining = Math.max(prev - 1, 0); // Decrement by 1 second
-
-            // Check if current stage has ended (remaining time hit 0)
-            if (newRemaining === 0) {
-              // Transition to next stage
-              if (currentStage === "pitching") {
-                setCurrentStage("qa");
-                const qaDuration = stages.qa * 60;
-                setRemainingTime(qaDuration);
-                haptics.notificationAsync(NotificationFeedbackType.Success);
-                Toast.show({
-                  type: "success",
-                  text1: "Q&A Time",
-                  text2: "Pitching complete, starting Q&A",
-                });
-                return qaDuration;
-              } else if (currentStage === "qa") {
-                setCurrentStage("buffer");
-                const bufferDuration = stages.buffer * 60;
-                setRemainingTime(bufferDuration);
-                haptics.notificationAsync(NotificationFeedbackType.Success);
-                Toast.show({
-                  type: "success",
-                  text1: "Buffer Time",
-                  text2: "Q&A complete, starting buffer",
-                });
-                return bufferDuration;
-              } else if (currentStage === "buffer") {
-                setCurrentStage("complete");
-                setIsRunning(false);
-                haptics.notificationAsync(NotificationFeedbackType.Error);
-                timerContext.stopTimer();
-                Toast.show({
-                  type: "success",
-                  text1: "Session Complete!",
-                  text2: "All stages finished",
-                });
-                return 0;
-              }
-            }
-
-            return newRemaining;
-          });
-        }
-      }, 1000); // Update every 1 second
+    const newStage = getCurrentStageFromRemaining(totalRemaining);
+    if (newStage !== currentStage) {
+      setCurrentStage(newStage);
     }
+  }, [totalRemaining]);
 
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [
-    isRunning,
-    timerContext.isPaused,
-    currentStage,
-    stages,
-    scheduleData?.actual_timestamp,
-    timerContext,
-  ]);
+  // Handle side effects when stage changes
+  useEffect(() => {
+    if (previousStageRef.current !== currentStage) {
+      // Stage has changed - trigger appropriate notifications
+      if (currentStage === "qa") {
+        haptics.notificationAsync(NotificationFeedbackType.Success);
+        Toast.show({
+          type: "success",
+          text1: "Q&A Time",
+          text2: "Pitching complete, starting Q&A",
+        });
+      } else if (currentStage === "buffer") {
+        haptics.notificationAsync(NotificationFeedbackType.Success);
+        Toast.show({
+          type: "success",
+          text1: "Buffer Time",
+          text2: "Q&A complete, starting buffer",
+        });
+      } else if (currentStage === "complete") {
+        haptics.notificationAsync(NotificationFeedbackType.Error);
+        Toast.show({
+          type: "success",
+          text1: "Session Complete!",
+          text2: "All stages finished",
+        });
+      }
+
+      previousStageRef.current = currentStage;
+    }
+  }, [currentStage]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -270,27 +308,21 @@ const JudgingTimerScreen = () => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Get display time for current stage (UI only - splits up the total remaining)
+  const stageDisplayTime = getStageDisplayTime(totalRemaining, currentStage);
+
+  // Get current stage duration
+  const getCurrentStageDuration = () => {
+    if (currentStage === "complete") return 0;
+    return stages[currentStage] * 60;
+  };
+
   // Calculate progress percentage for current stage (fills up as time progresses)
   const getProgress = () => {
     const stageDuration = getCurrentStageDuration();
     if (stageDuration === 0) return 100;
-    // Calculate how much time has elapsed (full duration minus remaining)
-    const elapsed = stageDuration - remainingTime;
-    // Return elapsed time as percentage (0% at start, 100% at end)
+    const elapsed = stageDuration - stageDisplayTime;
     return Math.min((elapsed / stageDuration) * 100, 100);
-  };
-
-  // Get time remaining in current stage (just return the state variable)
-  const getTimeRemaining = () => {
-    // Debug logging
-    if (remainingTime > 0 && remainingTime % 60 === 0) {
-      console.log("[DEBUG] Timer calculation:");
-      console.log("  Current stage:", currentStage);
-      console.log("  Remaining:", remainingTime, "seconds");
-      console.log("  Stage duration:", getCurrentStageDuration(), "seconds");
-    }
-
-    return remainingTime;
   };
 
   const handleStartTimer = async () => {
@@ -298,14 +330,6 @@ const JudgingTimerScreen = () => {
 
     haptics.impactAsync(ImpactFeedbackStyle.Heavy);
 
-    // Optimistically start locally for instant UI response
-    setIsRunning(true);
-    setCurrentStage("pitching");
-    const pitchingDurationSeconds = stages.pitching * 60;
-    setRemainingTime(pitchingDurationSeconds);
-    timerContext.startTimer(activeScheduleId);
-
-    // Use room-based endpoint to trigger WebSocket broadcast
     const room = formatLocation(scheduleData.location);
     const timestamp = scheduleData.timestamp;
 
@@ -315,8 +339,6 @@ const JudgingTimerScreen = () => {
       { room, timestamp },
       {
         onError: (error) => {
-          setIsRunning(false);
-          timerContext.stopTimer();
           Toast.show({
             type: "error",
             text1: "Failed to Start",
@@ -325,6 +347,17 @@ const JudgingTimerScreen = () => {
           });
         },
         onSuccess: () => {
+          // Immediately seed a local timer so the countdown updates without waiting for refetch
+          timerContext.upsertRoomTimer(room, {
+            actualStart: new Date().toISOString(),
+            durationSeconds: totalDurationSeconds,
+            remainingSeconds: totalDurationSeconds,
+            lastSyncedAt: Date.now(),
+            status: "running",
+            judgingScheduleId: scheduleData.judging_schedule_id,
+            teamId: scheduleData.team_id,
+          });
+
           Toast.show({
             type: "success",
             text1: "Timer Started",
@@ -341,81 +374,71 @@ const JudgingTimerScreen = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
     const room = formatLocation(scheduleData.location);
     const timestamp = scheduleData.timestamp;
+    const nowMs = Date.now();
 
-    if (timerContext.isPaused) {
-      // Resuming - optimistically update local state
-      if (timerContext.pauseStartTime !== null) {
-        const now = Date.now();
-        const pauseDuration = Math.floor(
-          (now - timerContext.pauseStartTime) / 1000
-        );
-        timerContext.addPausedTime(pauseDuration);
-        timerContext.setPauseStartTime(null);
+    // Use the toggle endpoint - backend handles pause/resume logic
+    togglePauseTimerByRoomMutation.mutate(
+      { room, timestamp },
+      {
+        onError: (error) => {
+          Toast.show({
+            type: "error",
+            text1: "Failed",
+            text2:
+              error instanceof Error ? error.message : "Unable to toggle timer",
+          });
+        },
+        onSuccess: (data) => {
+          const computedRemaining =
+            computeRemainingSecondsFromTimer(roomTimer, nowMs) ??
+            (() => {
+              if (!scheduleData.actual_timestamp) return totalDurationSeconds;
+              const startMs = new Date(scheduleData.actual_timestamp).getTime();
+              if (Number.isNaN(startMs)) return totalDurationSeconds;
+              const elapsed = Math.max(Math.floor((nowMs - startMs) / 1000), 0);
+              return Math.max(totalDurationSeconds - elapsed, 0);
+            })();
 
-        console.log(
-          "[DEBUG] Resume - Pause duration:",
-          pauseDuration,
-          "seconds"
-        );
-        console.log(
-          "[DEBUG] Resume - Total paused time:",
-          timerContext.totalPausedTime + pauseDuration,
-          "seconds"
-        );
+          if (data.action === "pause_timer") {
+            timerContext.upsertRoomTimer(room, {
+              actualStart:
+                roomTimer?.actualStart ?? scheduleData.actual_timestamp ?? null,
+              durationSeconds:
+                roomTimer?.durationSeconds ?? totalDurationSeconds,
+              remainingSeconds: computedRemaining,
+              lastSyncedAt: nowMs,
+              status: "paused",
+              judgingScheduleId:
+                roomTimer?.judgingScheduleId ??
+                scheduleData.judging_schedule_id,
+              teamId: roomTimer?.teamId ?? scheduleData.team_id,
+            });
+          } else if (data.action === "resume_timer") {
+            timerContext.upsertRoomTimer(room, {
+              actualStart:
+                roomTimer?.actualStart ?? scheduleData.actual_timestamp ?? null,
+              durationSeconds:
+                roomTimer?.durationSeconds ?? totalDurationSeconds,
+              remainingSeconds: computedRemaining,
+              lastSyncedAt: nowMs,
+              status: "running",
+              judgingScheduleId:
+                roomTimer?.judgingScheduleId ??
+                scheduleData.judging_schedule_id,
+              teamId: roomTimer?.teamId ?? scheduleData.team_id,
+            });
+          }
+
+          console.log("[DEBUG] Toggle response:", data);
+          Toast.show({
+            type: "success",
+            text1:
+              data.action === "resume_timer" ? "Timer Resumed" : "Timer Paused",
+            text2: `${data.judges_notified} judge(s) notified`,
+          });
+        },
       }
-      timerContext.resumeTimer();
-
-      // Broadcast resume via WebSocket by calling start-timer endpoint
-      // (Resume is same as start - it continues from current remaining time)
-      startTimerByRoomMutation.mutate(
-        { room, timestamp },
-        {
-          onError: (error) => {
-            Toast.show({
-              type: "error",
-              text1: "Resume Failed",
-              text2:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to resume timer",
-            });
-          },
-        }
-      );
-    } else {
-      // Pausing - optimistically update local state
-      timerContext.setPauseStartTime(Date.now());
-      timerContext.pauseTimer();
-
-      console.log("[DEBUG] Paused at:", Date.now());
-
-      // Broadcast pause via WebSocket
-      pauseTimerByRoomMutation.mutate(
-        { room, timestamp },
-        {
-          onError: (error) => {
-            // Revert local state if API call fails
-            timerContext.resumeTimer();
-            timerContext.setPauseStartTime(null);
-            Toast.show({
-              type: "error",
-              text1: "Pause Failed",
-              text2:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to pause timer",
-            });
-          },
-          onSuccess: (data) => {
-            Toast.show({
-              type: "success",
-              text1: "Timer Paused",
-              text2: `${data.judges_notified} judge(s) notified`,
-            });
-          },
-        }
-      );
-    }
+    );
   };
 
   // Get stage display name
@@ -451,47 +474,8 @@ const JudgingTimerScreen = () => {
   };
 
   const handleGoBack = () => {
-    console.log(
-      "[DEBUG] handleGoBack - isTimerRunning:",
-      timerContext.isTimerRunning
-    );
-    console.log("[DEBUG] handleGoBack - isPaused:", timerContext.isPaused);
-    console.log("[DEBUG] handleGoBack - isRunning (local):", isRunning);
-
-    // Check if timer is running (whether paused or not)
-    if (timerContext.isTimerRunning) {
-      // Determine current timer state for message
-      const timerState = timerContext.isPaused ? "paused" : "running";
-
-      // Show warning alert explaining state will persist
-      Alert.alert(
-        "Exit Timer?",
-        `Your timer will remain ${timerState}. You can return to this screen anytime to continue.`,
-        [
-          {
-            text: "Cancel",
-            onPress: () => {
-              haptics.impactAsync(ImpactFeedbackStyle.Light);
-            },
-            style: "cancel",
-          },
-          {
-            text: "Exit",
-            onPress: () => {
-              haptics.impactAsync(ImpactFeedbackStyle.Medium);
-              // Don't stop timer - let it persist
-              // Just navigate back
-              router.push("/(admin)/judging");
-            },
-          },
-        ],
-        { cancelable: true }
-      );
-    } else {
-      // No active timer, just navigate back
-      haptics.impactAsync(ImpactFeedbackStyle.Light);
-      router.push("/(admin)/judging");
-    }
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
+    router.push("/(admin)/judging");
   };
 
   // Circular progress ring component
@@ -556,7 +540,7 @@ const JudgingTimerScreen = () => {
               lineHeight: 84,
             }}
           >
-            {formatTime(getTimeRemaining())}
+            {formatTime(stageDisplayTime)}
           </Text>
         </View>
       </View>
@@ -761,31 +745,15 @@ const JudgingTimerScreen = () => {
                       isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
                     )}
                   >
-                    {timerContext.isPaused ? (
-                      <>
-                        <Play size={24} color={isDark ? "#000" : "#fff"} />
-                        <Text
-                          className={cn(
-                            "text-lg font-onest-bold",
-                            isDark ? "text-black" : "text-white"
-                          )}
-                        >
-                          Resume
-                        </Text>
-                      </>
-                    ) : (
-                      <>
-                        <Pause size={24} color={isDark ? "#000" : "#fff"} />
-                        <Text
-                          className={cn(
-                            "text-lg font-onest-bold",
-                            isDark ? "text-black" : "text-white"
-                          )}
-                        >
-                          Pause
-                        </Text>
-                      </>
-                    )}
+                    <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                    <Text
+                      className={cn(
+                        "text-lg font-onest-bold",
+                        isDark ? "text-black" : "text-white"
+                      )}
+                    >
+                      Pause/Resume
+                    </Text>
                   </Pressable>
                 )}
 
@@ -795,10 +763,8 @@ const JudgingTimerScreen = () => {
                     onPress={() => {
                       if (!nextSchedule) return;
                       haptics.impactAsync(ImpactFeedbackStyle.Medium);
-                      timerContext.stopTimer();
-                      setIsRunning(false);
                       setCurrentStage("pitching");
-                      setRemainingTime(0);
+                      previousStageRef.current = "pitching";
                       setActiveScheduleId(nextSchedule.judging_schedule_id);
                       router.replace({
                         pathname: "/(admin)/judgingTimer",

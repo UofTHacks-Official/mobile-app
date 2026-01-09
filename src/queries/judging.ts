@@ -4,6 +4,7 @@ import {
   startJudgingTimer,
   startJudgingTimerByRoom,
   pauseJudgingTimerByRoom,
+  togglePauseJudgingTimerByRoom,
   stopJudgingTimerByRoom,
 } from "@/requests/judging";
 import { getJudgeSchedules } from "@/requests/judge";
@@ -400,6 +401,34 @@ export const usePauseJudgingTimerByRoom = () => {
         return data;
       } catch (error) {
         devError("Pause judging timer by room error:", error);
+        throw error;
+      }
+    },
+  });
+};
+
+/**
+ * TanStack Query mutation hook for toggling pause/resume timers by room
+ * Intelligently toggles between pause and resume based on current timer state
+ * - If timer is running or unknown -> pauses the timer
+ * - If timer is paused -> resumes the timer
+ * Broadcasts the appropriate event via WebSocket to all judges in the room
+ * @returns Mutation result with action taken and judges notified
+ */
+export const useTogglePauseJudgingTimerByRoom = () => {
+  return useMutation({
+    mutationFn: async ({
+      room,
+      timestamp,
+    }: {
+      room: string;
+      timestamp: string;
+    }) => {
+      try {
+        const data = await togglePauseJudgingTimerByRoom(room, timestamp);
+        return data;
+      } catch (error) {
+        devError("Toggle pause judging timer by room error:", error);
         throw error;
       }
     },
