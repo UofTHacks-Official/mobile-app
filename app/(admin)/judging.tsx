@@ -10,11 +10,15 @@ import { JudgingScheduleItem } from "@/types/judging";
 import { USE_MOCK_JUDGING_DATA } from "@/utils/mockJudgingData";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
+import {
+  groupSchedulesByRoom,
+  formatLocationForDisplay,
+} from "@/utils/judging";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
 import { useQueryClient } from "@tanstack/react-query";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { RefreshCw } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -138,33 +142,47 @@ const JudgingLocationScreen = () => {
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-  // Get event status helper
-  const getEventStatus = (event: JudgingScheduleItem) => {
-    if (!event.actual_timestamp) {
+  // Group schedules by room
+  const roomGroups = useMemo(() => {
+    if (!sortedSchedules) return [];
+    return groupSchedulesByRoom(sortedSchedules);
+  }, [sortedSchedules]);
+
+  // Get room status helper (check if ANY schedule in the room has started)
+  const getRoomStatus = (roomSchedules: JudgingScheduleItem[]) => {
+    // Check if any schedule in this room has started
+    const anyStarted = roomSchedules.some((s) => s.actual_timestamp);
+
+    if (!anyStarted) {
       return "not-started";
     }
 
-    const startTime = new Date(event.actual_timestamp).getTime();
-    const now = Date.now();
-    const elapsed = Math.floor((now - startTime) / 1000);
-    const durationSeconds = event.duration * 60;
+    // If any started, check if all are completed
+    const allCompleted = roomSchedules.every((schedule) => {
+      if (!schedule.actual_timestamp) return false;
+      const startTime = new Date(schedule.actual_timestamp).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      const durationSeconds = schedule.duration * 60;
+      return elapsed >= durationSeconds;
+    });
 
-    if (elapsed < durationSeconds) {
-      return "in-progress";
+    if (allCompleted) {
+      return "completed";
     }
 
-    return "completed";
+    return "in-progress";
   };
 
-  // Find currently running timer (in-progress schedule)
-  const runningTimer = sortedSchedules?.find(
-    (event) => getEventStatus(event) === "in-progress"
+  // Find currently running room
+  const runningRoom = roomGroups?.find(
+    (room) => getRoomStatus(room.schedules) === "in-progress"
   );
 
-  // Filter schedules based on selected filter
-  const filteredSchedules = sortedSchedules?.filter((event) => {
+  // Filter room groups based on selected filter
+  const filteredRoomGroups = roomGroups?.filter((room) => {
     if (filter === "all") return true;
-    return getEventStatus(event) === filter;
+    return getRoomStatus(room.schedules) === filter;
   });
 
   // For judges only: show loading/error states
@@ -327,7 +345,7 @@ const JudgingLocationScreen = () => {
         )}
 
         {/* Currently Running Timer - Show at top for better UX */}
-        {!isJudge && runningTimer && (
+        {!isJudge && runningRoom && (
           <View className="mb-4">
             <Text
               className={cn(
@@ -337,7 +355,7 @@ const JudgingLocationScreen = () => {
             >
               Currently Running
             </Text>
-            <JudgingEventCard event={runningTimer} />
+            <JudgingEventCard roomGroup={runningRoom} />
           </View>
         )}
 
@@ -460,20 +478,20 @@ const JudgingLocationScreen = () => {
           </View>
         ) : (
           <View className="mt-4">
-            {filteredSchedules && filteredSchedules.length > 0 && (
+            {filteredRoomGroups && filteredRoomGroups.length > 0 && (
               <Text
                 className={cn(
                   "text-xl font-onest-bold mb-3",
                   themeStyles.primaryText
                 )}
               >
-                Judging Events
+                Judging Rooms
               </Text>
             )}
-            {filteredSchedules?.map((event, index) => (
+            {filteredRoomGroups?.map((roomGroup, index) => (
               <JudgingEventCard
-                key={`${event.judging_schedule_id}-${event.team_id}-${index}`}
-                event={event}
+                key={`${roomGroup.roomName}-${index}`}
+                roomGroup={roomGroup}
               />
             ))}
           </View>

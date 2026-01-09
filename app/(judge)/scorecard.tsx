@@ -9,6 +9,7 @@ import { useSubmitScore } from "@/queries/scoring";
 import { useJudgeSchedules } from "@/queries/judging";
 import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { formatLocationForDisplay } from "@/utils/judging";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
@@ -108,9 +109,7 @@ const Scorecard = () => {
   }, [params.projectId, project?.project_id]);
 
   const locationName = currentSchedule
-    ? typeof currentSchedule.location === "string"
-      ? currentSchedule.location
-      : currentSchedule.location.location_name
+    ? formatLocationForDisplay(currentSchedule.location)
     : "";
 
   // Note: Room timer is now managed by WebSocket listener (useJudgeTimerWebSocket)

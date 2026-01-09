@@ -6,6 +6,7 @@ import {
 } from "@/context/timerContext";
 import { useAllJudgingSchedules, useJudgeSchedules } from "@/queries/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
+import { formatLocationForDisplay } from "@/utils/judging";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
@@ -137,9 +138,7 @@ const ProjectOverview = () => {
   const roundInfo = getRoundInfo();
 
   const locationName = currentSchedule
-    ? typeof currentSchedule.location === "string"
-      ? currentSchedule.location
-      : currentSchedule.location.location_name
+    ? formatLocationForDisplay(currentSchedule.location)
     : "";
 
   // Note: Room timer is now managed by WebSocket listener (useJudgeTimerWebSocket)

@@ -11,6 +11,7 @@ import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { devError, devLog, devWarn } from "@/utils/logger";
 import { isFeatureEnabled } from "@/config/featureFlags";
 import { JudgingScheduleItem } from "@/types/judging";
+import { formatLocationForDisplay } from "@/utils/judging";
 
 type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error";
 
@@ -27,8 +28,8 @@ interface JudgeSocketMessage {
 
 const MAX_BACKOFF_MS = 30000;
 
-const getRoomName = (location: JudgingScheduleItem["location"]) =>
-  typeof location === "string" ? location : location.location_name;
+const getRoomPrefix = (location: JudgingScheduleItem["location"]) =>
+  formatLocationForDisplay(location);
 
 const deriveRemainingFromStartOrDuration = (
   timestamp: string | null | undefined,
@@ -79,7 +80,7 @@ export const useJudgeTimerWebSocket = () => {
     (judgeSchedules || []).forEach((schedule) => {
       map.set(schedule.judging_schedule_id, {
         durationSeconds: schedule.duration * 60,
-        room: getRoomName(schedule.location),
+        room: getRoomPrefix(schedule.location),
       });
     });
     durationByScheduleRef.current = map;
@@ -137,8 +138,11 @@ export const useJudgeTimerWebSocket = () => {
       const durationMeta = scheduleId
         ? durationByScheduleRef.current.get(scheduleId)
         : undefined;
+      // Prefer explicit room from payload; otherwise derive a stable room prefix
       const room =
-        data.room || durationMeta?.room || data.team_id?.toString() || "";
+        data.room ||
+        durationMeta?.room ||
+        (data.team_id ? data.team_id.toString() : "");
 
       console.log(
         "[DEBUG] Determined room:",

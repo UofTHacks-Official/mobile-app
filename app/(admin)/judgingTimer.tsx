@@ -19,6 +19,7 @@ import {
   ImpactFeedbackStyle,
   NotificationFeedbackType,
 } from "@/utils/haptics";
+import { formatLocationForDisplay, getFullLocationName } from "@/utils/judging";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Pause, Play } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -59,7 +60,8 @@ const JudgingTimerScreen = () => {
 
   // Note: Pause tracking is now handled in timer context for persistence across screen exits
 
-  const formatLocation = (location: JudgingScheduleItem["location"]) =>
+  // Get full location name for API calls (includes table)
+  const getLocationName = (location: JudgingScheduleItem["location"]) =>
     typeof location === "string" ? location : location.location_name;
 
   // Auto-load schedule from route params and reset state
@@ -144,9 +146,14 @@ const JudgingTimerScreen = () => {
     ? calculateStages(scheduleData.duration)
     : { pitching: 4, qa: 1, buffer: 1 }; // Fallback defaults
 
-  // Get the room name to look up the timer in context
-  const roomName = scheduleData ? formatLocation(scheduleData.location) : null;
+  // Get the room name (without table) to look up the timer in context
+  // All tables in the same room share the same timer
+  const roomName = scheduleData
+    ? formatLocationForDisplay(scheduleData.location)
+    : null;
   const roomTimer = roomName ? timerContext.roomTimers[roomName] : undefined;
+  const isRoomPaused = roomTimer?.status === "paused";
+  const isRoomRunning = roomTimer?.status === "running";
 
   // Total duration in seconds (shared across helpers)
   const totalDurationSeconds =
@@ -330,7 +337,8 @@ const JudgingTimerScreen = () => {
 
     haptics.impactAsync(ImpactFeedbackStyle.Heavy);
 
-    const room = formatLocation(scheduleData.location);
+    // Use room name only (without table) to start ALL timers in the room
+    const room = formatLocationForDisplay(scheduleData.location);
     const timestamp = scheduleData.timestamp;
 
     console.log("[DEBUG] Starting timer by room:", room, "at time:", timestamp);
@@ -372,7 +380,8 @@ const JudgingTimerScreen = () => {
     if (!scheduleData) return;
 
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
-    const room = formatLocation(scheduleData.location);
+    // Use room name only (without table) to pause ALL timers in the room
+    const room = formatLocationForDisplay(scheduleData.location);
     const timestamp = scheduleData.timestamp;
     const nowMs = Date.now();
 
@@ -681,7 +690,7 @@ const JudgingTimerScreen = () => {
                   )}
                 >
                   Team #{scheduleData.team_id} •{" "}
-                  {formatLocation(scheduleData.location)}
+                  {formatLocationForDisplay(scheduleData.location)}
                 </Text>
               </View>
             )}
@@ -744,17 +753,49 @@ const JudgingTimerScreen = () => {
                       "w-full py-4 px-6 rounded-2xl flex-row items-center justify-center gap-2",
                       isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
                     )}
+                    disabled={togglePauseTimerByRoomMutation.isPending}
+                    style={{
+                      opacity: togglePauseTimerByRoomMutation.isPending
+                        ? 0.65
+                        : 1,
+                    }}
                   >
-                    <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                    {isRoomPaused ? (
+                      <Play size={24} color={isDark ? "#000" : "#fff"} />
+                    ) : (
+                      <Pause size={24} color={isDark ? "#000" : "#fff"} />
+                    )}
                     <Text
                       className={cn(
                         "text-lg font-onest-bold",
                         isDark ? "text-black" : "text-white"
                       )}
                     >
-                      Pause/Resume
+                      {togglePauseTimerByRoomMutation.isPending
+                        ? isRoomPaused
+                          ? "Resuming..."
+                          : "Pausing..."
+                        : isRoomPaused
+                          ? "Resume"
+                          : "Pause"}
                     </Text>
                   </Pressable>
+                )}
+
+                {/* Status helper */}
+                {roomTimer && currentStage !== "complete" && (
+                  <Text
+                    className={cn(
+                      "mt-3 text-sm font-pp text-center",
+                      themeStyles.secondaryText
+                    )}
+                  >
+                    {isRoomPaused
+                      ? "Timer is paused"
+                      : isRoomRunning
+                        ? "Timer is running"
+                        : "Waiting to start"}
+                  </Text>
                 )}
 
                 {/* Next round navigation */}
