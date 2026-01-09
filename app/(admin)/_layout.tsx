@@ -72,13 +72,14 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide QR scanner if all scanner features are disabled OR if user is a judge
+            // Hide QR scanner if all scanner features are disabled OR if user is a judge or hacker
             if (
               route.name === "qr" &&
               ((!FEATURE_FLAGS.ENABLE_QR_SCANNER &&
                 !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
                 !FEATURE_FLAGS.ENABLE_HACKERBUCKS) ||
-                isJudge)
+                isJudge ||
+                isHacker)
             ) {
               return false;
             }
