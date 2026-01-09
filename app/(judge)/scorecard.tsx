@@ -222,26 +222,18 @@ const Scorecard = () => {
 
         if (currentIndex >= 0 && currentIndex < sortedSchedules.length - 1) {
           const nextSchedule = sortedSchedules[currentIndex + 1];
-          if (nextSchedule.actual_timestamp) {
-            router.replace({
-              pathname: "/(judge)/projectOverview",
-              params: {
-                teamId: nextSchedule.team_id,
-                scheduleId: nextSchedule.judging_schedule_id,
-              },
-            });
-          } else {
-            Toast.show({
-              type: "info",
-              text1: "Waiting for next round",
-              text2: "Admin hasn’t started the next project yet.",
-            });
-          }
+          router.replace({
+            pathname: "/(judge)/projectOverview",
+            params: {
+              teamId: nextSchedule.team_id,
+              scheduleId: nextSchedule.judging_schedule_id,
+            },
+          });
         } else {
-          router.replace("/(admin)/judging");
+          router.replace("/(judge)/complete");
         }
       } else {
-        router.replace("/(admin)/judging");
+        router.replace("/(judge)/complete");
       }
     } catch (error: any) {
       console.error("[ERROR] Score submission failed:", {
