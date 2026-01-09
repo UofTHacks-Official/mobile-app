@@ -2,10 +2,7 @@ import { JudgingEventCard } from "@/components/JudgingEventCard";
 import { JudgeScheduleView } from "@/components/JudgeScheduleView";
 import { useTheme } from "@/context/themeContext";
 import { useJudgeSchedules } from "@/queries/judge";
-import {
-  useAllJudgingSchedules,
-  useGenerateJudgingSchedules,
-} from "@/queries/judging";
+import { useAllJudgingSchedules } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
 import { USE_MOCK_JUDGING_DATA } from "@/utils/mockJudgingData";
 import { useScrollNavBar } from "@/utils/navigation";
@@ -15,9 +12,6 @@ import {
   formatLocationForDisplay,
 } from "@/utils/judging";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
-import { useQueryClient } from "@tanstack/react-query";
-import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
-import { RefreshCw } from "lucide-react-native";
 import { useEffect, useState, useMemo } from "react";
 import {
   ActivityIndicator,
@@ -27,13 +21,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 
 const JudgingLocationScreen = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
-  const queryClient = useQueryClient();
 
   const [isJudge, setIsJudge] = useState(false);
   const [judgeId, setJudgeId] = useState<number | null>(null);
@@ -61,7 +53,6 @@ const JudgingLocationScreen = () => {
   // Only enable the appropriate query based on user type
   const adminSchedules = useAllJudgingSchedules(!isJudge && userTypeChecked);
   const judgeSchedules = useJudgeSchedules(judgeId, isJudge && userTypeChecked);
-  const generateSchedulesMutation = useGenerateJudgingSchedules();
 
   // Use appropriate data source
   const {
@@ -73,66 +64,6 @@ const JudgingLocationScreen = () => {
   useEffect(() => {
     // No-op: retain dependency array to avoid lint warnings
   }, [isJudge, judgeId, judgingData, isLoading, isError, userTypeChecked]);
-
-  const handleGenerateSchedules = async () => {
-    try {
-      haptics.impactAsync(ImpactFeedbackStyle.Medium);
-
-      // Clear the current schedules from UI immediately
-      queryClient.setQueryData(["judging-schedules"], []);
-
-      const result = await generateSchedulesMutation.mutateAsync();
-
-      console.log("[DEBUG] Generate result:", result);
-
-      // Try different possible response structures
-      const scheduleCount =
-        result?.schedules_created ||
-        result?.total_schedules_created ||
-        result?.count ||
-        result?.total ||
-        (Array.isArray(result) ? result.length : undefined);
-
-      const message =
-        scheduleCount !== undefined
-          ? `Created ${scheduleCount} judging schedules`
-          : result?.message || "Judging schedules created successfully";
-
-      Toast.show({
-        type: "success",
-        text1: "Schedules Generated",
-        text2: message,
-      });
-    } catch (error: any) {
-      let errorMessage =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Unable to generate schedules";
-
-      // If it's a 500 error with generic message, provide helpful context
-      if (
-        error?.response?.status === 500 &&
-        errorMessage === "Internal Server Error"
-      ) {
-        errorMessage =
-          "Backend error. Check if teams, judges, and sponsors exist in database.";
-      }
-
-      console.error("[Generate Schedules Error]", {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-        fullError: error,
-      });
-
-      Toast.show({
-        type: "error",
-        text1: "Generation Failed",
-        text2: errorMessage,
-      });
-    }
-  };
 
   // Sort schedules by timestamp (chronological order)
   const sortedSchedules = (judgingData as JudgingScheduleItem[] | null)
@@ -261,59 +192,6 @@ const JudgingLocationScreen = () => {
               Manage judging sessions and timers
             </Text>
           </View>
-        )}
-
-        {/* Generate Schedules Button (Admin Only, hidden when using mock data) */}
-        {!isJudge && !USE_MOCK_JUDGING_DATA && (
-          <Pressable
-            onPress={handleGenerateSchedules}
-            disabled={generateSchedulesMutation.isPending}
-            className={cn(
-              "rounded-2xl p-6 mb-4 flex-row items-center justify-between",
-              isDark ? "bg-[#303030]" : "bg-white"
-            )}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: isDark ? 0.3 : 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-              opacity: generateSchedulesMutation.isPending ? 0.6 : 1,
-            }}
-          >
-            <View className="flex-row items-center flex-1">
-              <View
-                className="w-12 h-12 rounded-full items-center justify-center mr-4"
-                style={{ backgroundColor: isDark ? "#75EDEF" : "#132B38" }}
-              >
-                {generateSchedulesMutation.isPending ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={isDark ? "#000" : "#fff"}
-                  />
-                ) : (
-                  <RefreshCw size={24} color={isDark ? "#000" : "#fff"} />
-                )}
-              </View>
-              <View className="flex-1">
-                <Text
-                  className={cn(
-                    "text-xl font-onest-bold mb-1",
-                    themeStyles.primaryText
-                  )}
-                >
-                  {generateSchedulesMutation.isPending
-                    ? "Generating..."
-                    : "Generate Schedules"}
-                </Text>
-                <Text
-                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                >
-                  Create judging schedules from database
-                </Text>
-              </View>
-            </View>
-          </Pressable>
         )}
 
         {/* Mock Data Indicator */}
