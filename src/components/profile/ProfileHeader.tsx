@@ -44,8 +44,20 @@ export const ProfileHeader = ({ hacker }: ProfileHeaderProps) => {
       {/* Avatar and Name Section */}
       <View className="flex-row items-center mb-6">
         {/* Avatar Circle with Initials */}
-        <View className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 items-center justify-center mr-4">
-          <Text className="text-white font-bold text-2xl">{initials}</Text>
+        <View
+          className={cn(
+            "w-20 h-20 rounded-full items-center justify-center mr-4",
+            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+          )}
+        >
+          <Text
+            className={cn(
+              "font-bold text-2xl",
+              isDark ? "text-black" : "text-white"
+            )}
+          >
+            {initials}
+          </Text>
         </View>
 
         {/* Name and Email */}
