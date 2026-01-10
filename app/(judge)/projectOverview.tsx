@@ -202,8 +202,12 @@ const ProjectOverview = () => {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <ScrollView className="flex-1 px-6">
-        {/* Header placeholder (no back navigation for next rounds) */}
-        <View className="mt-6 mb-4" />
+        {/* Header */}
+        <View className="mt-6 mb-4">
+          <Pressable onPress={handleGoBack}>
+            <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
+          </Pressable>
+        </View>
 
         {/* Project Name */}
         <View className="mb-4">
