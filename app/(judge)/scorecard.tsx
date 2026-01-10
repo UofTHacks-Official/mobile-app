@@ -36,7 +36,6 @@ const Scorecard = () => {
 
   const [judgeId, setJudgeId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
-  const [notes, setNotes] = useState("");
   const [showAllTags, setShowAllTags] = useState(false);
   const [nowTs, setNowTs] = useState(Date.now());
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -562,31 +561,6 @@ const Scorecard = () => {
             min={0}
             max={2}
             disabled={isSliderDisabled}
-          />
-        </View>
-
-        {/* Notes */}
-        <View className="mb-6">
-          <Text
-            className={cn(
-              "text-lg font-onest-bold mb-3",
-              themeStyles.primaryText
-            )}
-          >
-            Notes
-          </Text>
-          <TextInput
-            className={cn(
-              "p-4 rounded-xl text-base font-pp min-h-[120px]",
-              isDark ? "bg-[#303030] text-white" : "bg-gray-100 text-black"
-            )}
-            placeholder="Add feedback for the team..."
-            placeholderTextColor={isDark ? "#888" : "#666"}
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            textAlignVertical="top"
-            editable={canEditScores}
           />
         </View>
 
