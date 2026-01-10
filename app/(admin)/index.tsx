@@ -415,6 +415,44 @@ const RecentAnnouncement = ({
   );
 };
 
+const StartJudgingButton = ({
+  themeStyles,
+  isDark,
+}: {
+  themeStyles: ReturnType<typeof getThemeStyles>;
+  isDark: boolean;
+}) => {
+  const handleStartJudging = () => {
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
+    router.push("/(admin)/judging");
+  };
+
+  return (
+    <View className="mt-6">
+      <Pressable
+        onPress={handleStartJudging}
+        className={cn(
+          "py-4 px-6 rounded-xl items-center justify-center",
+          isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+        )}
+        android_ripple={null}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
+        <Text
+          className={cn(
+            "text-lg font-onest-bold",
+            isDark ? "text-black" : "text-white"
+          )}
+        >
+          Start Judging
+        </Text>
+      </Pressable>
+    </View>
+  );
+};
+
 const UpcomingEvents = ({
   themeStyles,
   userType,
@@ -751,6 +789,9 @@ const AdminDashboard = () => {
         <DashboardGrid items={dashboardItems} />
         {userType && (
           <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
+        )}
+        {userType === "judge" && (
+          <StartJudgingButton themeStyles={themeStyles} isDark={isDark} />
         )}
         {FEATURE_FLAGS.ENABLE_HACKERBUCKS &&
           (userType === "admin" || userType === "volunteer") && (
