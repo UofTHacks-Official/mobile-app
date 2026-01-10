@@ -77,31 +77,6 @@ const ProjectOverview = () => {
 
   const project = currentSchedule?.team?.project;
 
-  // Calculate round information
-  const getRoundInfo = () => {
-    const schedulesForJudge =
-      judgeSchedules ||
-      allSchedules?.filter((s) => s.judge_id === judgeId) ||
-      [];
-    if (schedulesForJudge.length === 0 || !scheduleId) {
-      return { currentRound: 1, totalRounds: 1 };
-    }
-
-    const sortedSchedules = [...schedulesForJudge].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
-
-    const currentRound =
-      sortedSchedules.findIndex((s) => s.judging_schedule_id === scheduleId) +
-      1;
-
-    return {
-      currentRound: currentRound > 0 ? currentRound : 1,
-      totalRounds: sortedSchedules.length,
-    };
-  };
-
   const handleOpenLink = (url: string) => {
     if (url) {
       haptics.impactAsync(ImpactFeedbackStyle.Light);
@@ -134,8 +109,6 @@ const ProjectOverview = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
   };
-
-  const roundInfo = getRoundInfo();
 
   const locationName = currentSchedule
     ? formatLocationForDisplay(currentSchedule.location)
@@ -240,21 +213,12 @@ const ProjectOverview = () => {
         {/* Header placeholder (no back navigation for next rounds) */}
         <View className="mt-6 mb-4" />
 
-        {/* Project Name and Round */}
-        <View className="flex-row justify-between items-start mb-4">
+        {/* Project Name */}
+        <View className="mb-4">
           <Text
-            className={cn(
-              "text-2xl font-onest-bold flex-1",
-              themeStyles.primaryText
-            )}
+            className={cn("text-2xl font-onest-bold", themeStyles.primaryText)}
           >
             {project.project_name}
-          </Text>
-          <Text
-            className={cn("text-sm font-pp ml-2", themeStyles.secondaryText)}
-          >
-            Round {roundInfo.currentRound} ({roundInfo.currentRound}/
-            {roundInfo.totalRounds})
           </Text>
         </View>
 
