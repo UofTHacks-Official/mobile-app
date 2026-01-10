@@ -14,7 +14,7 @@ const STORAGE_KEYS = {
  * Handles days to show, selected event types, and current day index
  */
 export const useScheduleFilters = () => {
-  const [daysToShow, setDaysToShow] = useState(3);
+  const [daysToShow, setDaysToShow] = useState(1);
   const [selectedEventTypes, setSelectedEventTypes] = useState<ScheduleType[]>([
     "networking",
     "food",
@@ -92,7 +92,7 @@ export const useScheduleFilters = () => {
 
   const clearFilters = async () => {
     try {
-      await saveDaysPreference(3);
+      await saveDaysPreference(1);
       await saveEventTypesPreference(["networking", "food", "activity"]);
       await saveDayIndexPreference(0);
     } catch (error) {

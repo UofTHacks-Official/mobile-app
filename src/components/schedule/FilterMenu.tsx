@@ -150,40 +150,6 @@ const FilterMenu = ({
         >
           <View className="flex-1 px-4 py-6 mt-12">
             <View className="flex-1">
-              <View className="flex-col flex-wrap mb-8">
-                {[
-                  { value: 1, label: "1 day", icon: Square },
-                  { value: 3, label: "3 days", icon: Columns3 },
-                ].map((option) => {
-                  const IconComponent = option.icon;
-                  const isSelected = daysToShow === option.value;
-                  return (
-                    <Pressable
-                      key={option.value}
-                      onPress={() => setDaysToShow(option.value)}
-                      className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
-                        isSelected
-                          ? isDark
-                            ? "bg-[#262626]"
-                            : "bg-gray-100"
-                          : "transparent"
-                      }`}
-                    >
-                      <View className="flex-row items-center">
-                        <IconComponent
-                          size={20}
-                          color={themeStyles.iconColor}
-                        />
-                        <Text
-                          className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
-                        >
-                          {option.label}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
               <View className="mb-4">
                 <Text
                   className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
