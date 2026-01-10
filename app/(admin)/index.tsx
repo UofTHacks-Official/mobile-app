@@ -75,6 +75,15 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     route: "/(admin)/schedule",
   },
   {
+    id: "broadcast",
+    title: "Broadcast Notification",
+    description: "Send push notifications to users",
+    icon: BellPlus,
+    backgroundColor: "bg-uoft_primary_blue",
+    enabled: true,
+    route: "/(admin)/broadcast",
+  },
+  {
     id: "notification",
     title: "Notification Example",
     description: "Send a notification from phone async",
