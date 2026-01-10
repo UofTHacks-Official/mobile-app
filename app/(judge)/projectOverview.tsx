@@ -85,14 +85,7 @@ const ProjectOverview = () => {
   };
 
   const handleReady = () => {
-    if (!project || !scheduleId || !currentSchedule || !locationName) return;
-
-    const roomTimer = timerContext.roomTimers[locationName];
-
-    // Block if timer hasn't started or was stopped for this room
-    if (!roomTimer || roomTimer.status === "stopped") {
-      return;
-    }
+    if (!project || !scheduleId || !currentSchedule) return;
 
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
@@ -132,7 +125,6 @@ const ProjectOverview = () => {
   }, [locationName, roomTimer, timerContext.roomTimers]);
 
   const remainingSeconds = computeRemainingSecondsFromTimer(roomTimer, nowTs);
-  const readyDisabled = !roomTimer || roomTimer.status === "stopped";
   const timerStatusLabel =
     roomTimer?.status === "paused"
       ? "Timer paused by admin"
@@ -342,12 +334,10 @@ const ProjectOverview = () => {
         {/* Ready Button */}
         <Pressable
           onPress={handleReady}
-          disabled={readyDisabled}
           className={cn(
             "py-4 rounded-xl mb-8",
             isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
           )}
-          style={{ opacity: readyDisabled ? 0.6 : 1 }}
         >
           <Text
             className={cn(
