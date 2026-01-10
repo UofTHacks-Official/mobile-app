@@ -11,7 +11,7 @@ import { cn, getThemeStyles } from "@/utils/theme";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { devLog } from "@/utils/logger";
 import { router } from "expo-router";
-import { Alert , Pressable, Text, View, ScrollView, Image } from "react-native";
+import { Alert, Pressable, Text, View, ScrollView, Image } from "react-native";
 import {
   BellPlus,
   Route,
