@@ -94,9 +94,8 @@ export default function QRScanner() {
     if (mode === "checkin") {
       setIsProcessingCheckIn(true);
       try {
-        // Parse user_id from QR code data
-        const userId = parseInt(data, 10);
-        if (isNaN(userId)) {
+        // Send QR code string directly to backend
+        if (!data || data.trim() === "") {
           Alert.alert("Error", "Invalid QR code format", [
             {
               text: "Try Again",
@@ -120,7 +119,7 @@ export default function QRScanner() {
           return;
         }
 
-        const response = await checkInHacker({ user_id: userId });
+        const response = await checkInHacker({ qr_code: data });
 
         haptics.notificationAsync(NotificationFeedbackType.Success);
         Alert.alert("Check-In Successful", response.message, [
