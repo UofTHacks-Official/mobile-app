@@ -797,29 +797,6 @@ const AdminDashboard = () => {
           (userType === "admin" || userType === "volunteer") && (
             <AdminActionButtons themeStyles={themeStyles} isDark={isDark} />
           )}
-        {FEATURE_FLAGS.ENABLE_TEST_QR_GENERATOR && userType === "admin" && (
-          <View className="mt-4">
-            <Pressable
-              onPress={() => {
-                haptics.impactAsync(ImpactFeedbackStyle.Medium);
-                router.push("/(admin)/test-qr");
-              }}
-              className={cn(
-                "py-3 px-4 rounded-xl",
-                isDark ? "bg-[#303030]" : "bg-gray-200"
-              )}
-            >
-              <Text
-                className={cn(
-                  "text-center text-sm font-pp",
-                  themeStyles.primaryText
-                )}
-              >
-                [TEST] Generate Test QR Code
-              </Text>
-            </Pressable>
-          </View>
-        )}
         {userType && (
           <UpcomingEvents themeStyles={themeStyles} userType={userType} />
         )}
