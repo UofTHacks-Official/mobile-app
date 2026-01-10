@@ -3,6 +3,7 @@ import { broadcastNotification } from "@/requests/announcement";
 import { UserType } from "@/types/announcement";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
+import { devLog, devError } from "@/utils/logger";
 import { router } from "expo-router";
 import { Send, X } from "lucide-react-native";
 import { useState } from "react";
@@ -35,7 +36,8 @@ const BroadcastNotification = () => {
 
   const broadcastMutation = useMutation({
     mutationFn: broadcastNotification,
-    onSuccess: () => {
+    onSuccess: (response) => {
+      devLog("[Broadcast] Success response:", response);
       haptics.notificationAsync("success" as any);
       Alert.alert("Success", "Notification broadcast successfully!", [
         {
@@ -51,6 +53,8 @@ const BroadcastNotification = () => {
       ]);
     },
     onError: (error: any) => {
+      devError("[Broadcast] Error:", error);
+      devError("[Broadcast] Error response:", error?.response?.data);
       haptics.notificationAsync("error" as any);
       Alert.alert(
         "Error",
@@ -97,11 +101,13 @@ const BroadcastNotification = () => {
           text: "Send",
           style: "default",
           onPress: () => {
-            broadcastMutation.mutate({
+            const payload = {
               title: title.trim(),
               body: body.trim(),
               user_types: selectedUserTypes,
-            });
+            };
+            devLog("[Broadcast] Sending notification:", payload);
+            broadcastMutation.mutate(payload);
           },
         },
       ]

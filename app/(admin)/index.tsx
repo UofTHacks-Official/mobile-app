@@ -3,10 +3,15 @@ import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { useHackerBucksStore } from "@/reducers/hackerbucks";
 import { useScrollNavBar } from "@/utils/navigation";
-import { schedulePushNotification } from "@/utils/notifications";
+import {
+  schedulePushNotification,
+  registerForPushNotificationsAsync,
+} from "@/utils/notifications";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
+import { devLog } from "@/utils/logger";
 import { router } from "expo-router";
+import { Alert , Pressable, Text, View, ScrollView, Image } from "react-native";
 import {
   BellPlus,
   Route,
@@ -22,7 +27,6 @@ import {
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
-import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
 import { PlatformSafeArea } from "@/components/common/PlatformSafeArea";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
@@ -82,6 +86,30 @@ const DASHBOARD_ITEMS: DashboardItem[] = [
     backgroundColor: "bg-uoft_primary_blue",
     enabled: true,
     route: "/(admin)/broadcast",
+  },
+  {
+    id: "check-token",
+    title: "Check Push Token",
+    description: "View your device's push token status",
+    icon: BellPlus,
+    backgroundColor: "bg-[#75EDEF]",
+    enabled: true,
+    onPress: async () => {
+      try {
+        const token = await registerForPushNotificationsAsync();
+        devLog("[Push Token Check] Token:", token);
+        Alert.alert(
+          "Push Token Status",
+          token
+            ? `Token registered!\n\n${token.substring(0, 50)}...`
+            : "No push token found. Please enable notifications in device settings.",
+          [{ text: "OK" }]
+        );
+      } catch (error) {
+        devLog("[Push Token Check] Error:", error);
+        Alert.alert("Error", "Failed to check push token");
+      }
+    },
   },
   {
     id: "notification",

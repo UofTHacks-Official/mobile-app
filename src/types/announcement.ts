@@ -1,4 +1,4 @@
-export type UserType = "admin" | "hacker" | "judge";
+export type UserType = "admin" | "hacker" | "judge" | "volunteer";
 
 export interface Announcement {
   announcement_id: number;
