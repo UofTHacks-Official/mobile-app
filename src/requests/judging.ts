@@ -4,7 +4,13 @@ import { axiosInstance } from "./axiosConfig";
 export const judgingEndpoints = {
   GET_ALL_JUDGING_SCHEDULES: "/api/v13/judges/schedules/all",
   GET_JUDGING_SCHEDULE_BY_ID: "/api/v13/judging/{judging_schedule_id}",
-  START_JUDGING_TIMER: "/api/v13/judging/{judging_schedule_id}/start-timer",
+  START_JUDGING_TIMER:
+    "/api/v13/admins/judging/{judging_schedule_id}/start-timer",
+  START_TIMER_BY_ROOM: "/api/v13/admins/judging/start-timer-by-room",
+  PAUSE_TIMER_BY_ROOM: "/api/v13/admins/judging/pause-timer-by-room",
+  TOGGLE_PAUSE_TIMER_BY_ROOM:
+    "/api/v13/admins/judging/toggle-pause-timer-by-room",
+  STOP_TIMER_BY_ROOM: "/api/v13/admins/judging/stop-timer-by-room",
   GENERATE_SCHEDULES: "/api/v13/judging/generate-from-db",
 };
 
@@ -37,17 +43,110 @@ export const getJudgingScheduleById = async (
 };
 
 /**
- * Starts a judging timer for a specific schedule
+ * Starts a judging timer for a specific schedule (session)
+ * Note: This now starts the timer for ALL judges in the session
+ * @param judgingScheduleId - The session ID (shared by all judges in the session)
+ * @returns Array of all updated judging schedule entries (one per judge in the session)
  */
 export const startJudgingTimer = async (
   judgingScheduleId: number
-): Promise<JudgingScheduleItem> => {
-  const response = await axiosInstance.post<JudgingScheduleItem>(
+): Promise<JudgingScheduleItem[]> => {
+  console.log("[DEBUG] Starting timer for schedule ID:", judgingScheduleId);
+  const response = await axiosInstance.post<{
+    schedules: JudgingScheduleItem[];
+  }>(
     judgingEndpoints.START_JUDGING_TIMER.replace(
       "{judging_schedule_id}",
       judgingScheduleId.toString()
     )
   );
+  console.log("[DEBUG] Start timer response:", response.data);
+  return response.data.schedules;
+};
+
+/**
+ * Starts judging timers for all sessions in a room at a specific time
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Scheduled timestamp in ISO 8601 format
+ * @returns Array of all updated judging schedule entries
+ */
+export const startJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<JudgingScheduleItem[]> => {
+  const response = await axiosInstance.post<{
+    schedules: JudgingScheduleItem[];
+  }>(judgingEndpoints.START_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
+  return response.data.schedules;
+};
+
+/**
+ * Pauses judging timers for all sessions in a room at a specific time
+ * Broadcasts pause event via WebSocket to all judges in the room
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Current timestamp in ISO 8601 format
+ * @returns Success message with number of judges notified
+ */
+export const pauseJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<{ message: string; judges_notified: number }> => {
+  const response = await axiosInstance.post<{
+    message: string;
+    judges_notified: number;
+  }>(judgingEndpoints.PAUSE_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
+  return response.data;
+};
+
+/**
+ * Toggles pause/resume for judging timers in a room
+ * Intelligently checks current timer state and toggles between pause and resume
+ * - If timer is running or unknown -> sends "pause_timer" event
+ * - If timer is paused -> sends "resume_timer" event
+ * Broadcasts the appropriate WebSocket event to all judges in the room
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Current timestamp in ISO 8601 format
+ * @returns Success message with action taken and number of judges notified
+ */
+export const togglePauseJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<{ message: string; action: string; judges_notified: number }> => {
+  const response = await axiosInstance.post<{
+    message: string;
+    action: string;
+    judges_notified: number;
+  }>(judgingEndpoints.TOGGLE_PAUSE_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
+  return response.data;
+};
+
+/**
+ * Stops judging timers for all sessions in a room at a specific time
+ * Broadcasts stop event via WebSocket to all judges in the room
+ * @param room - Room prefix (e.g., "MY150", "MY330")
+ * @param timestamp - Current timestamp in ISO 8601 format
+ * @returns Success message with number of judges notified
+ */
+export const stopJudgingTimerByRoom = async (
+  room: string,
+  timestamp: string
+): Promise<{ message: string; judges_notified: number }> => {
+  const response = await axiosInstance.post<{
+    message: string;
+    judges_notified: number;
+  }>(judgingEndpoints.STOP_TIMER_BY_ROOM, {
+    room,
+    timestamp,
+  });
   return response.data;
 };
 
@@ -58,6 +157,5 @@ export const generateJudgingSchedules = async (): Promise<any> => {
   const response = await axiosInstance.post<any>(
     judgingEndpoints.GENERATE_SCHEDULES
   );
-  console.log("[DEBUG] Generate schedules response:", response.data);
   return response.data;
 };

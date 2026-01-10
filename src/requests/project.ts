@@ -1,32 +1,32 @@
 import { Project, ProjectListResponse } from "@/types/project";
-import { axiosInstance } from "./axiosConfig";
-
-export const projectEndpoints = {
-  PROJECT_LIST: "/api/v13/judges/projectlist",
-};
+import { getJudgeSchedules } from "./judge";
 
 /**
- * Get all projects for a specific sponsor PIN
+ * Get all projects for a specific judge using their schedule assignments
  */
-export const getProjectsByPin = async (
-  pin: number
+export const getProjectsForJudge = async (
+  judgeId: number
 ): Promise<ProjectListResponse> => {
-  const response = await axiosInstance.get<ProjectListResponse>(
-    projectEndpoints.PROJECT_LIST,
-    {
-      params: { pin },
-    }
+  const response = await getJudgeSchedules(judgeId);
+  const projects = response.schedules
+    .map((schedule) => schedule.team?.project)
+    .filter((project): project is Project => Boolean(project));
+
+  // Deduplicate by project_id since a judge may see the same project in multiple rounds
+  const uniqueProjects = Array.from(
+    new Map(projects.map((project) => [project.project_id, project])).values()
   );
-  return response.data;
+
+  return { projects: uniqueProjects };
 };
 
 /**
- * Get a specific project by team_id (filters from projectlist)
+ * Get a specific project by team_id from a judge's schedules
  */
 export const getProjectByTeamId = async (
-  pin: number,
+  judgeId: number,
   teamId: number
 ): Promise<Project | null> => {
-  const response = await getProjectsByPin(pin);
+  const response = await getProjectsForJudge(judgeId);
   return response.projects.find((p) => p.team_id === teamId) || null;
 };

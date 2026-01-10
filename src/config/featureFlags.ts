@@ -21,6 +21,7 @@ export const FEATURE_FLAGS = {
 
   // Judging features
   ENABLE_JUDGING: true,
+  ENABLE_JUDGE_WEBSOCKET_TIMERS: true,
 
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,

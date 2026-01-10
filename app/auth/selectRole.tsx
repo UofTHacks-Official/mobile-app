@@ -99,19 +99,19 @@ const SelectRole = () => {
     switch (role) {
       case "Admin":
         setUserType("admin");
-        router.navigate(`/auth/signInAdmin?role=admin`);
+        router.push(`/auth/signInAdmin?role=admin`);
         break;
       case "Volunteer":
         setUserType("volunteer");
-        router.navigate(`/auth/signInAdmin?role=volunteer`);
+        router.push(`/auth/signInAdmin?role=volunteer`);
         break;
       case "Judge":
         setUserType("judge");
-        router.navigate(`/auth/signInJudge`);
+        router.push(`/auth/signInJudge`);
         break;
       case "Hacker":
         setUserType("hacker");
-        router.navigate(`/auth/signInAdmin?role=hacker`);
+        router.push(`/auth/signInAdmin?role=hacker`);
         break;
     }
     devLog("Selected role: ", role);

@@ -49,8 +49,18 @@ const HackerCard = ({
     >
       {/* Header with Avatar and Name */}
       <View className="flex-row items-center mb-3">
-        <View className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 items-center justify-center mr-3">
-          <Text className="text-white font-bold text-lg">
+        <View
+          className={cn(
+            "w-12 h-12 rounded-full items-center justify-center mr-3",
+            isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+          )}
+        >
+          <Text
+            className={cn(
+              "font-bold text-lg",
+              isDark ? "text-black" : "text-white"
+            )}
+          >
             {hacker.hacker_fname[0]}
             {hacker.hacker_lname[0]}
           </Text>

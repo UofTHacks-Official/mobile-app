@@ -21,6 +21,7 @@ interface ScoringSliderProps {
   min?: number;
   max?: number;
   step?: number;
+  disabled?: boolean;
 }
 
 export const ScoringSlider = ({
@@ -31,6 +32,7 @@ export const ScoringSlider = ({
   min = 0,
   max = 3,
   step = 1,
+  disabled = false,
 }: ScoringSliderProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
@@ -47,6 +49,7 @@ export const ScoringSlider = ({
   };
 
   const handleValueChange = (values: number | number[]) => {
+    if (disabled) return;
     const newValue = Array.isArray(values) ? values[0] : values;
     const roundedValue = Math.round(newValue);
     if (roundedValue !== value) {
@@ -74,17 +77,20 @@ export const ScoringSlider = ({
         </View>
 
         {/* Slider */}
-        <Slider
-          value={value}
-          onValueChange={handleValueChange}
-          minimumValue={min}
-          maximumValue={max}
-          step={step}
-          minimumTrackTintColor={isDark ? "#75EDEF" : "#132B38"}
-          maximumTrackTintColor={isDark ? "#333" : "#DDD"}
-          thumbTintColor={isDark ? "#75EDEF" : "#132B38"}
-          containerStyle={{ height: 40 }}
-        />
+        <View style={{ opacity: disabled ? 0.5 : 1 }}>
+          <Slider
+            value={value}
+            onValueChange={handleValueChange}
+            minimumValue={min}
+            maximumValue={max}
+            step={step}
+            minimumTrackTintColor={isDark ? "#75EDEF" : "#132B38"}
+            maximumTrackTintColor={isDark ? "#333" : "#DDD"}
+            thumbTintColor={isDark ? "#75EDEF" : "#132B38"}
+            containerStyle={{ height: 40 }}
+            disabled={disabled}
+          />
+        </View>
       </View>
 
       {/* Criteria Info Modal */}

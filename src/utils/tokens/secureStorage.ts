@@ -58,6 +58,8 @@ export const USER_TYPE_KEY = "USER_TYPE";
 export const JUDGE_ID_KEY = "JUDGE_ID";
 export const SPONSOR_PIN_KEY = "SPONSOR_PIN";
 
+let cachedUserType: string | null = null;
+
 // Store the auth tokens in the secure storage
 
 export const storeAuthTokens = async (
@@ -80,12 +82,6 @@ export const getAuthTokens = async (): Promise<{
   try {
     const access_token = await PlatformStorage.getItemAsync(ACCESS_TOKEN_KEY);
     const refresh_token = await PlatformStorage.getItemAsync(REFRESH_TOKEN);
-    devLog(
-      "Successfully Fetched - Auth Tokens:",
-      access_token,
-      "Refresh Tokens: ",
-      refresh_token
-    );
     return { access_token, refresh_token };
   } catch (error) {
     devError("Error retrieving auth tokens:", error);
@@ -101,6 +97,7 @@ export const removeAuthTokens = async (): Promise<void | null> => {
     await PlatformStorage.deleteItemAsync(JUDGE_ID_KEY);
     await PlatformStorage.deleteItemAsync(SPONSOR_PIN_KEY);
     devLog("Successfully Removed Auth Tokens");
+    cachedUserType = null;
   } catch (error) {
     devError("Error removing auth tokens:", error);
     return null;
@@ -142,6 +139,7 @@ export const removeSecureToken = async (
 export const storeUserType = async (userType: string): Promise<void | null> => {
   try {
     await PlatformStorage.setItemAsync(USER_TYPE_KEY, userType);
+    cachedUserType = userType;
     devLog("Successfully stored user type:", userType);
   } catch (error) {
     devError("Error storing user type:", error);
@@ -151,8 +149,9 @@ export const storeUserType = async (userType: string): Promise<void | null> => {
 
 export const getUserType = async (): Promise<string | null> => {
   try {
+    if (cachedUserType) return cachedUserType;
     const userType = await PlatformStorage.getItemAsync(USER_TYPE_KEY);
-    devLog("Successfully fetched user type:", userType);
+    cachedUserType = userType;
     return userType;
   } catch (error) {
     devError("Error retrieving user type:", error);
