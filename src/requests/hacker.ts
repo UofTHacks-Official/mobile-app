@@ -10,6 +10,7 @@ export const hackerEndpoints = {
   HACKERS_GET: "/api/v13/hackers/get",
   HACKER_BY_ID: "/api/v13/hackers",
   HACKER_RESUME: "/api/v13/hackers/application/resume",
+  HACKER_GOOGLE_LOGIN: "/api/v13/hackers/google-auth/token",
   ADMIN_RESUME: "/api/v13/admins/applications",
 };
 
@@ -129,6 +130,17 @@ export const refreshHackerToken = async (refresh_token: string) => {
     return { error };
   }
 };
+
+/**
+ *
+ * @param bearerToken
+ * @returns
+ */
+export const hackerGoogleLogin = async (
+  code: string,
+  code_verifier: string,
+  redirect_uri: string
+) => {};
 
 /**
  * Retrieves the profile of the currently authenticated hacker.
