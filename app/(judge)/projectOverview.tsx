@@ -10,7 +10,7 @@ import { formatLocationForDisplay } from "@/utils/judging";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, ExternalLink } from "lucide-react-native";
+import { ExternalLink } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -98,11 +98,6 @@ const ProjectOverview = () => {
     });
   };
 
-  const handleGoBack = () => {
-    haptics.impactAsync(ImpactFeedbackStyle.Light);
-    router.back();
-  };
-
   const locationName = currentSchedule
     ? formatLocationForDisplay(currentSchedule.location)
     : "";
@@ -178,22 +173,6 @@ const ProjectOverview = () => {
           >
             Unable to load project details. Please try again.
           </Text>
-          <Pressable
-            onPress={handleGoBack}
-            className={cn(
-              "mt-6 px-6 py-3 rounded-xl",
-              isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-            )}
-          >
-            <Text
-              className={cn(
-                "text-base font-onest-bold",
-                isDark ? "text-black" : "text-white"
-              )}
-            >
-              Go Back
-            </Text>
-          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -202,15 +181,8 @@ const ProjectOverview = () => {
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
       <ScrollView className="flex-1 px-6">
-        {/* Header */}
-        <View className="mt-6 mb-4">
-          <Pressable onPress={handleGoBack}>
-            <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
-          </Pressable>
-        </View>
-
         {/* Project Name */}
-        <View className="mb-4">
+        <View className="mt-12 mb-4">
           <Text
             className={cn("text-2xl font-onest-bold", themeStyles.primaryText)}
           >

@@ -187,31 +187,35 @@ const Scorecard = () => {
         text2: `Scored ${project.project_name}`,
       });
 
-      // Navigate to next project only if its round has started
-      if (judgeSchedules && scheduleId) {
-        const sortedSchedules = [...judgeSchedules].sort(
-          (a, b) =>
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
+      // Only navigate if this is an auto-submit (timer expired)
+      // If submitted early, keep judge on scorecard until timer expires
+      if (isAuto) {
+        // Navigate to next project only if its round has started
+        if (judgeSchedules && scheduleId) {
+          const sortedSchedules = [...judgeSchedules].sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          );
 
-        const currentIndex = sortedSchedules.findIndex(
-          (s) => s.judging_schedule_id === scheduleId
-        );
+          const currentIndex = sortedSchedules.findIndex(
+            (s) => s.judging_schedule_id === scheduleId
+          );
 
-        if (currentIndex >= 0 && currentIndex < sortedSchedules.length - 1) {
-          const nextSchedule = sortedSchedules[currentIndex + 1];
-          router.replace({
-            pathname: "/(judge)/projectOverview",
-            params: {
-              teamId: nextSchedule.team_id,
-              scheduleId: nextSchedule.judging_schedule_id,
-            },
-          });
+          if (currentIndex >= 0 && currentIndex < sortedSchedules.length - 1) {
+            const nextSchedule = sortedSchedules[currentIndex + 1];
+            router.replace({
+              pathname: "/(judge)/projectOverview",
+              params: {
+                teamId: nextSchedule.team_id,
+                scheduleId: nextSchedule.judging_schedule_id,
+              },
+            });
+          } else {
+            router.replace("/(judge)/complete");
+          }
         } else {
           router.replace("/(judge)/complete");
         }
-      } else {
-        router.replace("/(judge)/complete");
       }
     } catch (error: any) {
       console.error("[ERROR] Score submission failed:", {

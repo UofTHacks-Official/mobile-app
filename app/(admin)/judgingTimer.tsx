@@ -57,6 +57,7 @@ const JudgingTimerScreen = () => {
     "pitching"
   );
   const [now, setNow] = useState(Date.now());
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Note: Pause tracking is now handled in timer context for persistence across screen exits
 
@@ -64,19 +65,49 @@ const JudgingTimerScreen = () => {
   const getLocationName = (location: JudgingScheduleItem["location"]) =>
     typeof location === "string" ? location : location.location_name;
 
-  // Auto-load schedule from route params and reset state
+  // Initialize from active timer if one exists, otherwise use route params
   useEffect(() => {
-    if (params.scheduleId && typeof params.scheduleId === "string") {
+    if (hasInitialized) return;
+
+    // Check if there's an active running or paused timer
+    const activeTimerEntry = Object.entries(timerContext.roomTimers).find(
+      ([room, timer]) => timer.status === "running" || timer.status === "paused"
+    );
+
+    if (activeTimerEntry) {
+      const [room, timer] = activeTimerEntry;
+      // Restore from active timer
+      if (
+        timer.judgingScheduleId &&
+        timer.judgingScheduleId !== activeScheduleId
+      ) {
+        console.log("[DEBUG] Restoring active timer:", {
+          scheduleId: timer.judgingScheduleId,
+          room,
+          status: timer.status,
+          remainingSeconds: timer.remainingSeconds,
+        });
+        setActiveScheduleId(timer.judgingScheduleId);
+        // Stage will be calculated from remaining time in the next effect
+      }
+    } else if (params.scheduleId && typeof params.scheduleId === "string") {
+      // No active timer - use route params
       const id = parseInt(params.scheduleId, 10);
-      if (!isNaN(id) && id > 0) {
-        if (activeScheduleId !== id) {
-          setActiveScheduleId(id);
-          setCurrentStage("pitching");
-          previousStageRef.current = "pitching";
-        }
+      if (!isNaN(id) && id > 0 && activeScheduleId !== id) {
+        console.log("[DEBUG] Using route param scheduleId:", id);
+        setActiveScheduleId(id);
+        setCurrentStage("pitching");
+        previousStageRef.current = "pitching";
       }
     }
-  }, [params.scheduleId, activeScheduleId]);
+
+    setHasInitialized(true);
+  }, [
+    hasInitialized,
+    timerContext.roomTimers,
+    params.scheduleId,
+    activeScheduleId,
+  ]);
 
   const {
     data: scheduleData,
