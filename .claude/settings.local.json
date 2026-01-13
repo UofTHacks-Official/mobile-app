@@ -1,6 +1,13 @@
 {
   "permissions": {
-    "allow": ["Bash(npm run type-check:*)", "Bash(find:*)"],
+    "allow": [
+      "Bash(npm run type-check:*)",
+      "Bash(find:*)",
+      "WebSearch",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:docs.expo.dev)",
+      "WebFetch(domain:github.com)"
+    ],
     "deny": [],
     "ask": [],
     "additionalDirectories": ["/home/isolumi/CS/uofthacks/dashboard-13/"]

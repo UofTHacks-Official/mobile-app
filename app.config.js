@@ -8,7 +8,8 @@ export default ({ config }) => {
     version: "1.0.2",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "com.uofthacks.uoft-hacks",
+    scheme:
+      "com.googleusercontent.apps.268617867891-31798uq62begvrn2joouemkb2u5ojmhb",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
