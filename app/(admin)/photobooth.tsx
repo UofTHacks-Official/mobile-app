@@ -12,7 +12,7 @@ import {
   Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Images, Camera } from "lucide-react-native";
 import DualCamera from "../../src/components/photobooth/DualCamera";
 import CompositePhoto from "../../src/components/photobooth/CompositePhoto";
@@ -26,6 +26,7 @@ import { usePhotoboothNotificationStore } from "@/reducers/photoboothNotificatio
 import { useScrollNavBar } from "@/utils/navigation";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
+import { getUserType } from "@/utils/tokens/secureStorage";
 
 export default function PhotoboothPage() {
   const { isDark } = useTheme();
@@ -35,6 +36,8 @@ export default function PhotoboothPage() {
     front: string;
     back: string;
   } | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   // Gallery state
   const [viewMode, setViewMode] = useState<"camera" | "gallery">("camera");
@@ -67,6 +70,19 @@ export default function PhotoboothPage() {
       setPhotoboothViewMode("camera");
     }, [setPhotoboothViewMode])
   );
+
+  // Redirect judges away from photobooth
+  useEffect(() => {
+    const loadUserType = async () => {
+      const type = await getUserType();
+      setUserType(type);
+      if (type === "judge") {
+        router.replace("/(admin)");
+      }
+      setIsCheckingAccess(false);
+    };
+    loadUserType();
+  }, []);
 
   // Animate header visibility
   useEffect(() => {
@@ -350,6 +366,10 @@ export default function PhotoboothPage() {
       </View>
     );
   };
+
+  if (isCheckingAccess || userType === "judge") {
+    return null;
+  }
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>

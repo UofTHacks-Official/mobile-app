@@ -87,7 +87,7 @@ export default function AdminLayout() {
             // Hide photobooth if disabled
             if (
               route.name === "photobooth" &&
-              !FEATURE_FLAGS.ENABLE_PHOTOBOOTH
+              (isJudge || !FEATURE_FLAGS.ENABLE_PHOTOBOOTH)
             ) {
               return false;
             }

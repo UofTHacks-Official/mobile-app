@@ -79,7 +79,7 @@ const buildOnboardingSteps = (): OnboardingStep[] => {
     feature: "Camera",
     requiresAction: true,
     actionLabel: "Continue",
-    skipEnabled: false,
+    skipEnabled: true,
   });
 
   return steps;
@@ -204,10 +204,16 @@ export default function OnboardingPage() {
           text1: "Camera Permission Granted",
           text2: "You can now scan QR codes",
         });
+        // Complete onboarding and go to main app
+        updateFirstSignInStatus(false);
+        router.replace("/(admin)");
+      } else {
+        Toast.show({
+          type: "info",
+          text1: "Camera Permission Denied",
+          text2: "You can enable access later in Settings",
+        });
       }
-      // Complete onboarding and go to main app
-      updateFirstSignInStatus(false);
-      router.replace("/(admin)");
     } catch (error) {
       Toast.show({
         type: "error",
