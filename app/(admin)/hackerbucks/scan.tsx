@@ -227,7 +227,7 @@ export default function QRScanner() {
               >
                 <Camera size={20} color="black" style={{ marginRight: 8 }} />
                 <Text className="text-center text-black font-semibold">
-                  Grant Camera Permission
+                  Continue
                 </Text>
               </TouchableOpacity>
             )}
