@@ -5,15 +5,17 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 
 interface ScheduleHeaderProps {
-  dates: Date[];
-  currentDate: Date;
+  dates: Date[]; // All selectable dates
+  currentDate: Date; // The currently active date
   onFilterPress?: () => void;
+  onDatePress?: (index: number) => void;
 }
 
 export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   dates,
   currentDate,
   onFilterPress,
+  onDatePress,
 }) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
@@ -34,7 +36,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             </Pressable>
           )}
           <Text className={cn("text-3xl font-bold", scheduleTheme.headerText)}>
-            {dates[0].toLocaleDateString("en-US", { month: "long" })}
+            {currentDate.toLocaleDateString("en-US", { month: "long" })}
           </Text>
         </View>
       </View>
@@ -66,8 +68,9 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
           const dayNumber = date.getDate();
 
           return (
-            <View
+            <Pressable
               key={index}
+              onPress={() => onDatePress?.(index)}
               className="flex-1 items-center justify-center px-6"
             >
               <Text className={cn("text-sm mb-1", scheduleTheme.secondaryText)}>
@@ -88,7 +91,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
                   {dayNumber}
                 </Text>
               </View>
-            </View>
+            </Pressable>
           );
         })}
       </View>

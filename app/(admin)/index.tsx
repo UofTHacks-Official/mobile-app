@@ -32,6 +32,7 @@ import { useScheduleData } from "@/queries/schedule/schedule";
 import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
 import { useJudgeSchedules } from "@/queries/judging";
+import { ScheduleType } from "@/types/schedule";
 
 // Event type icons
 const GoatSquare = require("../../assets/images/icons/goat-square.png");
@@ -477,7 +478,13 @@ const UpcomingEvents = ({
 
   // Fetch hacker/admin schedules (skip for judges, volunteers, AND when userType is still loading)
   const { data: hackerSchedules = [] } = useScheduleData(
-    ["activity", "networking", "food"],
+    [
+      ScheduleType.MINI,
+      ScheduleType.FOOD,
+      ScheduleType.WORKSHOP,
+      ScheduleType.CEREMONIES,
+      ScheduleType.SPONSOR,
+    ],
     userType !== null && !isJudge && !isVolunteer
   );
 
@@ -516,7 +523,7 @@ const UpcomingEvents = ({
           title: project?.project_name || `Project (Team #${schedule.team_id})`,
           startTime: schedule.timestamp,
           endTime: endTime.toISOString(),
-          type: "activity" as const,
+          type: ScheduleType.MINI,
           location:
             typeof schedule.location === "string"
               ? schedule.location
@@ -577,12 +584,17 @@ const UpcomingEvents = ({
     return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
   };
 
-  const getEventTypeColor = (type: string) => {
+  const getEventTypeColor = (type: ScheduleType | string) => {
     switch (type) {
+      case ScheduleType.FOOD:
       case "food":
         return "#FFD54F";
+      case ScheduleType.SPONSOR:
       case "networking":
         return "#75EDEF";
+      case ScheduleType.MINI:
+      case ScheduleType.WORKSHOP:
+      case ScheduleType.CEREMONIES:
       case "activity":
         return "#C8B6FF";
       default:
@@ -590,12 +602,17 @@ const UpcomingEvents = ({
     }
   };
 
-  const getEventTypeIcon = (type: string) => {
+  const getEventTypeIcon = (type: ScheduleType | string) => {
     switch (type) {
+      case ScheduleType.FOOD:
       case "food":
         return LionSquare;
+      case ScheduleType.SPONSOR:
       case "networking":
         return GoatSquare;
+      case ScheduleType.MINI:
+      case ScheduleType.WORKSHOP:
+      case ScheduleType.CEREMONIES:
       case "activity":
         return AxSquare;
       default:

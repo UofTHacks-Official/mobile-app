@@ -14,7 +14,7 @@ const STORAGE_KEYS = {
  * Handles days to show, selected event types, and current day index
  */
 export const useScheduleFilters = () => {
-  const [daysToShow, setDaysToShow] = useState(3);
+  const [daysToShow, setDaysToShow] = useState(1);
   const [selectedEventTypes, setSelectedEventTypes] = useState<ScheduleType[]>([
     ScheduleType.CEREMONIES,
     ScheduleType.FOOD,

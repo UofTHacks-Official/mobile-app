@@ -14,7 +14,7 @@ import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dimensions, ScrollView, View, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +23,7 @@ const Schedule = () => {
   const scheduleTheme = getScheduleThemeStyles(isDark);
   const currentTime = useCurrentTime();
   const insets = useSafeAreaInsets();
+  const dayScrollViewRef = useRef<ScrollView>(null);
 
   const [isJudge, setIsJudge] = useState(false);
   const [isVolunteer, setIsVolunteer] = useState(false);
@@ -233,11 +234,21 @@ const Schedule = () => {
     >
       <View className={cn("flex-1", scheduleTheme.primaryText)}>
         <ScheduleHeader
-          dates={dates}
+          dates={allDates}
           currentDate={currentDate}
           onFilterPress={() => {
             haptics.impactAsync(ImpactFeedbackStyle.Medium);
             setIsFilterModalVisible(true);
+          }}
+          onDatePress={(index) => {
+            haptics.impactAsync(ImpactFeedbackStyle.Light);
+            saveDayIndexPreference(index);
+            if (daysToShow === 1) {
+              dayScrollViewRef.current?.scrollTo({
+                x: index * Dimensions.get("window").width,
+                animated: true,
+              });
+            }
           }}
         />
 
@@ -271,6 +282,7 @@ const Schedule = () => {
                   }}
                   onScroll={handleDayScroll}
                   scrollEventThrottle={16}
+                  ref={dayScrollViewRef}
                 >
                   {allDates.map((date, dayIndex) => (
                     <View
