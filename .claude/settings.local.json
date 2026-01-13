@@ -1,7 +1,8 @@
 {
   "permissions": {
-    "allow": ["Bash(npm run type-check:*)"],
+    "allow": ["Bash(npm run type-check:*)", "Bash(find:*)"],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": ["/home/isolumi/CS/uofthacks/dashboard-13/"]
   }
 }

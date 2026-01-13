@@ -83,6 +83,11 @@ export interface HackerQueryParams {
   has_rsvpd?: boolean;
 }
 
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+}
+
 /**
  * Authenticates a hacker user with email and password.
  */
@@ -130,17 +135,6 @@ export const refreshHackerToken = async (refresh_token: string) => {
     return { error };
   }
 };
-
-/**
- *
- * @param bearerToken
- * @returns
- */
-export const hackerGoogleLogin = async (
-  code: string,
-  code_verifier: string,
-  redirect_uri: string
-) => {};
 
 /**
  * Retrieves the profile of the currently authenticated hacker.
@@ -223,6 +217,25 @@ export const fetchHackerResume = async (
     `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`,
     {
       responseType: "blob",
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Exchanges a Google OAuth2 code for a token pair.
+ */
+export const googleAuthToken = async (
+  code: string,
+  code_verifier: string,
+  redirect_uri?: string
+): Promise<TokenPair> => {
+  const response = await axiosInstance.post(
+    hackerEndpoints.HACKER_GOOGLE_LOGIN,
+    {
+      code,
+      code_verifier,
+      redirect_uri,
     }
   );
   return response.data;

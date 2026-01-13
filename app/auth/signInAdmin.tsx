@@ -7,7 +7,17 @@ import { useUserTypeStore } from "@/reducers/userType";
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
+import {
+  generateCodeVerifier,
+  generateCodeChallenge,
+  generateRandomState,
+} from "@/utils/pkce";
+import { env } from "@/utils/config";
+import { googleAuthToken } from "@/requests/hacker";
 import { router, useLocalSearchParams } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
+import * as SecureStore from "expo-secure-store";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View, Platform } from "react-native";
@@ -20,6 +30,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+
+WebBrowser.maybeCompleteAuthSession();
 
 // Use native View on web for better compatibility
 const AnimatedView = Platform.OS === "web" ? View : Animated.View;
@@ -133,6 +145,114 @@ const SignInAdmin = () => {
   const handleGoBack = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Light);
     router.back();
+  };
+
+  const handleGoogleSignIn = async () => {
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
+
+    try {
+      // generate pkce params
+      const verifier = await generateCodeVerifier();
+      const challenge = await generateCodeChallenge(verifier);
+      const state = await generateRandomState();
+
+      // store pkce verifier and state
+      await SecureStore.setItemAsync("google_pkce_verifier", verifier);
+      await SecureStore.setItemAsync("google_oauth_state", state);
+
+      // build oauth url
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
+        {
+          client_id: env.google.iosClientId,
+          redirect_uri: env.google.redirectUri,
+          response_type: "code",
+          scope: "openid email profile",
+          code_challenge: challenge,
+          code_challenge_method: "S256",
+          access_type: "offline",
+          prompt: "consent",
+          state,
+        }
+      ).toString()}`;
+
+      // open browser for oauth
+      const result = await WebBrowser.openAuthSessionAsync(
+        authUrl,
+        env.google.redirectUri
+      );
+      if (result.type === "success" && result.url) {
+        try {
+          // Parse the callback URL
+          const url = new URL(result.url);
+          const code = url.searchParams.get("code");
+          const returnedState = url.searchParams.get("state");
+
+          // Retrieve stored values from SecureStore
+          const storedVerifier = await SecureStore.getItemAsync(
+            "google_pkce_verifier"
+          );
+          const storedState =
+            await SecureStore.getItemAsync("google_oauth_state");
+
+          // Validate
+          if (!code) {
+            throw new Error("No authorization code received");
+          }
+
+          if (!storedVerifier) {
+            throw new Error("Missing PKCE verifier");
+          }
+
+          if (!returnedState || returnedState !== storedState) {
+            throw new Error("Invalid OAuth state");
+          }
+
+          // Exchange code for tokens
+          const tokens = await googleAuthToken(
+            code,
+            storedVerifier,
+            env.google.redirectUri
+          );
+
+          // Clean up stored values
+          await SecureStore.deleteItemAsync("google_pkce_verifier");
+          await SecureStore.deleteItemAsync("google_oauth_state");
+
+          // Sign in the user
+          await signIn(tokens.access_token, tokens.refresh_token);
+          router.dismissAll();
+
+          if (isFirstSignIn) {
+            router.replace("/auth/onboarding");
+          } else {
+            router.replace("/(admin)");
+          }
+
+          Toast.show({
+            type: "success",
+            text1: "Welcome!",
+            text2: "Successfully signed in with Google",
+          });
+        } catch (error) {
+          devError("OAuth callback error:", error);
+          Toast.show({
+            type: "error",
+            text1: "Sign-In Failed",
+            text2:
+              error instanceof Error
+                ? error.message
+                : "Unable to complete sign-in",
+          });
+        }
+      }
+    } catch (error) {
+      devError("Google OAuth Error", error);
+      Toast.show({
+        type: "error",
+        text1: "Google Sign-In Failed",
+        text2: "Unable to sign in with Google. Please try again.",
+      });
+    }
   };
 
   if (loginMutation.isPending) {
@@ -250,6 +370,44 @@ const SignInAdmin = () => {
             </Text>
           </AnimatedView>
         </Pressable>
+
+        <View className="flex-row items-center px-8 my-6">
+          <View
+            className={cn(
+              "flex-1 h-px",
+              isDark ? "bg-gray-700" : "bg-gray-300"
+            )}
+          />
+          <Text className={cn("mx-4 text-sm", themeStyles.secondaryText)}>
+            or
+          </Text>
+          <View
+            className={cn(
+              "flex-1 h-px",
+              isDark ? "bg-gray-700" : "bg-gray-300"
+            )}
+          />
+        </View>
+
+        {/* Google OAuth Button - Only show for hackers */}
+        {displayRole === "hacker" && (
+          <Pressable
+            onPress={handleGoogleSignIn}
+            className={cn(
+              "mx-8 py-4 rounded-md flex-row items-center justify-center mb-4",
+              isDark ? "bg-gray-800" : "bg-gray-100"
+            )}
+          >
+            <Text
+              className={cn(
+                "text-center text-lg font-semibold",
+                themeStyles.primaryText
+              )}
+            >
+              Continue with Google
+            </Text>
+          </Pressable>
+        )}
 
         <View className="w-full px-12 absolute bottom-0 mb-8">
           <Text

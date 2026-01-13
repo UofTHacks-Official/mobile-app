@@ -8,7 +8,7 @@ export default ({ config }) => {
     version: "1.0.2",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "native",
+    scheme: "com.uofthacks.uoft-hacks",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
