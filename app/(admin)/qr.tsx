@@ -288,8 +288,8 @@ const QRScannerScreen = () => {
               Camera Permission Required
             </Text>
             <Text className={cn("text-center mb-8", themeStyles.secondaryText)}>
-              We need camera access to scan QR codes. Grant permission to
-              continue.
+              We need camera access to scan QR codes. Tap Continue to ask for
+              permission.
             </Text>
 
             {permission.canAskAgain && (
