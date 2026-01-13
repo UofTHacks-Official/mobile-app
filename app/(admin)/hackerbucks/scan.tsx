@@ -216,8 +216,8 @@ export default function QRScanner() {
               Camera Permission Required
             </Text>
             <Text className={cn("text-center mb-8", themeStyles.secondaryText)}>
-              We need camera access to scan QR codes. Grant permission to
-              continue.
+              We need camera access to scan QR codes. Tap Continue to ask for
+              permission.
             </Text>
 
             {permission.canAskAgain && (
@@ -227,7 +227,7 @@ export default function QRScanner() {
               >
                 <Camera size={20} color="black" style={{ marginRight: 8 }} />
                 <Text className="text-center text-black font-semibold">
-                  Grant Camera Permission
+                  Continue
                 </Text>
               </TouchableOpacity>
             )}
