@@ -59,7 +59,6 @@ const Schedule = () => {
     selectedEventTypes,
     !isVolunteer && userTypeChecked
   );
-  console.log("hackerSchedule:", hackerSchedules);
   // For judges, fetch all their judging schedules (no event type filtering)
   const { data: judgeSchedules = [] } = useJudgeScheduleData(
     // Pass a default type to satisfy the hook, but it won't be used for filtering
@@ -133,7 +132,6 @@ const Schedule = () => {
   const timeRange = { start: 0, end: 24 };
 
   const renderDaySchedules = (date: Date, index: number) => {
-    console.log(schedules);
     const filtered = schedules.flatMap((schedule) => {
       const start = new Date(schedule.startTime);
       const end = new Date(schedule.endTime);
@@ -212,7 +210,6 @@ const Schedule = () => {
       date.getFullYear() === now.getFullYear() &&
       date.getMonth() === now.getMonth() &&
       date.getDate() === now.getDate();
-    console.log(filtered);
     return (
       <DayColumn
         key={index}
