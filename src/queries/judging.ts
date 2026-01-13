@@ -498,10 +498,7 @@ export const useGenerateJudgingSchedules = () => {
  * @param enabled - Whether the query should be enabled (default: true)
  * @returns Query result with judge's schedules formatted as Schedule objects
  */
-export const useJudgeScheduleData = (
-  selectedEventTypes: ScheduleType[],
-  enabled: boolean = true
-) => {
+export const useJudgeScheduleData = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["judge-calendar-schedules"], // Removed selectedEventTypes from key since we ignore it
     queryFn: async () => {
@@ -576,7 +573,7 @@ export const useJudgeScheduleData = (
                 startTime: currentBlock.start.toISOString(),
                 endTime: currentBlock.end.toISOString(),
                 date: currentBlock.start,
-                type: "activity" as ScheduleType,
+                type: ScheduleType.SPONSOR,
                 sponsorId: null,
                 isShift: false,
                 shiftType: null,
@@ -605,7 +602,7 @@ export const useJudgeScheduleData = (
             startTime: block.start.toISOString(),
             endTime: block.end.toISOString(),
             date: block.start,
-            type: "activity" as ScheduleType,
+            type: ScheduleType.SPONSOR,
             sponsorId: null,
             isShift: false,
             shiftType: null,

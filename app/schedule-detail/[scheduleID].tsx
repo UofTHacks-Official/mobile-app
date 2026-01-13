@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/themeContext";
 import { useScheduleById } from "@/queries/schedule/schedule";
+import { getScheduleTypeLabel, ScheduleType } from "@/types/schedule";
 import { devError } from "@/utils/logger";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { formatTimeTo12Hour } from "@/utils/time";
@@ -8,10 +9,13 @@ import { Clock, Globe, Info, Tag, UserCog } from "lucide-react-native";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const eventIconColors = {
-  networking: "#1D4ED8", // blue-700
-  food: "#EA580C", // orange-600
-  activity: "#EC4899", // pink-500
+const eventIconColors: Record<number, string> = {
+  [ScheduleType.CEREMONIES]: "#9333EA", // purple-600
+  [ScheduleType.SPONSOR]: "#2563EB", // blue-600
+  [ScheduleType.MINI]: "#EC4899", // pink-500
+  [ScheduleType.FOOD]: "#EA580C", // orange-600
+  [ScheduleType.SHIFTS]: "#4B5563", // gray-600
+  [ScheduleType.WORKSHOP]: "#16A34A", // green-600
 };
 
 export default function ScheduleDetail() {
@@ -97,8 +101,8 @@ export default function ScheduleDetail() {
     );
   }
 
-  const getEventIconColor = (eventType: string) => {
-    return eventIconColors[eventType as keyof typeof eventIconColors] || "#666";
+  const getEventIconColor = (eventType: ScheduleType) => {
+    return eventIconColors[eventType] || "#666";
   };
 
   return (
@@ -175,7 +179,7 @@ export default function ScheduleDetail() {
                 themeStyles.primaryText
               )}
             >
-              {selectedSchedule?.type}
+              {getScheduleTypeLabel(selectedSchedule?.type)}
             </Text>
           </View>
         </View>

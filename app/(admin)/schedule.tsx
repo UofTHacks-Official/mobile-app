@@ -54,41 +54,33 @@ const Schedule = () => {
   } = useScheduleFilters();
 
   // Conditionally fetch schedule data based on user type (skip for judges and volunteers)
+
   const { data: hackerSchedules = [] } = useScheduleData(
     selectedEventTypes,
-    !isJudge && !isVolunteer && userTypeChecked
+    !isVolunteer && userTypeChecked
   );
-
+  console.log("hackerSchedule:", hackerSchedules);
   // For judges, fetch all their judging schedules (no event type filtering)
   const { data: judgeSchedules = [] } = useJudgeScheduleData(
-    ["activity"], // Pass a default type to satisfy the hook, but it won't be used for filtering
+    // Pass a default type to satisfy the hook, but it won't be used for filtering
     isJudge && userTypeChecked
   );
 
   // Use the appropriate schedule data based on user type
-  const schedules = isJudge ? judgeSchedules : hackerSchedules;
+  const schedules = hackerSchedules;
 
   const hourHeight = 100;
 
   // Use different dates based on user type
   // Judges: January 1, 2025 (single day - matching their schedule data from DB)
   // Hackers/Admins: January 16-18, 2026 (hackathon dates)
-  const allDates = isJudge
-    ? [
-        new Date(2025, 0, 1), // January 1, 2025 - judging day (matches DB timestamp)
-      ]
-    : [
-        new Date(2026, 0, 16), // January 16, 2026
-        new Date(2026, 0, 17), // January 17, 2026
-        new Date(2026, 0, 18), // January 18, 2026
-      ];
+  const allDates = [
+    new Date(2026, 0, 16), // January 16, 2026
+    new Date(2026, 0, 17), // January 17, 2026
+    new Date(2026, 0, 18), // January 18, 2026
+  ];
 
   const getDatesToShow = () => {
-    // Judges always see single day view
-    if (isJudge) {
-      return [allDates[0]];
-    }
-
     if (daysToShow === 1) {
       return [allDates[currentDayIndex]];
     } else {
@@ -101,11 +93,8 @@ const Schedule = () => {
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
   // Use current date based on user type
-  const currentDate = isJudge
-    ? allDates[0]
-    : daysToShow === 1
-      ? allDates[currentDayIndex]
-      : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
+  const currentDate =
+    daysToShow === 1 ? allDates[currentDayIndex] : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
 
   const handleDayScroll = (event: any) => {
     handleScroll(event);
@@ -125,20 +114,26 @@ const Schedule = () => {
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
+
+    // Extract original numeric ID if it was split (e.g., "123-part1" -> "123")
+    const scheduleID =
+      typeof schedule.id === "string" && schedule.id.includes("-")
+        ? schedule.id.split("-")[0]
+        : schedule.id;
+
     router.push({
       pathname: "/schedule-detail/[scheduleID]" as any,
       params: {
-        scheduleID: schedule.id,
+        scheduleID: scheduleID.toString(),
       },
     });
   };
 
-  // Define time range based on user type
-  const timeRange = isJudge
-    ? { start: 7, end: 17 } // 7 AM to 5 PM for judges
-    : { start: 0, end: 24 }; // Full day for hackers/admins
+  // Define time range (24/7)
+  const timeRange = { start: 0, end: 24 };
 
   const renderDaySchedules = (date: Date, index: number) => {
+    console.log(schedules);
     const filtered = schedules.flatMap((schedule) => {
       const start = new Date(schedule.startTime);
       const end = new Date(schedule.endTime);
@@ -178,22 +173,26 @@ const Schedule = () => {
         );
         const isEndDay = date.getTime() === endDate.getTime();
         if (isEndDay) {
-          const secondPart = {
-            ...schedule,
-            id: `${schedule.id}-part2`, // Unique ID for second part
-            startTime: new Date(
-              end.getFullYear(),
-              end.getMonth(),
-              end.getDate(),
-              0,
-              0,
-              0,
-              0
-            ).toISOString(),
-            endTime: schedule.endTime,
-            date: endDate,
-          };
-          results.push(secondPart);
+          // Only add second part if it actually has duration
+          const part2Start = new Date(
+            end.getFullYear(),
+            end.getMonth(),
+            end.getDate(),
+            0,
+            0,
+            0,
+            0
+          );
+          if (end.getTime() > part2Start.getTime()) {
+            const secondPart = {
+              ...schedule,
+              id: `${schedule.id}-part2`, // Unique ID for second part
+              startTime: part2Start.toISOString(),
+              endTime: schedule.endTime,
+              date: endDate,
+            };
+            results.push(secondPart);
+          }
         }
         return results;
       } else {
@@ -203,22 +202,17 @@ const Schedule = () => {
           start.getDate()
         );
         const isCurrentDay = date.getTime() === eventDate.getTime();
-        if (isCurrentDay) {
-          return [schedule];
-        }
-        return [];
+        return isCurrentDay ? [schedule] : [];
       }
     });
 
     // Use current date based on user type for "today" indicator
-    const now = isJudge
-      ? new Date(2025, 0, 1) // January 1, 2025 for judges (matches DB timestamp)
-      : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
+    const now = new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
     const isToday =
       date.getFullYear() === now.getFullYear() &&
       date.getMonth() === now.getMonth() &&
       date.getDate() === now.getDate();
-
+    console.log(filtered);
     return (
       <DayColumn
         key={index}
@@ -244,14 +238,10 @@ const Schedule = () => {
         <ScheduleHeader
           dates={dates}
           currentDate={currentDate}
-          onFilterPress={
-            isJudge
-              ? undefined
-              : () => {
-                  haptics.impactAsync(ImpactFeedbackStyle.Medium);
-                  setIsFilterModalVisible(true);
-                }
-          }
+          onFilterPress={() => {
+            haptics.impactAsync(ImpactFeedbackStyle.Medium);
+            setIsFilterModalVisible(true);
+          }}
         />
 
         <View className="flex-1">
@@ -315,12 +305,8 @@ const Schedule = () => {
                                   key={hour}
                                   hour={hour}
                                   isCurrentHour={hour === currentHour}
-                                  schedules={[]}
                                   hourHeight={hourHeight}
-                                  onSchedulePress={() => {}}
                                   showTime={true}
-                                  startHour={timeRange.start}
-                                  endHour={timeRange.end}
                                 />
                               );
                             }
@@ -351,12 +337,8 @@ const Schedule = () => {
                             key={hour}
                             hour={hour}
                             isCurrentHour={hour === currentHour}
-                            schedules={[]}
                             hourHeight={hourHeight}
-                            onSchedulePress={() => {}}
                             showTime={true}
-                            startHour={timeRange.start}
-                            endHour={timeRange.end}
                           />
                         );
                       }
@@ -376,17 +358,15 @@ const Schedule = () => {
           </ScrollView>
         </View>
 
-        {!isJudge && (
-          <FilterMenu
-            isVisible={isFilterModalVisible}
-            onClose={() => setIsFilterModalVisible(false)}
-            daysToShow={daysToShow}
-            setDaysToShow={saveDaysPreference}
-            selectedEventTypes={selectedEventTypes}
-            onToggleEventType={toggleEventType}
-            onClearFilters={clearFilters}
-          />
-        )}
+        <FilterMenu
+          isVisible={isFilterModalVisible}
+          onClose={() => setIsFilterModalVisible(false)}
+          daysToShow={daysToShow}
+          setDaysToShow={saveDaysPreference}
+          selectedEventTypes={selectedEventTypes}
+          onToggleEventType={toggleEventType}
+          onClearFilters={clearFilters}
+        />
       </View>
     </View>
   );

@@ -6,16 +6,10 @@ import EventComponent from "./Event";
 
 interface TimeSlotProps {
   hour: number;
-  isCurrentHour: boolean;
-  schedules: Schedule[];
+  isCurrentHour?: boolean;
   hourHeight: number;
-  onSchedulePress: (schedule: Schedule) => void;
   showTime?: boolean;
   onLayout?: (e: LayoutChangeEvent) => void;
-  // Add these props to handle global event positioning
-  allSchedules?: Schedule[];
-  startHour?: number;
-  endHour?: number;
 }
 
 interface DayColumnProps {
@@ -33,15 +27,10 @@ interface DayColumnProps {
 
 const TimeSlot = ({
   hour,
-  isCurrentHour: _isCurrentHour,
-  schedules,
+  isCurrentHour,
   hourHeight,
-  onSchedulePress,
   showTime = true,
   onLayout,
-  allSchedules = schedules,
-  startHour = 0,
-  endHour: _endHour = 24,
 }: TimeSlotProps) => {
   const { isDark } = useTheme();
   const scheduleTheme = getScheduleThemeStyles(isDark);
@@ -55,63 +44,12 @@ const TimeSlot = ({
           ? `${hour - 12} PM`
           : `${hour} AM`;
 
-  function getEventRange(schedule: Schedule) {
-    const start = new Date(schedule.startTime);
-    const end = new Date(schedule.endTime);
-    let startMinutes = start.getHours() * 60 + start.getMinutes();
-    let endMinutes = end.getHours() * 60 + end.getMinutes();
-    if (endMinutes <= startMinutes) endMinutes += 24 * 60;
-    return { start: startMinutes, end: endMinutes };
-  }
-
-  // Only render events that START in this hour to avoid duplication
-  const hourStart = hour * 60;
-  const hourEnd = (hour + 1) * 60;
-  const eventsStartingInThisHour = schedules.filter((schedule) => {
-    const { start } = getEventRange(schedule);
-    return start >= hourStart && start < hourEnd;
-  });
-
-  // For each event starting in this hour, find all events that overlap with it
-  // across the entire day (not just this hour)
-  function findOverlappingEvents(targetEvent: Schedule) {
-    const targetRange = getEventRange(targetEvent);
-    return allSchedules.filter((schedule) => {
-      const range = getEventRange(schedule);
-      return range.start < targetRange.end && targetRange.start < range.end;
-    });
-  }
-
-  // Group overlapping events
-  function groupOverlappingEvents(events: Schedule[]) {
-    if (events.length === 0) return [];
-
-    const groups: Schedule[][] = [];
-    const processed: Set<string> = new Set();
-
-    for (const event of events) {
-      if (processed.has(event.id.toString())) continue;
-
-      const overlappingEvents = findOverlappingEvents(event);
-      const group = overlappingEvents.sort((a, b) => {
-        const aStart = getEventRange(a).start;
-        const bStart = getEventRange(b).start;
-        return aStart - bStart;
-      });
-
-      // Mark all events in this group as processed
-      group.forEach((e) => processed.add(e.id.toString()));
-      groups.push(group);
-    }
-
-    return groups;
-  }
-
-  const overlapGroups = groupOverlappingEvents(eventsStartingInThisHour);
-
   return (
     <View
-      className={cn(scheduleTheme.timeBlockBackground)}
+      className={cn(
+        scheduleTheme.timeBlockBackground,
+        isCurrentHour && (isDark ? "bg-blue-900/10" : "bg-blue-50")
+      )}
       style={{
         height: hourHeight,
         borderBottomWidth: 1,
@@ -122,64 +60,33 @@ const TimeSlot = ({
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">
-            <Text className={cn("text-xs ml-1 mt-1", scheduleTheme.timeText)}>
+            <Text
+              className={cn(
+                "text-xs ml-1 mt-1",
+                isCurrentHour
+                  ? "text-blue-600 font-bold"
+                  : scheduleTheme.timeText
+              )}
+            >
               {formattedHour}
             </Text>
           </View>
         )}
-        <View className="flex-1 relative h-full">
-          {overlapGroups.map((group, _groupIdx) => {
-            const eventWidth = 100 / group.length;
-
-            return group.map((schedule, index) => {
-              const { start, end } = getEventRange(schedule);
-
-              const spacing = 4;
-
-              // Calculate the full height of the event
-              const eventDurationMinutes = end - start;
-              const eventHeightPixels =
-                (eventDurationMinutes / 60) * hourHeight - spacing;
-
-              // Calculate the top position relative to the start of the day
-              const eventStartHour = Math.floor(start / 60);
-              const eventStartMinutes = start % 60;
-              const topPositionFromDayStart =
-                (eventStartHour - startHour) * hourHeight +
-                (eventStartMinutes / 60) * hourHeight;
-
-              // Calculate the top position relative to this hour
-              const topPositionFromThisHour =
-                topPositionFromDayStart -
-                (hour - startHour) * hourHeight +
-                spacing / 2;
-
-              return (
-                <EventComponent
-                  key={schedule.id}
-                  id={schedule.id.toString()}
-                  title={schedule.title}
-                  startTime={schedule.startTime}
-                  endTime={schedule.endTime}
-                  hourHeight={hourHeight}
-                  type={schedule.type}
-                  onPress={() => onSchedulePress(schedule)}
-                  style={{
-                    width: `${eventWidth}%`,
-                    left: `${eventWidth * index}%`,
-                    top: topPositionFromThisHour,
-                    height: eventHeightPixels,
-                    position: "absolute",
-                  }}
-                />
-              );
-            });
-          })}
-        </View>
+        <View className="flex-1 relative h-full" />
       </View>
     </View>
   );
 };
+
+function getEventRange(schedule: Schedule) {
+  const start = new Date(schedule.startTime);
+  const end = new Date(schedule.endTime);
+  let startMinutes = start.getHours() * 60 + start.getMinutes();
+  let endMinutes = end.getHours() * 60 + end.getMinutes();
+  // Handle events that cross midnight
+  if (endMinutes < startMinutes) endMinutes += 24 * 60;
+  return { start: startMinutes, end: endMinutes };
+}
 
 export const DayColumn = ({
   currentHour,
@@ -196,6 +103,45 @@ export const DayColumn = ({
   // Calculate number of hours to display
   const hoursToDisplay = endHour - startHour;
 
+  // Group events into clusters of overlaps (connected components)
+  const clusters: Schedule[][] = [];
+  const processed = new Set<string>();
+
+  const sortedSchedules = [...schedules].sort((a, b) => {
+    const aRange = getEventRange(a);
+    const bRange = getEventRange(b);
+    return aRange.start - bRange.start;
+  });
+
+  for (const schedule of sortedSchedules) {
+    if (processed.has(schedule.id.toString())) continue;
+
+    const cluster: Schedule[] = [];
+    const stack = [schedule];
+    processed.add(schedule.id.toString());
+
+    while (stack.length > 0) {
+      const current = stack.pop()!;
+      cluster.push(current);
+      const currentRange = getEventRange(current);
+
+      for (const other of sortedSchedules) {
+        if (processed.has(other.id.toString())) continue;
+        const otherRange = getEventRange(other);
+
+        // Check if overlaps
+        if (
+          currentRange.start < otherRange.end &&
+          otherRange.start < currentRange.end
+        ) {
+          processed.add(other.id.toString());
+          stack.push(other);
+        }
+      }
+    }
+    clusters.push(cluster);
+  }
+
   return (
     <View
       className="flex-1 relative"
@@ -204,6 +150,7 @@ export const DayColumn = ({
         borderRightColor: scheduleTheme.lineColor,
       }}
     >
+      {/* Grid Lines */}
       {Array.from({ length: hoursToDisplay }, (_, i) => {
         const hour = startHour + i;
         return (
@@ -211,16 +158,85 @@ export const DayColumn = ({
             key={hour}
             hour={hour}
             isCurrentHour={hour === currentHour}
-            schedules={schedules}
             hourHeight={hourHeight}
-            onSchedulePress={onSchedulePress}
             showTime={showTimeLabels}
-            allSchedules={schedules}
-            startHour={startHour}
-            endHour={endHour}
           />
         );
       })}
+
+      {/* Events Layer */}
+      <View
+        className="absolute top-0 right-0 left-0 bottom-0"
+        style={{ marginLeft: showTimeLabels ? 48 : 0 }}
+      >
+        {clusters.map((cluster, clusterIdx) => {
+          // Sort cluster by start time
+          cluster.sort(
+            (a, b) => getEventRange(a).start - getEventRange(b).start
+          );
+
+          // Assign columns to events in the cluster
+          const columns: Schedule[][] = [];
+          const eventToColumn = new Map<string, number>();
+
+          for (const ev of cluster) {
+            const evRange = getEventRange(ev);
+            let placed = false;
+
+            for (let i = 0; i < columns.length; i++) {
+              const lastInCol = columns[i][columns[i].length - 1];
+              if (getEventRange(lastInCol).end <= evRange.start) {
+                columns[i].push(ev);
+                eventToColumn.set(ev.id.toString(), i);
+                placed = true;
+                break;
+              }
+            }
+
+            if (!placed) {
+              eventToColumn.set(ev.id.toString(), columns.length);
+              columns.push([ev]);
+            }
+          }
+
+          const numCols = columns.length;
+          const eventWidth = 100 / numCols;
+
+          return cluster.map((schedule) => {
+            const { start, end } = getEventRange(schedule);
+            const colIndex = eventToColumn.get(schedule.id.toString()) || 0;
+
+            const spacing = 4;
+            const eventDurationMinutes = end - start;
+            const eventHeightPixels =
+              (eventDurationMinutes / 60) * hourHeight - spacing;
+
+            const topPosition =
+              (start / 60 - startHour) * hourHeight + spacing / 2;
+
+            return (
+              <EventComponent
+                key={schedule.id}
+                id={schedule.id.toString()}
+                title={schedule.title}
+                startTime={schedule.startTime}
+                endTime={schedule.endTime}
+                hourHeight={hourHeight}
+                type={schedule.type}
+                onPress={() => onSchedulePress(schedule)}
+                style={{
+                  width: `${eventWidth - 1}%`, // Small gap
+                  left: `${eventWidth * colIndex}%`,
+                  top: topPosition,
+                  height: eventHeightPixels,
+                  position: "absolute",
+                  zIndex: 2,
+                }}
+              />
+            );
+          });
+        })}
+      </View>
     </View>
   );
 };
