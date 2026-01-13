@@ -1,5 +1,5 @@
-import { axiosInstance } from "./axiosConfig";
 import type { PaginatedResponse } from "@/types/pagination";
+import { axiosInstance } from "./axiosConfig";
 
 export const hackerEndpoints = {
   HACKER_LOGIN: "/api/v13/hackers/login",
@@ -236,6 +236,7 @@ export const googleAuthToken = async (
       code,
       code_verifier,
       redirect_uri,
+      platform: "ios",
     }
   );
   return response.data;

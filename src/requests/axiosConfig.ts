@@ -16,6 +16,7 @@ const ENDPOINTS_WITHOUT_AUTH = [
   "/api/v13/admins/login",
   "/api/v13/admins/refresh",
   "/api/v13/hackers/login",
+  "/api/v13/hackers/google-auth/token",
   "/api/v13/hackers/refresh",
   "/api/v13/judges/sponsor-by-pin",
   "/api/v13/judges/login",
