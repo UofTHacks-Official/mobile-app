@@ -2,8 +2,13 @@ import { useTheme } from "@/context/themeContext";
 import { ScheduleType } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
+  Award,
+  BookOpen,
+  Briefcase,
   Check,
+  Clock,
   Columns3,
+  Sparkles,
   Square,
   Target,
   Users,
@@ -154,28 +159,90 @@ const FilterMenu = ({
                 <Text
                   className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
                 >
+                  View Mode
+                </Text>
+                <View className="flex-row mb-8">
+                  <Pressable
+                    onPress={() => setDaysToShow(1)}
+                    className={`flex-1 p-3 rounded-l-md items-center justify-center border-y border-l ${
+                      daysToShow === 1
+                        ? "bg-blue-600 border-blue-600"
+                        : `${isDark ? "bg-[#262626] border-[#404040]" : "bg-white border-gray-300"}`
+                    }`}
+                  >
+                    <Text
+                      className={`font-semibold ${
+                        daysToShow === 1
+                          ? "text-white"
+                          : themeStyles.primaryText
+                      }`}
+                    >
+                      Single Day
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setDaysToShow(3)}
+                    className={`flex-1 p-3 rounded-r-md items-center justify-center border ${
+                      daysToShow === 3
+                        ? "bg-blue-600 border-blue-600"
+                        : `${isDark ? "bg-[#262626] border-[#404040]" : "bg-white border-gray-300"}`
+                    }`}
+                  >
+                    <Text
+                      className={`font-semibold ${
+                        daysToShow === 3
+                          ? "text-white"
+                          : themeStyles.primaryText
+                      }`}
+                    >
+                      Full Event
+                    </Text>
+                  </Pressable>
+                </View>
+
+                <Text
+                  className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
+                >
                   Event Types
                 </Text>
 
                 <View>
                   {[
                     {
-                      type: "networking" as ScheduleType,
-                      label: "Networking",
-                      icon: Users,
+                      type: ScheduleType.CEREMONIES,
+                      label: "Ceremonies",
+                      icon: Award,
+                      color: "#9333EA",
+                    },
+                    {
+                      type: ScheduleType.SPONSOR,
+                      label: "Sponsor Events",
+                      icon: Briefcase,
                       color: "#2563EB",
                     },
                     {
-                      type: "food" as ScheduleType,
+                      type: ScheduleType.MINI,
+                      label: "Mini Events",
+                      icon: Target,
+                      color: "#F472B6",
+                    },
+                    {
+                      type: ScheduleType.FOOD,
                       label: "Food",
                       icon: Utensils,
                       color: "#EA580C",
                     },
                     {
-                      type: "activity" as ScheduleType,
-                      label: "Activities",
-                      icon: Target,
-                      color: "#F472B6",
+                      type: ScheduleType.SHIFTS,
+                      label: "Shifts",
+                      icon: Clock,
+                      color: "#4B5563",
+                    },
+                    {
+                      type: ScheduleType.WORKSHOP,
+                      label: "Workshops",
+                      icon: BookOpen,
+                      color: "#16A34A",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);

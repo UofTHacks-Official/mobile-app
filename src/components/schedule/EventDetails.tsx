@@ -2,7 +2,7 @@
 import React from "react";
 import { Modal, View, Text, Pressable } from "react-native";
 import { Clock, Tag, UserCog, X, Info, Globe } from "lucide-react-native";
-import { Schedule } from "@/types/schedule";
+import { Schedule, ScheduleType } from "@/types/schedule";
 import { formatTimeTo12Hour } from "@/utils/time";
 
 interface EventDetailsProps {
@@ -90,7 +90,10 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
           <View className="px-6 mb-6">
             <View className="flex-row">
               <View className="w-6 mr-4">
-                <Tag size={20} color={getEventIconColor(schedule?.type)} />
+                <Tag
+                  size={20}
+                  color={getEventIconColor(ScheduleType[schedule?.type])}
+                />
               </View>
               <Text className="text-lg text-black capitalize">
                 {schedule?.type}

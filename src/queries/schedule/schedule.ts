@@ -4,13 +4,8 @@ import { devError, devLog } from "@/utils/logger";
 import { useQuery } from "@tanstack/react-query";
 
 function mapApiToSchedule(apiEvent: any): Schedule {
-  const typeMap: Record<number, ScheduleType> = {
-    0: "activity",
-    1: "networking",
-    2: "activity",
-    3: "food",
-    4: "activity",
-  };
+  const eventType: ScheduleType = apiEvent.event_type;
+
   return {
     id: apiEvent.schedule_id.toString(),
     title: apiEvent.schedule_name,
@@ -18,7 +13,8 @@ function mapApiToSchedule(apiEvent: any): Schedule {
     startTime: apiEvent.schedule_start_time,
     endTime: apiEvent.schedule_end_time,
     date: new Date(apiEvent.schedule_start_time),
-    type: typeMap[apiEvent.event_type] || "activity",
+    // Directly assign the enum value
+    type: eventType,
     sponsorId: apiEvent.sponsor_id,
     isShift: apiEvent.is_shift,
     shiftType: apiEvent.shift_type,
@@ -40,6 +36,7 @@ export const useScheduleData = (
     queryFn: async () => {
       try {
         const data = await fetchAllSchedules();
+
         const mappedSchedules = data.map(mapApiToSchedule);
 
         return mappedSchedules.filter((schedule) =>

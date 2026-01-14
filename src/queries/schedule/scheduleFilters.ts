@@ -16,9 +16,12 @@ const STORAGE_KEYS = {
 export const useScheduleFilters = () => {
   const [daysToShow, setDaysToShow] = useState(1);
   const [selectedEventTypes, setSelectedEventTypes] = useState<ScheduleType[]>([
-    "networking",
-    "food",
-    "activity",
+    ScheduleType.CEREMONIES,
+    ScheduleType.FOOD,
+    ScheduleType.MINI,
+    ScheduleType.SHIFTS,
+    ScheduleType.SPONSOR,
+    ScheduleType.WORKSHOP,
   ]);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
@@ -93,7 +96,14 @@ export const useScheduleFilters = () => {
   const clearFilters = async () => {
     try {
       await saveDaysPreference(1);
-      await saveEventTypesPreference(["networking", "food", "activity"]);
+      await saveEventTypesPreference([
+        ScheduleType.CEREMONIES,
+        ScheduleType.FOOD,
+        ScheduleType.MINI,
+        ScheduleType.SHIFTS,
+        ScheduleType.SPONSOR,
+        ScheduleType.WORKSHOP,
+      ]);
       await saveDayIndexPreference(0);
     } catch (error) {
       devError("Error clearing filters:", error);

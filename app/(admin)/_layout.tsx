@@ -63,7 +63,7 @@ export default function AdminLayout() {
             }
 
             // Hide schedule for judges and volunteers
-            if (route.name === "schedule" && (isJudge || isVolunteer)) {
+            if (route.name === "schedule" && isVolunteer) {
               return false;
             }
 
