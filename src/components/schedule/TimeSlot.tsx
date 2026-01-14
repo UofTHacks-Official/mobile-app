@@ -46,10 +46,7 @@ const TimeSlot = ({
 
   return (
     <View
-      className={cn(
-        scheduleTheme.timeBlockBackground,
-        isCurrentHour && (isDark ? "bg-blue-900/10" : "bg-blue-50")
-      )}
+      className={scheduleTheme.timeBlockBackground}
       style={{
         height: hourHeight,
         borderBottomWidth: 1,
@@ -60,14 +57,7 @@ const TimeSlot = ({
       <View className="flex-row h-full">
         {showTime && (
           <View className="w-12">
-            <Text
-              className={cn(
-                "text-xs ml-1 mt-1",
-                isCurrentHour
-                  ? "text-blue-600 font-bold"
-                  : scheduleTheme.timeText
-              )}
-            >
+            <Text className={cn("text-xs ml-1 mt-1", scheduleTheme.timeText)}>
               {formattedHour}
             </Text>
           </View>
