@@ -20,7 +20,15 @@ import * as SecureStore from "expo-secure-store";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View, Platform } from "react-native";
+import {
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import Animated, {
   Easing,
   interpolateColor,
@@ -323,67 +331,42 @@ const SignInAdmin = () => {
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
-      <View className={cn("flex-1 pt-12", themeStyles.primaryText)}>
-        <Pressable onPress={handleGoBack} className="px-8">
-          <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
-        </Pressable>
-        <View className="px-8 flex-col mt-6 mb-12">
-          <Text
-            className={cn(
-              "text-2xl mb-4 font-semibold",
-              themeStyles.primaryText
-            )}
-          >
-            {roleTitle}
-          </Text>
-          <Text className={cn("text-lg", themeStyles.secondaryText)}>
-            {roleDescription}
-          </Text>
-        </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View className={cn("flex-1 pt-12", themeStyles.primaryText)}>
+          <Pressable onPress={handleGoBack} className="px-8">
+            <ChevronLeft size={24} color={isDark ? "#fff" : "#000"} />
+          </Pressable>
+          <View className="px-8 flex-col mt-6 mb-12">
+            <Text
+              className={cn(
+                "text-2xl mb-4 font-semibold",
+                themeStyles.primaryText
+              )}
+            >
+              {roleTitle}
+            </Text>
+            <Text className={cn("text-lg", themeStyles.secondaryText)}>
+              {roleDescription}
+            </Text>
+          </View>
 
-        <View className="space-y-4 px-8">
-          <TextInput
-            className={cn(
-              "w-full px-4 rounded-xl text-lg mb-4",
-              themeStyles.lightCardBackground
-            )}
-            placeholder="Email"
-            placeholderTextColor={isDark ? "#888" : "#666"}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-            autoFocus={true}
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => {}}
-            onBlur={() => {}}
-            style={{
-              minHeight: 50,
-              textAlignVertical: "center",
-              paddingTop: 4,
-              paddingBottom: 4,
-              lineHeight: 20,
-              color: isDark ? "#fff" : "#000",
-            }}
-          />
-
-          <View
-            className={cn(
-              "w-full flex-row items-center px-4 rounded-xl mb-4",
-              themeStyles.lightCardBackground
-            )}
-          >
+          <View className="space-y-4 px-8">
             <TextInput
-              className="flex-1 text-lg"
-              placeholder="Password"
+              className={cn(
+                "w-full px-4 rounded-xl text-lg mb-4",
+                themeStyles.lightCardBackground
+              )}
+              placeholder="Email"
               placeholderTextColor={isDark ? "#888" : "#666"}
-              secureTextEntry={!showPassword}
+              keyboardType="email-address"
               autoCapitalize="none"
-              autoComplete="password"
+              autoComplete="email"
               autoCorrect={false}
-              value={password}
-              onChangeText={setPassword}
+              autoFocus={true}
+              value={email}
+              onChangeText={setEmail}
+              onFocus={() => {}}
+              onBlur={() => {}}
               style={{
                 minHeight: 50,
                 textAlignVertical: "center",
@@ -393,126 +376,153 @@ const SignInAdmin = () => {
                 color: isDark ? "#fff" : "#000",
               }}
             />
-            <Pressable onPress={togglePasswordVisibility} className="ml-2">
-              {showPassword ? (
-                <Eye size={20} color={isDark ? "#fff" : "#000"} />
-              ) : (
-                <EyeOff size={20} color={isDark ? "#fff" : "#000"} />
+
+            <View
+              className={cn(
+                "w-full flex-row items-center px-4 rounded-xl mb-4",
+                themeStyles.lightCardBackground
               )}
+            >
+              <TextInput
+                className="flex-1 text-lg"
+                placeholder="Password"
+                placeholderTextColor={isDark ? "#888" : "#666"}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoComplete="password"
+                autoCorrect={false}
+                value={password}
+                onChangeText={setPassword}
+                style={{
+                  minHeight: 50,
+                  textAlignVertical: "center",
+                  paddingTop: 4,
+                  paddingBottom: 4,
+                  lineHeight: 20,
+                  color: isDark ? "#fff" : "#000",
+                }}
+              />
+              <Pressable onPress={togglePasswordVisibility} className="ml-2">
+                {showPassword ? (
+                  <Eye size={20} color={isDark ? "#fff" : "#000"} />
+                ) : (
+                  <EyeOff size={20} color={isDark ? "#fff" : "#000"} />
+                )}
+              </Pressable>
+            </View>
+          </View>
+
+          <Pressable
+            onPress={handleSignIn}
+            disabled={!isFormValid || loginMutation.isPending}
+          >
+            <AnimatedView
+              style={
+                Platform.OS === "web"
+                  ? {
+                      backgroundColor: isFormValid
+                        ? isDark
+                          ? "#75EDEF"
+                          : "#132B38"
+                        : "#9CA3AF",
+                      opacity: isFormValid ? 1 : 0.6,
+                    }
+                  : [animatedButtonStyle, animatedBackgroundStyle]
+              }
+              className={cn("py-4 mt-8 mx-8 rounded-md")}
+            >
+              <Text
+                className={cn(
+                  "text-center text-lg font-semibold",
+                  themeStyles.primaryText1
+                )}
+              >
+                {loginMutation.isPending ? "Signing In..." : "Sign In"}
+              </Text>
+            </AnimatedView>
+          </Pressable>
+
+          <View className="flex-row items-center px-8 my-6">
+            <View
+              className={cn(
+                "flex-1 h-px",
+                isDark ? "bg-gray-700" : "bg-gray-300"
+              )}
+            />
+            <Text className={cn("mx-4 text-sm", themeStyles.secondaryText)}>
+              or
+            </Text>
+            <View
+              className={cn(
+                "flex-1 h-px",
+                isDark ? "bg-gray-700" : "bg-gray-300"
+              )}
+            />
+          </View>
+
+          {/* Google OAuth Button - Only show for hackers */}
+          {displayRole === "hacker" && (
+            <Pressable
+              onPress={handleGoogleSignIn}
+              className={cn(
+                "mx-8 py-4 rounded-md flex-row items-center justify-center mb-4",
+                isDark ? "bg-gray-800" : "bg-gray-100"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-center text-lg font-semibold",
+                  themeStyles.primaryText
+                )}
+              >
+                Continue with Google
+              </Text>
             </Pressable>
+          )}
+          {/* Apple Sign In Button - Only show on iOS for hackers */}
+          {displayRole === "hacker" && Platform.OS === "ios" && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={
+                AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+              }
+              buttonStyle={
+                isDark
+                  ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                  : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              }
+              cornerRadius={8}
+              style={{
+                width: "100%",
+                height: 50,
+                marginHorizontal: 32,
+              }}
+              onPress={handleAppleSignIn}
+            />
+          )}
+
+          <View className="w-full px-12 absolute bottom-0 mb-8">
+            <Text
+              className={cn("text-xs text-center", themeStyles.secondaryText)}
+            >
+              By signing in, you agree to our{" "}
+              <Text
+                style={{ textDecorationLine: "underline" }}
+                onPress={() => {}}
+              >
+                Terms and Conditions
+              </Text>{" "}
+              and{" "}
+              <Text
+                style={{ textDecorationLine: "underline" }}
+                onPress={() => {}}
+              >
+                Privacy Policy
+              </Text>
+              .
+            </Text>
           </View>
         </View>
-
-        <Pressable
-          onPress={handleSignIn}
-          disabled={!isFormValid || loginMutation.isPending}
-        >
-          <AnimatedView
-            style={
-              Platform.OS === "web"
-                ? {
-                    backgroundColor: isFormValid
-                      ? isDark
-                        ? "#75EDEF"
-                        : "#132B38"
-                      : "#9CA3AF",
-                    opacity: isFormValid ? 1 : 0.6,
-                  }
-                : [animatedButtonStyle, animatedBackgroundStyle]
-            }
-            className={cn("py-4 mt-8 mx-8 rounded-md")}
-          >
-            <Text
-              className={cn(
-                "text-center text-lg font-semibold",
-                themeStyles.primaryText1
-              )}
-            >
-              {loginMutation.isPending ? "Signing In..." : "Sign In"}
-            </Text>
-          </AnimatedView>
-        </Pressable>
-
-        <View className="flex-row items-center px-8 my-6">
-          <View
-            className={cn(
-              "flex-1 h-px",
-              isDark ? "bg-gray-700" : "bg-gray-300"
-            )}
-          />
-          <Text className={cn("mx-4 text-sm", themeStyles.secondaryText)}>
-            or
-          </Text>
-          <View
-            className={cn(
-              "flex-1 h-px",
-              isDark ? "bg-gray-700" : "bg-gray-300"
-            )}
-          />
-        </View>
-
-        {/* Google OAuth Button - Only show for hackers */}
-        {displayRole === "hacker" && (
-          <Pressable
-            onPress={handleGoogleSignIn}
-            className={cn(
-              "mx-8 py-4 rounded-md flex-row items-center justify-center mb-4",
-              isDark ? "bg-gray-800" : "bg-gray-100"
-            )}
-          >
-            <Text
-              className={cn(
-                "text-center text-lg font-semibold",
-                themeStyles.primaryText
-              )}
-            >
-              Continue with Google
-            </Text>
-          </Pressable>
-        )}
-        {/* Apple Sign In Button - Only show on iOS for hackers */}
-        {displayRole === "hacker" && Platform.OS === "ios" && (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={
-              AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
-            }
-            buttonStyle={
-              isDark
-                ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
-                : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-            }
-            cornerRadius={8}
-            style={{
-              width: "100%",
-              height: 50,
-              marginHorizontal: 32,
-            }}
-            onPress={handleAppleSignIn}
-          />
-        )}
-
-        <View className="w-full px-12 absolute bottom-0 mb-8">
-          <Text
-            className={cn("text-xs text-center", themeStyles.secondaryText)}
-          >
-            By signing in, you agree to our{" "}
-            <Text
-              style={{ textDecorationLine: "underline" }}
-              onPress={() => {}}
-            >
-              Terms and Conditions
-            </Text>{" "}
-            and{" "}
-            <Text
-              style={{ textDecorationLine: "underline" }}
-              onPress={() => {}}
-            >
-              Privacy Policy
-            </Text>
-            .
-          </Text>
-        </View>
-      </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
