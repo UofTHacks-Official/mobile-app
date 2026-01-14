@@ -29,6 +29,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import GoogleLogo from "../../assets/images/icons/google-logo.svg";
 import Animated, {
   Easing,
   interpolateColor,
@@ -469,9 +470,10 @@ const SignInAdmin = () => {
                 isDark ? "bg-gray-800" : "bg-gray-100"
               )}
             >
+              <GoogleLogo width={20} height={20} />
               <Text
                 className={cn(
-                  "text-center text-lg font-semibold",
+                  "text-lg font-semibold ml-3",
                   themeStyles.primaryText
                 )}
               >
@@ -481,23 +483,24 @@ const SignInAdmin = () => {
           )}
           {/* Apple Sign In Button - Only show on iOS for hackers */}
           {displayRole === "hacker" && Platform.OS === "ios" && (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={
-                AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
-              }
-              buttonStyle={
-                isDark
-                  ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
-                  : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-              }
-              cornerRadius={8}
-              style={{
-                width: "100%",
-                height: 50,
-                marginHorizontal: 32,
-              }}
-              onPress={handleAppleSignIn}
-            />
+            <View className="mx-8 mb-4">
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={
+                  AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+                }
+                buttonStyle={
+                  isDark
+                    ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                    : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                }
+                cornerRadius={8}
+                style={{
+                  width: "100%",
+                  height: 50,
+                }}
+                onPress={handleAppleSignIn}
+              />
+            </View>
           )}
 
           <View className="w-full px-12 absolute bottom-0 mb-8">
