@@ -13,11 +13,11 @@ import {
   generateRandomState,
 } from "@/utils/pkce";
 import { env } from "@/utils/config";
-import { googleAuthToken } from "@/requests/hacker";
+import { appleAuthToken, googleAuthToken } from "@/requests/hacker";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View, Platform } from "react-native";
@@ -255,6 +255,68 @@ const SignInAdmin = () => {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    haptics.impactAsync(ImpactFeedbackStyle.Medium);
+
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      // Extract identity token
+      const { identityToken, fullName } = credential;
+
+      if (!identityToken) {
+        throw new Error("No identity token received from Apple");
+      }
+
+      // Prepare user data (only provided on first sign-in)
+      const userData = fullName
+        ? {
+            firstName: fullName.givenName || undefined,
+            lastName: fullName.familyName || undefined,
+          }
+        : undefined;
+
+      // Exchange token for app tokens
+      const tokens = await appleAuthToken(identityToken, userData);
+
+      // Sign in the user
+      await signIn(tokens.access_token, tokens.refresh_token);
+      router.dismissAll();
+
+      if (isFirstSignIn) {
+        router.replace("/auth/onboarding");
+      } else {
+        router.replace("/(admin)");
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "Welcome!",
+        text2: "Successfully signed in with Apple",
+      });
+    } catch (error: any) {
+      if (error.code === "ERR_REQUEST_CANCELED") {
+        // User canceled - do nothing
+        return;
+      }
+
+      devError("Apple Sign In error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Apple Sign-In Failed",
+        text2:
+          error instanceof Error
+            ? error.message
+            : "Unable to sign in with Apple",
+      });
+    }
+  };
+
   if (loginMutation.isPending) {
     return <CustomSplashScreen />;
   }
@@ -407,6 +469,26 @@ const SignInAdmin = () => {
               Continue with Google
             </Text>
           </Pressable>
+        )}
+        {/* Apple Sign In Button - Only show on iOS for hackers */}
+        {displayRole === "hacker" && Platform.OS === "ios" && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={
+              AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+            }
+            buttonStyle={
+              isDark
+                ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+            }
+            cornerRadius={8}
+            style={{
+              width: "100%",
+              height: 50,
+              marginHorizontal: 32,
+            }}
+            onPress={handleAppleSignIn}
+          />
         )}
 
         <View className="w-full px-12 absolute bottom-0 mb-8">

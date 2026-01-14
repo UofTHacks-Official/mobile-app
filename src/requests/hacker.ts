@@ -11,6 +11,7 @@ export const hackerEndpoints = {
   HACKER_BY_ID: "/api/v13/hackers",
   HACKER_RESUME: "/api/v13/hackers/application/resume",
   HACKER_GOOGLE_LOGIN: "/api/v13/hackers/google-auth/token",
+  HACKER_APPLE_LOGIN: "/api/v13/hackers/apple-auth/token",
   ADMIN_RESUME: "/api/v13/admins/applications",
 };
 
@@ -237,6 +238,23 @@ export const googleAuthToken = async (
       code_verifier,
       redirect_uri,
       platform: "ios",
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Exchanges an Apple ID token for a token pair
+ */
+export const appleAuthToken = async (
+  id_token: string,
+  user_data?: { firstName?: string; lastName?: string }
+): Promise<TokenPair> => {
+  const response = await axiosInstance.post(
+    hackerEndpoints.HACKER_APPLE_LOGIN,
+    {
+      id_token,
+      user_data: user_data ? { name: user_data } : null,
     }
   );
   return response.data;

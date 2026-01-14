@@ -10,6 +10,9 @@
     ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": ["/home/isolumi/CS/uofthacks/dashboard-13/"]
+    "additionalDirectories": [
+      "/home/isolumi/CS/uofthacks/dashboard-13/",
+      "/home/isolumi/CS/uofthacks/backend-2/"
+    ]
   }
 }

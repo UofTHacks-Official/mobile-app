@@ -34,6 +34,10 @@ export default ({ config }) => {
       config: {
         usesNonExemptEncryption: false,
       },
+      entitlements: {
+        "com.apple.developer.applesignin": ["Default"],
+      },
+      usesAppleSignIn: true,
     },
     android: {
       ...config.android,
