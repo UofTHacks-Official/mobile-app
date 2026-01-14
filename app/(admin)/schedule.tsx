@@ -60,12 +60,6 @@ const Schedule = () => {
     selectedEventTypes,
     !isVolunteer && userTypeChecked
   );
-  // For judges, fetch all their judging schedules (no event type filtering)
-  const { data: judgeSchedules = [] } = useJudgeScheduleData(
-    // Pass a default type to satisfy the hook, but it won't be used for filtering
-    isJudge && userTypeChecked
-  );
-
   // Use the appropriate schedule data based on user type
   const schedules = hackerSchedules;
 
@@ -93,8 +87,7 @@ const Schedule = () => {
   const currentHour = currentTime.getHours();
   const currentMinute = currentTime.getMinutes();
   // Use current date based on user type
-  const currentDate =
-    daysToShow === 1 ? allDates[currentDayIndex] : new Date(2026, 0, 17); // January 17, 2026 for hackers/admins
+  const currentDate = allDates[currentDayIndex];
 
   const handleDayScroll = (event: any) => {
     handleScroll(event);
