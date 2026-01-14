@@ -21,16 +21,21 @@ export default function CameraPage() {
       const { status } = await Camera.requestCameraPermissionsAsync();
       devLog("Camera permission status:", status);
       setPermission(status === "granted");
-      Toast.show({
-        type: "success",
-        text1: "Camera Permission Granted",
-        text2: "You can now scan QR codes",
-      });
-      Toast.show({
-        type: "success",
-        text1: "Camera Permission Granted",
-        text2: "You can now scan QR codes",
-      });
+      if (status === "granted") {
+        Toast.show({
+          type: "success",
+          text1: "Camera Permission Granted",
+          text2: "You can now scan QR codes",
+        });
+        updateFirstSignInStatus(false);
+        router.replace("/(admin)");
+      } else {
+        Toast.show({
+          type: "info",
+          text1: "Camera Permission Denied",
+          text2: "You can enable access later in Settings",
+        });
+      }
     } catch (error) {
       Toast.show({
         type: "error",
@@ -38,9 +43,6 @@ export default function CameraPage() {
         text2: "Please try again",
       });
       devError("Error requesting camera permission:", error);
-    } finally {
-      updateFirstSignInStatus(false);
-      router.replace("/(admin)");
     }
   };
 
@@ -56,6 +58,7 @@ export default function CameraPage() {
   };
 
   const _handleMaybeLater = async () => {
+    updateFirstSignInStatus(false);
     router.replace("/(admin)");
   };
 
@@ -101,6 +104,19 @@ export default function CameraPage() {
                 )}
               >
                 Continue
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable onPress={_handleMaybeLater}>
+            <View className="py-3 px-2 rounded-md items-center">
+              <Text
+                className={cn(
+                  "text-center font-semibold",
+                  themeStyles.primaryText
+                )}
+              >
+                Maybe Later
               </Text>
             </View>
           </Pressable>

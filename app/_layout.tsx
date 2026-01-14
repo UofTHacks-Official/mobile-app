@@ -127,7 +127,11 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="auth/selectRole"
-                options={{ headerShown: false, animation: "slide_from_right" }}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  gestureEnabled: false,
+                }}
               />
               <Stack.Screen
                 name="auth/signInAdmin"

@@ -33,7 +33,7 @@ export interface QRHackerBucksResponse {
 }
 
 export interface CheckInRequest {
-  user_id: number;
+  qr_code: string;
 }
 
 export interface CheckInResponse {

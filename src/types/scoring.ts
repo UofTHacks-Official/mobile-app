@@ -27,12 +27,11 @@ export interface SubmitScoreResponse {
 
 export const SCORING_CRITERIA_INFO = {
   design: {
-    title: "Design (Required)",
+    title: "Design",
     maxScore: 3,
     description:
       "How well-designed is the project (UI/UX, aesthetics, accessibility)?",
-    breakdown: `Required: Minimum score of 1
-
+    breakdown: `0 - No attention to design
 1 - Barely functional, minimal attention to design
 2 - Functional with some attention to UI/UX
 3 - Highly polished design with strong accessibility features`,
@@ -69,12 +68,11 @@ export const SCORING_CRITERIA_INFO = {
 5 - Highly impactful solution w/ multiple integrated creative ideas; distinctly original concept`,
   },
   technology: {
-    title: "Technicality (Required)",
+    title: "Technicality",
     maxScore: 5,
     description:
       "How effectively was technology used to implement the solution?",
-    breakdown: `Required: Minimum score of 1
-
+    breakdown: `0 - No meaningful use of technology
 1 - Limited or overly simple use of technology for the problem
 2 - Basic use of technology, but not fully aligned with the solution's needs
 3 - Appropriate technology usage with some non-trivial features
@@ -82,11 +80,10 @@ export const SCORING_CRITERIA_INFO = {
 5 - Highly innovative or efficient use of a complex tech stack, where each component is justified`,
   },
   pitching: {
-    title: "Pitching (Required)",
+    title: "Pitching",
     maxScore: 5,
     description: "How clear and effective was the pitch?",
-    breakdown: `Required: Minimum score of 1
-
+    breakdown: `0 - No pitch or unable to communicate
 1 - Spoke clearly and audibly
 2 - Explained the idea effectively
 3 - Explained the data and technologies used

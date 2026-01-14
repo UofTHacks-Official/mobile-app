@@ -1,6 +1,5 @@
 import { useTheme } from "@/context/themeContext";
 import { useTimer } from "@/context/timerContext";
-import { JudgingScheduleItem } from "@/types/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
 import {
@@ -8,54 +7,53 @@ import {
   ImpactFeedbackStyle,
   NotificationFeedbackType,
 } from "@/utils/haptics";
+import { RoomGroup, getFullLocationName } from "@/utils/judging";
 import { router } from "expo-router";
-import { Play, Clock, MapPin, Users, CheckCircle } from "lucide-react-native";
+import { Play, Clock, CheckCircle } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 interface JudgingEventCardProps {
-  event: JudgingScheduleItem;
+  roomGroup: RoomGroup;
 }
 
-export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
+export const JudgingEventCard = ({ roomGroup }: JudgingEventCardProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { activeTimerId, isTimerRunning } = useTimer();
-  const [isJudge, setIsJudge] = useState(false);
 
-  // Check if user is a judge
-  useEffect(() => {
-    const checkUserType = async () => {
-      const userType = await getUserType();
-      setIsJudge(userType === "judge");
-    };
-    checkUserType();
-  }, []);
-
-  // Determine event status
+  // Determine room status based on all schedules in the room
   const getStatus = () => {
-    if (!event.actual_timestamp) {
+    // Check if any schedule in this room has started
+    const anyStarted = roomGroup.schedules.some((s) => s.actual_timestamp);
+
+    if (!anyStarted) {
       return { label: "Not Started", color: "text-gray-500", icon: "●" };
     }
 
-    const startTime = new Date(event.actual_timestamp).getTime();
-    const now = Date.now();
-    const elapsed = Math.floor((now - startTime) / 1000);
-    const durationSeconds = event.duration * 60;
+    // If any started, check if all are completed
+    const allCompleted = roomGroup.schedules.every((schedule) => {
+      if (!schedule.actual_timestamp) return false;
+      const startTime = new Date(schedule.actual_timestamp).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      const durationSeconds = schedule.duration * 60;
+      return elapsed >= durationSeconds;
+    });
 
-    if (elapsed < durationSeconds) {
+    if (allCompleted) {
       return {
-        label: "In Progress",
-        color: "text-green-500",
-        icon: "●",
+        label: "Completed",
+        color: "text-blue-500",
+        icon: "✓",
       };
     }
 
     return {
-      label: "Completed",
-      color: "text-blue-500",
-      icon: "✓",
+      label: "In Progress",
+      color: "text-green-500",
+      icon: "●",
     };
   };
 
@@ -74,36 +72,14 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
     return `${month} ${day}, ${displayHours}:${displayMinutes} ${ampm}`;
   };
 
-  const formatLocation = (location: JudgingScheduleItem["location"]) =>
-    typeof location === "string" ? location : location.location_name;
-
   const handleStartTimer = () => {
-    // Check if another timer is running
-    if (isTimerRunning && activeTimerId !== event.judging_schedule_id) {
-      haptics.notificationAsync(NotificationFeedbackType.Error);
-      Toast.show({
-        type: "error",
-        text1: "Timer Already Running",
-        text2: "Stop the current timer before starting a new one",
-      });
-      return;
-    }
+    // Use the first schedule in the room group to navigate to timer
+    const firstSchedule = roomGroup.schedules[0];
 
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/(admin)/judgingTimer",
-      params: { scheduleId: event.judging_schedule_id },
-    });
-  };
-
-  const handleStartJudging = () => {
-    haptics.impactAsync(ImpactFeedbackStyle.Medium);
-    router.push({
-      pathname: "/(judge)/projectOverview",
-      params: {
-        teamId: event.team_id,
-        scheduleId: event.judging_schedule_id,
-      },
+      params: { scheduleId: firstSchedule.judging_schedule_id },
     });
   };
 
@@ -129,7 +105,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         <Text
           className={cn("text-lg font-onest-bold", themeStyles.primaryText)}
         >
-          Event #{event.judging_schedule_id}
+          {roomGroup.roomName}
         </Text>
         {status.label !== "Completed" && (
           <View className="flex-row items-center gap-1">
@@ -145,35 +121,11 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
 
       {/* Event Details */}
       <View className="space-y-2 mb-4">
-        {/* Judge */}
-        <View className="flex-row items-center gap-2">
-          <Users size={16} color={isDark ? "#A0A0A0" : "#666"} />
-          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            Judge #{event.judge_id}
-          </Text>
-        </View>
-
-        {/* Team */}
-        <View className="flex-row items-center gap-2">
-          <Users size={16} color={isDark ? "#A0A0A0" : "#666"} />
-          <Text className={cn("text-sm font-pp", themeStyles.primaryText)}>
-            Team #{event.team_id}
-          </Text>
-        </View>
-
         {/* Time */}
         <View className="flex-row items-center gap-2">
           <Clock size={16} color={isDark ? "#A0A0A0" : "#666"} />
           <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {formatDateTime(event.timestamp)}
-          </Text>
-        </View>
-
-        {/* Location */}
-        <View className="flex-row items-center gap-2">
-          <MapPin size={16} color={isDark ? "#A0A0A0" : "#666"} />
-          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {formatLocation(event.location)}
+            {formatDateTime(roomGroup.timestamp)}
           </Text>
         </View>
 
@@ -181,27 +133,30 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
         <View className="flex-row items-center gap-2">
           <Clock size={16} color={isDark ? "#A0A0A0" : "#666"} />
           <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-            {event.duration} minutes
+            {roomGroup.schedules[0].duration} minutes
+          </Text>
+        </View>
+
+        {/* Number of tables */}
+        <View className="flex-row items-center gap-2">
+          <Clock size={16} color={isDark ? "#A0A0A0" : "#666"} />
+          <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
+            {roomGroup.schedules.length}{" "}
+            {roomGroup.schedules.length === 1 ? "table" : "tables"}
           </Text>
         </View>
       </View>
 
-      {/* Action Button - Different for Admin vs Judge */}
+      {/* Action Button - Admin only */}
       <Pressable
-        onPress={isJudge ? handleStartJudging : handleStartTimer}
+        onPress={handleStartTimer}
         className={cn(
           "py-3 px-4 rounded-xl flex-row items-center justify-center gap-2",
           status.label === "Completed"
             ? "bg-gray-500"
-            : activeTimerId === event.judging_schedule_id &&
-                isTimerRunning &&
-                !isJudge
-              ? isDark
-                ? "bg-[#75EDEF]"
-                : "bg-[#132B38]"
-              : isDark
-                ? "bg-[#75EDEF]"
-                : "bg-[#132B38]"
+            : isDark
+              ? "bg-[#75EDEF]"
+              : "bg-[#132B38]"
         )}
         disabled={status.label === "Completed"}
       >
@@ -210,30 +165,6 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
             <CheckCircle size={20} color="white" />
             <Text className="text-white text-base font-onest-bold">
               Completed
-            </Text>
-          </>
-        ) : isJudge ? (
-          <>
-            <Play size={20} color={isDark ? "#000" : "#fff"} />
-            <Text
-              className={cn(
-                "text-base font-onest-bold",
-                isDark ? "text-black" : "text-white"
-              )}
-            >
-              Start Judging
-            </Text>
-          </>
-        ) : activeTimerId === event.judging_schedule_id && isTimerRunning ? (
-          <>
-            <CheckCircle size={20} color={isDark ? "#000" : "#fff"} />
-            <Text
-              className={cn(
-                "text-base font-onest-bold",
-                isDark ? "text-black" : "text-white"
-              )}
-            >
-              Timer Running
             </Text>
           </>
         ) : (
@@ -245,7 +176,7 @@ export const JudgingEventCard = ({ event }: JudgingEventCardProps) => {
                 isDark ? "text-black" : "text-white"
               )}
             >
-              {status.label === "In Progress" ? "Resume Timer" : "Start Timer"}
+              {status.label === "In Progress" ? "View Timer" : "Start Timer"}
             </Text>
           </>
         )}

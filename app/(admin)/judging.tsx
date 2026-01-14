@@ -2,19 +2,17 @@ import { JudgingEventCard } from "@/components/JudgingEventCard";
 import { JudgeScheduleView } from "@/components/JudgeScheduleView";
 import { useTheme } from "@/context/themeContext";
 import { useJudgeSchedules } from "@/queries/judge";
-import {
-  useAllJudgingSchedules,
-  useGenerateJudgingSchedules,
-} from "@/queries/judging";
+import { useAllJudgingSchedules } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
 import { USE_MOCK_JUDGING_DATA } from "@/utils/mockJudgingData";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
+import {
+  groupSchedulesByRoom,
+  formatLocationForDisplay,
+} from "@/utils/judging";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
-import { useQueryClient } from "@tanstack/react-query";
-import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
-import { RefreshCw } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -23,13 +21,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 
 const JudgingLocationScreen = () => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
   const { handleScroll } = useScrollNavBar();
-  const queryClient = useQueryClient();
 
   const [isJudge, setIsJudge] = useState(false);
   const [judgeId, setJudgeId] = useState<number | null>(null);
@@ -43,11 +39,9 @@ const JudgingLocationScreen = () => {
   useEffect(() => {
     const checkUserType = async () => {
       const userType = await getUserType();
-      console.log("[DEBUG] Judging page - User type:", userType);
       if (userType === "judge") {
         setIsJudge(true);
         const id = await getJudgeId();
-        console.log("[DEBUG] Judging page - Judge ID:", id);
         setJudgeId(id);
       }
       setUserTypeChecked(true);
@@ -59,7 +53,6 @@ const JudgingLocationScreen = () => {
   // Only enable the appropriate query based on user type
   const adminSchedules = useAllJudgingSchedules(!isJudge && userTypeChecked);
   const judgeSchedules = useJudgeSchedules(judgeId, isJudge && userTypeChecked);
-  const generateSchedulesMutation = useGenerateJudgingSchedules();
 
   // Use appropriate data source
   const {
@@ -69,81 +62,8 @@ const JudgingLocationScreen = () => {
   } = isJudge ? judgeSchedules : adminSchedules;
 
   useEffect(() => {
-    console.log("[DEBUG] Judging page - userTypeChecked:", userTypeChecked);
-    console.log("[DEBUG] Judging page - isJudge:", isJudge);
-    console.log("[DEBUG] Judging page - judgeId:", judgeId);
-    console.log(
-      "[DEBUG] Judging page - admin query enabled:",
-      !isJudge && userTypeChecked
-    );
-    console.log(
-      "[DEBUG] Judging page - judge query enabled:",
-      isJudge && userTypeChecked
-    );
-    console.log("[DEBUG] Judging page - judgingData:", judgingData);
-    console.log("[DEBUG] Judging page - isLoading:", isLoading);
-    console.log("[DEBUG] Judging page - isError:", isError);
+    // No-op: retain dependency array to avoid lint warnings
   }, [isJudge, judgeId, judgingData, isLoading, isError, userTypeChecked]);
-
-  const handleGenerateSchedules = async () => {
-    try {
-      haptics.impactAsync(ImpactFeedbackStyle.Medium);
-
-      // Clear the current schedules from UI immediately
-      queryClient.setQueryData(["judging-schedules"], []);
-
-      const result = await generateSchedulesMutation.mutateAsync();
-
-      console.log("[DEBUG] Generate result:", result);
-
-      // Try different possible response structures
-      const scheduleCount =
-        result?.schedules_created ||
-        result?.total_schedules_created ||
-        result?.count ||
-        result?.total ||
-        (Array.isArray(result) ? result.length : undefined);
-
-      const message =
-        scheduleCount !== undefined
-          ? `Created ${scheduleCount} judging schedules`
-          : result?.message || "Judging schedules created successfully";
-
-      Toast.show({
-        type: "success",
-        text1: "Schedules Generated",
-        text2: message,
-      });
-    } catch (error: any) {
-      let errorMessage =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Unable to generate schedules";
-
-      // If it's a 500 error with generic message, provide helpful context
-      if (
-        error?.response?.status === 500 &&
-        errorMessage === "Internal Server Error"
-      ) {
-        errorMessage =
-          "Backend error. Check if teams, judges, and sponsors exist in database.";
-      }
-
-      console.error("[Generate Schedules Error]", {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-        fullError: error,
-      });
-
-      Toast.show({
-        type: "error",
-        text1: "Generation Failed",
-        text2: errorMessage,
-      });
-    }
-  };
 
   // Sort schedules by timestamp (chronological order)
   const sortedSchedules = (judgingData as JudgingScheduleItem[] | null)
@@ -153,28 +73,47 @@ const JudgingLocationScreen = () => {
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-  // Get event status helper
-  const getEventStatus = (event: JudgingScheduleItem) => {
-    if (!event.actual_timestamp) {
+  // Group schedules by room
+  const roomGroups = useMemo(() => {
+    if (!sortedSchedules) return [];
+    return groupSchedulesByRoom(sortedSchedules);
+  }, [sortedSchedules]);
+
+  // Get room status helper (check if ANY schedule in the room has started)
+  const getRoomStatus = (roomSchedules: JudgingScheduleItem[]) => {
+    // Check if any schedule in this room has started
+    const anyStarted = roomSchedules.some((s) => s.actual_timestamp);
+
+    if (!anyStarted) {
       return "not-started";
     }
 
-    const startTime = new Date(event.actual_timestamp).getTime();
-    const now = Date.now();
-    const elapsed = Math.floor((now - startTime) / 1000);
-    const durationSeconds = event.duration * 60;
+    // If any started, check if all are completed
+    const allCompleted = roomSchedules.every((schedule) => {
+      if (!schedule.actual_timestamp) return false;
+      const startTime = new Date(schedule.actual_timestamp).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      const durationSeconds = schedule.duration * 60;
+      return elapsed >= durationSeconds;
+    });
 
-    if (elapsed < durationSeconds) {
-      return "in-progress";
+    if (allCompleted) {
+      return "completed";
     }
 
-    return "completed";
+    return "in-progress";
   };
 
-  // Filter schedules based on selected filter
-  const filteredSchedules = sortedSchedules?.filter((event) => {
+  // Find currently running room
+  const runningRoom = roomGroups?.find(
+    (room) => getRoomStatus(room.schedules) === "in-progress"
+  );
+
+  // Filter room groups based on selected filter
+  const filteredRoomGroups = roomGroups?.filter((room) => {
     if (filter === "all") return true;
-    return getEventStatus(event) === filter;
+    return getRoomStatus(room.schedules) === filter;
   });
 
   // For judges only: show loading/error states
@@ -255,59 +194,6 @@ const JudgingLocationScreen = () => {
           </View>
         )}
 
-        {/* Generate Schedules Button (Admin Only, hidden when using mock data) */}
-        {!isJudge && !USE_MOCK_JUDGING_DATA && (
-          <Pressable
-            onPress={handleGenerateSchedules}
-            disabled={generateSchedulesMutation.isPending}
-            className={cn(
-              "rounded-2xl p-6 mb-4 flex-row items-center justify-between",
-              isDark ? "bg-[#303030]" : "bg-white"
-            )}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: isDark ? 0.3 : 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-              opacity: generateSchedulesMutation.isPending ? 0.6 : 1,
-            }}
-          >
-            <View className="flex-row items-center flex-1">
-              <View
-                className="w-12 h-12 rounded-full items-center justify-center mr-4"
-                style={{ backgroundColor: isDark ? "#75EDEF" : "#132B38" }}
-              >
-                {generateSchedulesMutation.isPending ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={isDark ? "#000" : "#fff"}
-                  />
-                ) : (
-                  <RefreshCw size={24} color={isDark ? "#000" : "#fff"} />
-                )}
-              </View>
-              <View className="flex-1">
-                <Text
-                  className={cn(
-                    "text-xl font-onest-bold mb-1",
-                    themeStyles.primaryText
-                  )}
-                >
-                  {generateSchedulesMutation.isPending
-                    ? "Generating..."
-                    : "Generate Schedules"}
-                </Text>
-                <Text
-                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                >
-                  Create judging schedules from database
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-        )}
-
         {/* Mock Data Indicator */}
         {USE_MOCK_JUDGING_DATA && (
           <View
@@ -333,6 +219,21 @@ const JudgingLocationScreen = () => {
               Temporary test data is enabled. Set USE_MOCK_JUDGING_DATA to false
               in mockJudgingData.ts to use real backend data.
             </Text>
+          </View>
+        )}
+
+        {/* Currently Running Timer - Show at top for better UX */}
+        {!isJudge && runningRoom && (
+          <View className="mb-4">
+            <Text
+              className={cn(
+                "text-lg font-onest-bold mb-2",
+                themeStyles.primaryText
+              )}
+            >
+              Currently Running
+            </Text>
+            <JudgingEventCard roomGroup={runningRoom} />
           </View>
         )}
 
@@ -455,20 +356,20 @@ const JudgingLocationScreen = () => {
           </View>
         ) : (
           <View className="mt-4">
-            {filteredSchedules && filteredSchedules.length > 0 && (
+            {filteredRoomGroups && filteredRoomGroups.length > 0 && (
               <Text
                 className={cn(
                   "text-xl font-onest-bold mb-3",
                   themeStyles.primaryText
                 )}
               >
-                Judging Events
+                Judging Rooms
               </Text>
             )}
-            {filteredSchedules?.map((event, index) => (
+            {filteredRoomGroups?.map((roomGroup, index) => (
               <JudgingEventCard
-                key={`${event.judging_schedule_id}-${event.team_id}-${index}`}
-                event={event}
+                key={`${roomGroup.roomName}-${index}`}
+                roomGroup={roomGroup}
               />
             ))}
           </View>

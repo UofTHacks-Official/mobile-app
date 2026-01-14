@@ -2,8 +2,13 @@ import { useTheme } from "@/context/themeContext";
 import { ScheduleType } from "@/types/schedule";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import {
+  Award,
+  BookOpen,
+  Briefcase,
   Check,
+  Clock,
   Columns3,
+  Sparkles,
   Square,
   Target,
   Users,
@@ -150,41 +155,51 @@ const FilterMenu = ({
         >
           <View className="flex-1 px-4 py-6 mt-12">
             <View className="flex-1">
-              <View className="flex-col flex-wrap mb-8">
-                {[
-                  { value: 1, label: "1 day", icon: Square },
-                  { value: 3, label: "3 days", icon: Columns3 },
-                ].map((option) => {
-                  const IconComponent = option.icon;
-                  const isSelected = daysToShow === option.value;
-                  return (
-                    <Pressable
-                      key={option.value}
-                      onPress={() => setDaysToShow(option.value)}
-                      className={`mr-3 px-4 py-3 w-full rounded-md mb-2 ${
-                        isSelected
-                          ? isDark
-                            ? "bg-[#262626]"
-                            : "bg-gray-100"
-                          : "transparent"
+              <View className="mb-4">
+                <Text
+                  className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
+                >
+                  View Mode
+                </Text>
+                <View className="flex-row mb-8">
+                  <Pressable
+                    onPress={() => setDaysToShow(1)}
+                    className={`flex-1 p-3 rounded-l-md items-center justify-center border-y border-l ${
+                      daysToShow === 1
+                        ? "bg-blue-600 border-blue-600"
+                        : `${isDark ? "bg-[#262626] border-[#404040]" : "bg-white border-gray-300"}`
+                    }`}
+                  >
+                    <Text
+                      className={`font-semibold ${
+                        daysToShow === 1
+                          ? "text-white"
+                          : themeStyles.primaryText
                       }`}
                     >
-                      <View className="flex-row items-center">
-                        <IconComponent
-                          size={20}
-                          color={themeStyles.iconColor}
-                        />
-                        <Text
-                          className={`ml-2 text-sm font-medium ${themeStyles.primaryText}`}
-                        >
-                          {option.label}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <View className="mb-4">
+                      Single Day
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setDaysToShow(3)}
+                    className={`flex-1 p-3 rounded-r-md items-center justify-center border ${
+                      daysToShow === 3
+                        ? "bg-blue-600 border-blue-600"
+                        : `${isDark ? "bg-[#262626] border-[#404040]" : "bg-white border-gray-300"}`
+                    }`}
+                  >
+                    <Text
+                      className={`font-semibold ${
+                        daysToShow === 3
+                          ? "text-white"
+                          : themeStyles.primaryText
+                      }`}
+                    >
+                      Full Event
+                    </Text>
+                  </Pressable>
+                </View>
+
                 <Text
                   className={`text-lg font-semibold ${themeStyles.headerText} mb-4`}
                 >
@@ -194,22 +209,40 @@ const FilterMenu = ({
                 <View>
                   {[
                     {
-                      type: "networking" as ScheduleType,
-                      label: "Networking",
-                      icon: Users,
+                      type: ScheduleType.CEREMONIES,
+                      label: "Ceremonies",
+                      icon: Award,
+                      color: "#9333EA",
+                    },
+                    {
+                      type: ScheduleType.SPONSOR,
+                      label: "Sponsor Events",
+                      icon: Briefcase,
                       color: "#2563EB",
                     },
                     {
-                      type: "food" as ScheduleType,
+                      type: ScheduleType.MINI,
+                      label: "Mini Events",
+                      icon: Target,
+                      color: "#F472B6",
+                    },
+                    {
+                      type: ScheduleType.FOOD,
                       label: "Food",
                       icon: Utensils,
                       color: "#EA580C",
                     },
                     {
-                      type: "activity" as ScheduleType,
-                      label: "Activities",
-                      icon: Target,
-                      color: "#F472B6",
+                      type: ScheduleType.SHIFTS,
+                      label: "Shifts",
+                      icon: Clock,
+                      color: "#4B5563",
+                    },
+                    {
+                      type: ScheduleType.WORKSHOP,
+                      label: "Workshops",
+                      icon: BookOpen,
+                      color: "#16A34A",
                     },
                   ].map((option, index) => {
                     const isSelected = selectedEventTypes.includes(option.type);

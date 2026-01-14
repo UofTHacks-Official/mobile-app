@@ -83,27 +83,17 @@ export const useJudgeSchedules = (
 
       // Use mock data if enabled
       if (USE_MOCK_JUDGING_DATA) {
-        console.log(`[DEBUG] Using mock data for judge ${judgeId}`);
         // Simulate network delay
         await new Promise((resolve) => setTimeout(resolve, 500));
         // Filter schedules for this judge
         const judgeSchedules = MOCK_JUDGING_SCHEDULES.filter(
           (s) => s.judge_id === judgeId
         );
-        console.log(
-          `[DEBUG] Mock schedules for judge ${judgeId}:`,
-          judgeSchedules
-        );
         return judgeSchedules;
       }
 
       try {
-        console.log(`[DEBUG] Fetching schedules for judge ${judgeId}`);
         const data = await getJudgeSchedules(judgeId);
-        console.log(
-          `[DEBUG] Judge ${judgeId} schedules response:`,
-          JSON.stringify(data, null, 2)
-        );
         return data.schedules;
       } catch (error) {
         devError("Judge schedules fetch error:", error);

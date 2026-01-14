@@ -63,7 +63,7 @@ export default function AdminLayout() {
             }
 
             // Hide schedule for judges and volunteers
-            if (route.name === "schedule" && (isJudge || isVolunteer)) {
+            if (route.name === "schedule" && isVolunteer) {
               return false;
             }
 
@@ -72,13 +72,14 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide QR scanner if all scanner features are disabled OR if user is a judge
+            // Hide QR scanner if all scanner features are disabled OR if user is a judge or hacker
             if (
               route.name === "qr" &&
               ((!FEATURE_FLAGS.ENABLE_QR_SCANNER &&
                 !FEATURE_FLAGS.ENABLE_EVENT_CHECKIN &&
                 !FEATURE_FLAGS.ENABLE_HACKERBUCKS) ||
-                isJudge)
+                isJudge ||
+                isHacker)
             ) {
               return false;
             }
@@ -86,7 +87,7 @@ export default function AdminLayout() {
             // Hide photobooth if disabled
             if (
               route.name === "photobooth" &&
-              !FEATURE_FLAGS.ENABLE_PHOTOBOOTH
+              (isJudge || !FEATURE_FLAGS.ENABLE_PHOTOBOOTH)
             ) {
               return false;
             }

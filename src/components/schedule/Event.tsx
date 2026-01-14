@@ -1,6 +1,6 @@
 import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
 
-type EventType = "networking" | "food" | "activity";
+import { ScheduleType } from "@/types/schedule";
 
 interface EventProps {
   title: string;
@@ -8,26 +8,41 @@ interface EventProps {
   endTime: string;
   hourHeight: number;
   style?: StyleProp<ViewStyle>;
-  type: EventType;
+  type: ScheduleType;
   id?: string;
   onPress?: () => void;
 }
 
 const eventTypeColors = {
-  networking: {
+  [ScheduleType.CEREMONIES]: {
+    borderClass: "border-purple-600",
+    textClass: "text-purple-800",
+    backgroundColor: "bg-purple-100",
+  },
+  [ScheduleType.SPONSOR]: {
     borderClass: "border-blue-600",
     textClass: "text-blue-800",
     backgroundColor: "bg-blue-100",
   },
-  food: {
+  [ScheduleType.MINI]: {
+    borderClass: "border-pink-400",
+    textClass: "text-pink-600",
+    backgroundColor: "bg-pink-100",
+  },
+  [ScheduleType.FOOD]: {
     borderClass: "border-orange-600",
     textClass: "text-orange-800",
     backgroundColor: "bg-orange-100",
   },
-  activity: {
-    borderClass: "border-pink-400",
-    textClass: "text-pink-600",
-    backgroundColor: "bg-pink-100",
+  [ScheduleType.SHIFTS]: {
+    borderClass: "border-gray-600",
+    textClass: "text-gray-800",
+    backgroundColor: "bg-gray-100",
+  },
+  [ScheduleType.WORKSHOP]: {
+    borderClass: "border-green-600",
+    textClass: "text-green-800",
+    backgroundColor: "bg-green-100",
   },
 };
 
@@ -59,7 +74,11 @@ const Event = ({
   };
 
   const timeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
-  const colors = eventTypeColors[type];
+  const colors = eventTypeColors[type] || eventTypeColors[ScheduleType.MINI]; // Fallback to MINI if type is unknown
+
+  if (!colors) {
+    return null;
+  }
 
   return (
     <Pressable
