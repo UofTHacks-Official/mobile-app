@@ -8,7 +8,8 @@ export default ({ config }) => {
     version: "1.0.3",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "native",
+    scheme:
+      "com.googleusercontent.apps.268617867891-31798uq62begvrn2joouemkb2u5ojmhb",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
@@ -33,6 +34,10 @@ export default ({ config }) => {
       config: {
         usesNonExemptEncryption: false,
       },
+      entitlements: {
+        "com.apple.developer.applesignin": ["Default"],
+      },
+      usesAppleSignIn: true,
     },
     android: {
       ...config.android,

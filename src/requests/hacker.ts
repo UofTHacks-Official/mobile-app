@@ -1,5 +1,5 @@
-import { axiosInstance } from "./axiosConfig";
 import type { PaginatedResponse } from "@/types/pagination";
+import { axiosInstance } from "./axiosConfig";
 
 export const hackerEndpoints = {
   HACKER_LOGIN: "/api/v13/hackers/login",
@@ -10,6 +10,8 @@ export const hackerEndpoints = {
   HACKERS_GET: "/api/v13/hackers/get",
   HACKER_BY_ID: "/api/v13/hackers",
   HACKER_RESUME: "/api/v13/hackers/application/resume",
+  HACKER_GOOGLE_LOGIN: "/api/v13/hackers/google-auth/token",
+  HACKER_APPLE_LOGIN: "/api/v13/hackers/apple-auth/token",
   ADMIN_RESUME: "/api/v13/admins/applications",
 };
 
@@ -80,6 +82,11 @@ export interface HackerQueryParams {
   page?: number;
   page_size?: number;
   has_rsvpd?: boolean;
+}
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
 }
 
 /**
@@ -211,6 +218,43 @@ export const fetchHackerResume = async (
     `${hackerEndpoints.ADMIN_RESUME}/${applicationId}/resume`,
     {
       responseType: "blob",
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Exchanges a Google OAuth2 code for a token pair.
+ */
+export const googleAuthToken = async (
+  code: string,
+  code_verifier: string,
+  redirect_uri?: string
+): Promise<TokenPair> => {
+  const response = await axiosInstance.post(
+    hackerEndpoints.HACKER_GOOGLE_LOGIN,
+    {
+      code,
+      code_verifier,
+      redirect_uri,
+      platform: "ios",
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Exchanges an Apple ID token for a token pair
+ */
+export const appleAuthToken = async (
+  id_token: string,
+  user_data?: { firstName?: string; lastName?: string }
+): Promise<TokenPair> => {
+  const response = await axiosInstance.post(
+    hackerEndpoints.HACKER_APPLE_LOGIN,
+    {
+      id_token,
+      user_data: user_data ? { name: user_data } : null,
     }
   );
   return response.data;
