@@ -1,6 +1,6 @@
 import * as Crypto from "expo-crypto";
 
-export function base64UrlEncode(buffer: ArrayBuffer): string {
+export function base64UrlEncode(buffer: ArrayBufferLike): string {
   const bytes = new Uint8Array(buffer);
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {

@@ -1,18 +1,18 @@
 import { ScoringSlider } from "@/components/ScoringSlider";
 import { useTheme } from "@/context/themeContext";
 import {
-  computeRemainingSecondsFromStart,
   computeRemainingSecondsFromTimer,
   useTimer,
 } from "@/context/timerContext";
-import { useSubmitScore } from "@/queries/scoring";
 import { useJudgeSchedules } from "@/queries/judging";
-import { ScoringCriteria, SCORING_CRITERIA_INFO } from "@/types/scoring";
-import { cn, getThemeStyles } from "@/utils/theme";
-import { formatLocationForDisplay } from "@/utils/judging";
-import { getJudgeId } from "@/utils/tokens/secureStorage";
+import { useSubmitScore } from "@/queries/scoring";
+import { SCORING_CRITERIA_INFO, ScoringCriteria } from "@/types/scoring";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
-import { router, useLocalSearchParams } from "expo-router";
+import { formatLocationForDisplay } from "@/utils/judging";
+import { cn, getThemeStyles } from "@/utils/theme";
+import { getJudgeId } from "@/utils/tokens/secureStorage";
+import { useFocusEffect } from "@react-navigation/native";
+import { Href, router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -21,12 +21,10 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { useFocusEffect } from "@react-navigation/native";
 
 const Scorecard = () => {
   const { isDark } = useTheme();
@@ -211,10 +209,10 @@ const Scorecard = () => {
               },
             });
           } else {
-            router.replace("/(judge)/complete");
+            router.replace("/(judge)/complete" as Href);
           }
         } else {
-          router.replace("/(judge)/complete");
+          router.replace("/(judge)/complete" as Href);
         }
       }
     } catch (error: any) {
