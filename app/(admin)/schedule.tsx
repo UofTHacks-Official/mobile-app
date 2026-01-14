@@ -24,6 +24,7 @@ const Schedule = () => {
   const currentTime = useCurrentTime();
   const insets = useSafeAreaInsets();
   const dayScrollViewRef = useRef<ScrollView>(null);
+  const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
 
   const [isJudge, setIsJudge] = useState(false);
   const [isVolunteer, setIsVolunteer] = useState(false);
@@ -88,6 +89,18 @@ const Schedule = () => {
   const currentMinute = currentTime.getMinutes();
   // Use current date based on user type
   const currentDate = allDates[currentDayIndex];
+
+  // Handle initial scroll to current day
+  useEffect(() => {
+    if (!hasInitiallyScrolled && dayScrollViewRef.current && daysToShow === 1) {
+      dayScrollViewRef.current.scrollTo({
+        x: currentDayIndex * Dimensions.get("window").width,
+        y: 0,
+        animated: false,
+      });
+      setHasInitiallyScrolled(true);
+    }
+  }, [currentDayIndex, hasInitiallyScrolled, daysToShow]);
 
   const handleDayScroll = (event: any) => {
     handleScroll(event);
@@ -268,10 +281,6 @@ const Schedule = () => {
                     if (newIndex >= 0 && newIndex < allDates.length) {
                       saveDayIndexPreference(newIndex);
                     }
-                  }}
-                  contentOffset={{
-                    x: currentDayIndex * Dimensions.get("window").width,
-                    y: 0,
                   }}
                   onScroll={handleDayScroll}
                   scrollEventThrottle={16}
