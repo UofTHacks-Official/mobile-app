@@ -190,33 +190,42 @@ const JudgingTimerScreen = () => {
   const totalDurationSeconds =
     (stages.pitching + stages.qa + stages.buffer) * 60;
 
-  // Get total remaining seconds - SAME AS JUDGE SIDE
+  // Get total remaining seconds - Prioritize actual_timestamp for running timers
   const getTotalRemaining = (): number => {
     // Always clamp to total duration to avoid runaway values if the start time is in the future
     const clampRemaining = (remaining: number) =>
       Math.max(Math.min(remaining, totalDurationSeconds), 0);
 
-    // If we have a roomTimer, use it (same as judge side)
-    if (roomTimer) {
-      if (roomTimer.status === "stopped") return 0;
-      if (roomTimer.status === "paused") return roomTimer.remainingSeconds;
+    // If paused, always use the stored remainingSeconds
+    if (roomTimer?.status === "paused") {
+      return roomTimer.remainingSeconds;
+    }
 
-      // Status is "running" - calculate elapsed since last sync
+    // If stopped, return 0
+    if (roomTimer?.status === "stopped") {
+      return 0;
+    }
+
+    // For running timer: prioritize actual_timestamp from schedule if available
+    // Calculate: actual_timestamp + duration - current_time
+    if (scheduleData?.actual_timestamp) {
+      const startMs = new Date(scheduleData.actual_timestamp).getTime();
+      if (!Number.isNaN(startMs)) {
+        const elapsed = Math.max(Math.floor((now - startMs) / 1000), 0);
+        return clampRemaining(totalDurationSeconds - elapsed);
+      }
+    }
+
+    // Fallback: if we have a roomTimer but no actual_timestamp, use roomTimer
+    if (roomTimer) {
       const elapsedSinceSync = Math.floor(
         (now - roomTimer.lastSyncedAt) / 1000
       );
       return clampRemaining(roomTimer.remainingSeconds - elapsedSinceSync);
     }
 
-    // Fallback: calculate from actual_timestamp if no roomTimer
-    if (!scheduleData?.actual_timestamp) return totalDurationSeconds;
-    const startMs = new Date(scheduleData.actual_timestamp).getTime();
-    if (Number.isNaN(startMs)) return totalDurationSeconds;
-
-    // If the backend timestamp is in the future, treat elapsed as 0 so we don't add
-    // the "time until start" to the countdown (which was causing 13k+ minute timers)
-    const elapsed = Math.max(Math.floor((now - startMs) / 1000), 0);
-    return clampRemaining(totalDurationSeconds - elapsed);
+    // No timer data available - return full duration
+    return totalDurationSeconds;
   };
 
   const totalRemaining = getTotalRemaining();

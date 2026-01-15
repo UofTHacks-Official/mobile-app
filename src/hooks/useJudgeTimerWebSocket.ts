@@ -185,11 +185,26 @@ export const useJudgeTimerWebSocket = () => {
 
       switch (data.action) {
         case "start_timer": {
-          // Starting fresh - use full duration
-          const remainingSeconds = baseTimer.durationSeconds;
+          // Calculate remaining time based on actual_timestamp
+          // Formula: actual_timestamp + duration - current_time
+          let remainingSeconds = baseTimer.durationSeconds;
+          const actualStart = data.timestamp ?? baseTimer.actualStart;
+
+          if (actualStart) {
+            const startMs = new Date(actualStart).getTime();
+            if (!Number.isNaN(startMs)) {
+              // Calculate elapsed time since actual start
+              const elapsed = Math.max(Math.floor((nowMs - startMs) / 1000), 0);
+              remainingSeconds = Math.max(
+                baseTimer.durationSeconds - elapsed,
+                0
+              );
+            }
+          }
+
           const timerData = {
             ...baseTimer,
-            actualStart: data.timestamp ?? baseTimer.actualStart,
+            actualStart,
             remainingSeconds,
             lastSyncedAt: nowMs,
             status: "running" as TimerStatus,
@@ -203,6 +218,12 @@ export const useJudgeTimerWebSocket = () => {
             timestamp: data.timestamp,
             durationSeconds: baseTimer.durationSeconds,
             remainingSeconds,
+            elapsed: actualStart
+              ? Math.max(
+                  Math.floor((nowMs - new Date(actualStart).getTime()) / 1000),
+                  0
+                )
+              : 0,
           });
           upsertRoomTimer(room, timerData);
           break;
