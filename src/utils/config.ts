@@ -2,11 +2,16 @@ import { z } from "zod";
 
 const envSchema = z
   .object({
-    EXPO_PUBLIC_UOFT_STAGING: z.string().url().default(""),
+    EXPO_PUBLIC_UOFT_STAGING: z
+      .string()
+      .url()
+      .optional()
+      .or(z.literal(""))
+      .default(""),
     EXPO_PUBLIC_PUSH_ID: z.string().default(""),
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: z.string().default(""),
     EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: z.string().default(""),
-    EXPO_PUBLIC_GOOGLE_REDIRECT_URI: z.string().url().default(""),
+    EXPO_PUBLIC_GOOGLE_REDIRECT_URI: z.string().default(""),
     EXPO_PUBLIC_CF_ACCOUNT_ID: z.string().default(""),
     EXPO_PUBLIC_R2_ACCESS_KEY_ID: z.string().default(""),
     EXPO_PUBLIC_R2_SECRET_ACCESS_KEY: z.string().default(""),
