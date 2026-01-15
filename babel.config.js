@@ -15,6 +15,8 @@ module.exports = function (api) {
         },
       ],
       ["@babel/plugin-transform-class-static-block"],
+      // Keep this last so Reanimated can compile worklets correctly
+      "react-native-reanimated/plugin",
     ],
   };
 };
