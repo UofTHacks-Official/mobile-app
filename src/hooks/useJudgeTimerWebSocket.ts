@@ -56,6 +56,7 @@ export const useJudgeTimerWebSocket = () => {
     null
   );
   const reconnectAttemptRef = useRef(0);
+  const connectRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     roomTimersRef.current = roomTimers;
@@ -122,9 +123,9 @@ export const useJudgeTimerWebSocket = () => {
     devLog(`[JudgeTimerWebSocket] Reconnecting in ${delay}ms`);
     reconnectTimeoutRef.current = setTimeout(() => {
       reconnectTimeoutRef.current = null;
-      connect();
+      connectRef.current();
     }, delay);
-  }, [connect, featureEnabled, judgeId]);
+  }, [featureEnabled, judgeId]);
 
   const handleTimerAction = useCallback(
     (data: JudgeSocketMessage["data"]) => {
@@ -346,6 +347,10 @@ export const useJudgeTimerWebSocket = () => {
     judgeId,
     scheduleReconnect,
   ]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     console.log(
