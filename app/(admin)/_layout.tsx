@@ -88,10 +88,12 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide photobooth if disabled
+            // Hide photobooth if disabled or nav flag off
             if (
               route.name === "photobooth" &&
-              (isJudge || !FEATURE_FLAGS.ENABLE_PHOTOBOOTH)
+              (isJudge ||
+                !FEATURE_FLAGS.ENABLE_PHOTOBOOTH ||
+                !FEATURE_FLAGS.ENABLE_PHOTOBOOTH_NAV)
             ) {
               return false;
             }
@@ -167,8 +169,12 @@ export default function AdminLayout() {
           name="photobooth"
           options={{
             title: "Photo",
-            // Hide tab if photobooth is disabled
-            href: FEATURE_FLAGS.ENABLE_PHOTOBOOTH ? undefined : null,
+            // Hide tab if photobooth is disabled or nav flag is off
+            href:
+              FEATURE_FLAGS.ENABLE_PHOTOBOOTH &&
+              FEATURE_FLAGS.ENABLE_PHOTOBOOTH_NAV
+                ? undefined
+                : null,
           }}
         />
         <Tabs.Screen

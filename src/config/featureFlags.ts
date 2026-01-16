@@ -12,6 +12,7 @@ const parseEnvFlag = (value: string | undefined, fallback: boolean) => {
 
 // Allow overriding select flags via env vars (e.g., Cloudflare Pages Variables)
 const envEnableJudgeTimers = process.env.EXPO_PUBLIC_ENABLE_JUDGE_TIMERS;
+const envEnablePhotoboothNav = process.env.EXPO_PUBLIC_ENABLE_PHOTOBOOTH_NAV;
 
 export const FEATURE_FLAGS = {
   // QR Scanner features
@@ -23,6 +24,7 @@ export const FEATURE_FLAGS = {
 
   // Photobooth features
   ENABLE_PHOTOBOOTH: true,
+  ENABLE_PHOTOBOOTH_NAV: parseEnvFlag(envEnablePhotoboothNav, true),
 
   // Google OAuth
   ENABLE_GOOGLE_LOGIN: false,
