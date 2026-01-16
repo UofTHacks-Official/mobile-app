@@ -19,6 +19,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -39,6 +41,7 @@ const Scorecard = () => {
   const [showAllTags, setShowAllTags] = useState(false);
   const [nowTs, setNowTs] = useState(Date.now());
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [showWebSubmitConfirm, setShowWebSubmitConfirm] = useState(false);
 
   const [scores, setScores] = useState<ScoringCriteria>({
     design: 0,
@@ -99,6 +102,7 @@ const Scorecard = () => {
   }, [judgeSchedules, scheduleId]);
 
   const project = currentSchedule?.team?.project;
+  const projectNameForDisplay = project?.project_name || "this project";
   const projectId = useMemo(() => {
     if (project?.project_id) return project.project_id;
     if (params.projectId && typeof params.projectId === "string") {
@@ -117,6 +121,7 @@ const Scorecard = () => {
   // Calculate total score
   const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0);
   const maxScore = 27; // Design(3) + Completion(4) + Theme(3) + Innovation(5) + Tech(5) + Pitching(5) + Time(2)
+  const submitConfirmationMessage = `You are about to submit a score of ${totalScore}/${maxScore} for ${projectNameForDisplay}. This action cannot be undone.`;
 
   const roomTimer =
     timerSyncEnabled && locationName
@@ -264,22 +269,92 @@ const Scorecard = () => {
     )
       return;
 
-    Alert.alert(
-      "Submit Scores?",
-      `You are about to submit a score of ${totalScore}/${maxScore} for ${project.project_name}. This action cannot be undone.`,
-      [
-        {
-          text: "Cancel",
-          onPress: () => haptics.impactAsync(ImpactFeedbackStyle.Light),
-          style: "cancel",
-        },
-        {
-          text: "Submit",
-          onPress: () => submitScores(false),
-        },
-      ]
-    );
+    const confirmationMessage = `You are about to submit a score of ${totalScore}/${maxScore} for ${projectNameForDisplay}. This action cannot be undone.`;
+
+    if (Platform.OS === "web") {
+      setShowWebSubmitConfirm(true);
+      return;
+    }
+
+    Alert.alert("Submit Scores?", confirmationMessage, [
+      {
+        text: "Cancel",
+        onPress: () => haptics.impactAsync(ImpactFeedbackStyle.Light),
+        style: "cancel",
+      },
+      {
+        text: "Submit",
+        onPress: () => submitScores(false),
+      },
+    ]);
   };
+
+  const handleCancelSubmit = () => {
+    setShowWebSubmitConfirm(false);
+    haptics.impactAsync(ImpactFeedbackStyle.Light);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowWebSubmitConfirm(false);
+    submitScores(false);
+  };
+
+  const submitConfirmationModal = (
+    <Modal
+      animationType="fade"
+      transparent
+      visible={showWebSubmitConfirm}
+      onRequestClose={handleCancelSubmit}
+    >
+      <View className="flex-1 bg-black/60 justify-center items-center px-6">
+        <View
+          className={cn(
+            "w-full p-6 rounded-2xl",
+            isDark ? "bg-uoft_dark_mode_card" : "bg-white"
+          )}
+          style={{ maxWidth: 480 }}
+        >
+          <Text
+            className={cn(
+              "text-xl mb-2 font-onest-bold",
+              themeStyles.primaryText
+            )}
+          >
+            Submit Scores?
+          </Text>
+          <Text className={cn("text-base mb-6", themeStyles.secondaryText)}>
+            {submitConfirmationMessage}
+          </Text>
+          <View className="flex-row justify-end gap-3">
+            <Pressable
+              onPress={handleCancelSubmit}
+              className="px-4 py-3 rounded-xl border border-gray-300"
+            >
+              <Text className={cn("text-base font-onest-bold text-center")}>
+                Cancel
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleConfirmSubmit}
+              className={cn(
+                "px-4 py-3 rounded-xl",
+                isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
+              )}
+            >
+              <Text
+                className={cn(
+                  "text-base font-onest-bold text-center",
+                  isDark ? "text-black" : "text-white"
+                )}
+              >
+                Submit
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const handleGoBack = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Light);
@@ -341,6 +416,7 @@ const Scorecard = () => {
             </Text>
           </Pressable>
         </View>
+        {submitConfirmationModal}
       </SafeAreaView>
     );
   }
@@ -575,6 +651,7 @@ const Scorecard = () => {
           </Text>
         </Pressable>
       </ScrollView>
+      {submitConfirmationModal}
     </SafeAreaView>
   );
 };

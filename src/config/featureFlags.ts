@@ -23,8 +23,8 @@ export const FEATURE_FLAGS = {
   ENABLE_HACKERBUCKS: true,
 
   // Photobooth features
-  ENABLE_PHOTOBOOTH: true,
-  ENABLE_PHOTOBOOTH_NAV: parseEnvFlag(envEnablePhotoboothNav, true),
+  ENABLE_PHOTOBOOTH: false,
+  ENABLE_PHOTOBOOTH_NAV: parseEnvFlag(envEnablePhotoboothNav, false),
 
   // Google OAuth
   ENABLE_GOOGLE_LOGIN: false,
