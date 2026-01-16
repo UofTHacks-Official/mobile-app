@@ -25,6 +25,7 @@ interface FilterMenuProps {
   selectedEventTypes: ScheduleType[];
   onToggleEventType: (type: ScheduleType) => void;
   onClearFilters: () => void;
+  hideShifts?: boolean;
 }
 
 const FilterMenu = ({
@@ -35,6 +36,7 @@ const FilterMenu = ({
   selectedEventTypes,
   onToggleEventType,
   onClearFilters,
+  hideShifts = false,
 }: FilterMenuProps) => {
   const slideAnim = useRef(new Animated.Value(-320)).current;
   const bgOpacity = useRef(new Animated.Value(0)).current;
@@ -244,14 +246,21 @@ const FilterMenu = ({
                       icon: BookOpen,
                       color: "#16A34A",
                     },
-                  ].map((option, index) => {
-                    const isSelected = selectedEventTypes.includes(option.type);
-                    const IconComponent = option.icon;
-                    return (
-                      <Pressable
-                        key={option.type}
-                        onPress={() => onToggleEventType(option.type)}
-                        className={`p-2 py-3 rounded-md 
+                  ]
+                    .filter(
+                      (option) =>
+                        !(hideShifts && option.type === ScheduleType.SHIFTS)
+                    )
+                    .map((option, index) => {
+                      const isSelected = selectedEventTypes.includes(
+                        option.type
+                      );
+                      const IconComponent = option.icon;
+                      return (
+                        <Pressable
+                          key={option.type}
+                          onPress={() => onToggleEventType(option.type)}
+                          className={`p-2 py-3 rounded-md 
                           ${index > 0 ? "mt-3" : ""} ${
                             isSelected
                               ? isDark
@@ -259,23 +268,23 @@ const FilterMenu = ({
                                 : "bg-gray-100"
                               : "transparent"
                           }`}
-                      >
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center">
-                            <IconComponent size={16} color={option.color} />
-                            <Text
-                              className={`text-base ${themeStyles.primaryText} ml-4`}
-                            >
-                              {option.label}
-                            </Text>
+                        >
+                          <View className="flex-row items-center justify-between">
+                            <View className="flex-row items-center">
+                              <IconComponent size={16} color={option.color} />
+                              <Text
+                                className={`text-base ${themeStyles.primaryText} ml-4`}
+                              >
+                                {option.label}
+                              </Text>
+                            </View>
+                            {isSelected && (
+                              <Check size={16} color={themeStyles.iconColor} />
+                            )}
                           </View>
-                          {isSelected && (
-                            <Check size={16} color={themeStyles.iconColor} />
-                          )}
-                        </View>
-                      </Pressable>
-                    );
-                  })}
+                        </Pressable>
+                      );
+                    })}
                 </View>
               </View>
             </View>

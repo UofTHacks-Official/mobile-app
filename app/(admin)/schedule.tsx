@@ -8,13 +8,13 @@ import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useScheduleData } from "@/queries/schedule/schedule";
 import { useScheduleFilters } from "@/queries/schedule/scheduleFilters";
 import { useJudgeScheduleData } from "@/queries/judging";
-import { Schedule as ScheduleInterface } from "@/types/schedule";
+import { Schedule as ScheduleInterface, ScheduleType } from "@/types/schedule";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getScheduleThemeStyles } from "@/utils/theme";
 import { getUserType } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { router } from "expo-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Dimensions, ScrollView, View, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -52,13 +52,51 @@ const Schedule = () => {
     saveDaysPreference,
     saveDayIndexPreference,
     toggleEventType,
-    clearFilters,
+    saveEventTypesPreference,
   } = useScheduleFilters();
 
+  const allEventTypes = useMemo(
+    () => [
+      ScheduleType.CEREMONIES,
+      ScheduleType.FOOD,
+      ScheduleType.MINI,
+      ScheduleType.SPONSOR,
+      ScheduleType.SHIFTS,
+      ScheduleType.WORKSHOP,
+    ],
+    []
+  );
+  const nonShiftEventTypes = useMemo(
+    () => allEventTypes.filter((type) => type !== ScheduleType.SHIFTS),
+    [allEventTypes]
+  );
+
+  // Ensure default filters start fully selected (judges exclude shifts)
+  useEffect(() => {
+    if (!userTypeChecked) return;
+    const desiredTypes = isJudge ? nonShiftEventTypes : allEventTypes;
+    const areEqual =
+      selectedEventTypes.length === desiredTypes.length &&
+      selectedEventTypes.every((t) => desiredTypes.includes(t));
+    if (!areEqual) {
+      saveEventTypesPreference(desiredTypes);
+    }
+  }, [
+    userTypeChecked,
+    isJudge,
+    selectedEventTypes,
+    saveEventTypesPreference,
+    allEventTypes,
+    nonShiftEventTypes,
+  ]);
+
   // Conditionally fetch schedule data based on user type (skip for judges and volunteers)
+  const eventTypesForQuery = isJudge
+    ? selectedEventTypes.filter((t) => t !== ScheduleType.SHIFTS)
+    : selectedEventTypes;
 
   const { data: hackerSchedules = [] } = useScheduleData(
-    selectedEventTypes,
+    eventTypesForQuery,
     !isVolunteer && userTypeChecked
   );
   // Use the appropriate schedule data based on user type
@@ -116,6 +154,13 @@ const Schedule = () => {
     if (newIndex >= 0 && newIndex < allDates.length) {
       saveDayIndexPreference(newIndex);
     }
+  };
+
+  const handleClearFilters = async () => {
+    const defaultTypes = isJudge ? nonShiftEventTypes : allEventTypes;
+    await saveDaysPreference(1);
+    await saveEventTypesPreference(defaultTypes);
+    await saveDayIndexPreference(0);
   };
 
   const handleSchedulePress = (schedule: ScheduleInterface) => {
@@ -376,7 +421,8 @@ const Schedule = () => {
           setDaysToShow={saveDaysPreference}
           selectedEventTypes={selectedEventTypes}
           onToggleEventType={toggleEventType}
-          onClearFilters={clearFilters}
+          onClearFilters={handleClearFilters}
+          hideShifts={isJudge}
         />
       </View>
     </View>

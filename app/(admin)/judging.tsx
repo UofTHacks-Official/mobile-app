@@ -1,16 +1,14 @@
 import { JudgingEventCard } from "@/components/JudgingEventCard";
 import { JudgeScheduleView } from "@/components/JudgeScheduleView";
 import { useTheme } from "@/context/themeContext";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { useJudgeSchedules } from "@/queries/judge";
 import { useAllJudgingSchedules } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
 import { USE_MOCK_JUDGING_DATA } from "@/utils/mockJudgingData";
 import { useScrollNavBar } from "@/utils/navigation";
 import { cn, getThemeStyles } from "@/utils/theme";
-import {
-  groupSchedulesByRoom,
-  formatLocationForDisplay,
-} from "@/utils/judging";
+import { groupSchedulesByRoom } from "@/utils/judging";
 import { getJudgeId, getUserType } from "@/utils/tokens/secureStorage";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -115,6 +113,32 @@ const JudgingLocationScreen = () => {
     if (filter === "all") return true;
     return getRoomStatus(room.schedules) === filter;
   });
+
+  if (!FEATURE_FLAGS.ENABLE_JUDGE_TIMERS) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Judging timers disabled
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            Timer sync is off. Enable the judging timer feature flag to manage
+            sessions here.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // For judges only: show loading/error states
   if (isJudge) {

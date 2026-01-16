@@ -1,6 +1,7 @@
 import { JudgeTimerSocketListener } from "@/components/judging/JudgeTimerSocketListener";
 import { AuthContext } from "@/context/authContext";
 import { TimerProvider } from "@/context/timerContext";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { Redirect, Stack } from "expo-router";
 import { useContext } from "react";
 
@@ -19,7 +20,7 @@ export default function JudgeLayout() {
 
   return (
     <TimerProvider>
-      <JudgeTimerSocketListener />
+      {FEATURE_FLAGS.ENABLE_JUDGE_TIMERS && <JudgeTimerSocketListener />}
       <Stack
         screenOptions={{
           headerShown: false,

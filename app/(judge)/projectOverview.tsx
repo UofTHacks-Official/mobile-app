@@ -1,10 +1,10 @@
 import { useTheme } from "@/context/themeContext";
 import {
   useTimer,
-  computeRemainingSecondsFromStart,
   computeRemainingSecondsFromTimer,
 } from "@/context/timerContext";
-import { useAllJudgingSchedules, useJudgeSchedules } from "@/queries/judging";
+import { isFeatureEnabled } from "@/config/featureFlags";
+import { useJudgeSchedules } from "@/queries/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
 import { formatLocationForDisplay } from "@/utils/judging";
 import { getJudgeId } from "@/utils/tokens/secureStorage";
@@ -28,6 +28,7 @@ const ProjectOverview = () => {
   const themeStyles = getThemeStyles(isDark);
   const params = useLocalSearchParams();
   const timerContext = useTimer();
+  const timerSyncEnabled = isFeatureEnabled("ENABLE_JUDGE_TIMERS");
 
   const [judgeId, setJudgeId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
@@ -46,7 +47,6 @@ const ProjectOverview = () => {
     loadData();
   }, [params]);
 
-  const { data: allSchedules } = useAllJudgingSchedules();
   const {
     data: judgeSchedules,
     refetch: refetchJudgeSchedules,
@@ -105,25 +105,29 @@ const ProjectOverview = () => {
   // Note: Room timer is now managed by WebSocket listener (useJudgeTimerWebSocket)
   // No need to hydrate here - the WebSocket will update roomTimers in real-time
 
-  const roomTimer = locationName
-    ? timerContext.roomTimers[locationName]
-    : undefined;
+  const roomTimer =
+    timerSyncEnabled && locationName
+      ? timerContext.roomTimers[locationName]
+      : undefined;
 
   // Debug logging
   useEffect(() => {
+    if (!timerSyncEnabled) return;
     console.log("[DEBUG projectOverview] locationName:", locationName);
     console.log("[DEBUG projectOverview] roomTimer:", roomTimer);
     console.log(
       "[DEBUG projectOverview] all roomTimers:",
       timerContext.roomTimers
     );
-  }, [locationName, roomTimer, timerContext.roomTimers]);
+  }, [locationName, roomTimer, timerContext.roomTimers, timerSyncEnabled]);
 
-  const remainingSeconds = computeRemainingSecondsFromTimer(roomTimer, nowTs);
+  const remainingSeconds = timerSyncEnabled
+    ? computeRemainingSecondsFromTimer(roomTimer, nowTs)
+    : null;
   const timerStatusLabel =
-    roomTimer?.status === "paused"
+    timerSyncEnabled && roomTimer?.status === "paused"
       ? "Timer paused by admin"
-      : roomTimer?.status === "stopped"
+      : timerSyncEnabled && roomTimer?.status === "stopped"
         ? "Timer ended by admin"
         : null;
   const countdownDisplay =
@@ -324,49 +328,62 @@ const ProjectOverview = () => {
             Ready
           </Text>
         </Pressable>
-        {!roomTimer ? (
+        {timerSyncEnabled ? (
+          !roomTimer ? (
+            <Text
+              className={cn(
+                "text-center text-sm font-pp mb-4",
+                themeStyles.secondaryText
+              )}
+            >
+              Waiting for admin to start the timer for this room.
+            </Text>
+          ) : (
+            <View className="items-center mb-4">
+              <Text
+                className={cn("text-sm font-pp", themeStyles.secondaryText)}
+              >
+                Time remaining for this project
+              </Text>
+              <Text
+                className={cn(
+                  "text-2xl font-onest-bold mt-1",
+                  themeStyles.primaryText
+                )}
+              >
+                {countdownDisplay}
+              </Text>
+              {timerStatusLabel && (
+                <Text
+                  className={cn(
+                    "text-xs font-pp mt-1",
+                    themeStyles.secondaryText
+                  )}
+                >
+                  {timerStatusLabel}
+                </Text>
+              )}
+              {isFetchingJudgeSchedules && (
+                <Text
+                  className={cn(
+                    "text-xs font-pp mt-1",
+                    themeStyles.secondaryText
+                  )}
+                >
+                  Syncing latest timer...
+                </Text>
+              )}
+            </View>
+          )
+        ) : (
           <Text
             className={cn(
               "text-center text-sm font-pp mb-4",
               themeStyles.secondaryText
             )}
           >
-            Waiting for admin to start the timer for this room.
+            Timer sync is off; you can start scoring whenever you are ready.
           </Text>
-        ) : (
-          <View className="items-center mb-4">
-            <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-              Time remaining for this project
-            </Text>
-            <Text
-              className={cn(
-                "text-2xl font-onest-bold mt-1",
-                themeStyles.primaryText
-              )}
-            >
-              {countdownDisplay}
-            </Text>
-            {timerStatusLabel && (
-              <Text
-                className={cn(
-                  "text-xs font-pp mt-1",
-                  themeStyles.secondaryText
-                )}
-              >
-                {timerStatusLabel}
-              </Text>
-            )}
-            {isFetchingJudgeSchedules && (
-              <Text
-                className={cn(
-                  "text-xs font-pp mt-1",
-                  themeStyles.secondaryText
-                )}
-              >
-                Syncing latest timer...
-              </Text>
-            )}
-          </View>
         )}
       </ScrollView>
     </SafeAreaView>
