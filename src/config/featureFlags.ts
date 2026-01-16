@@ -5,6 +5,14 @@
  * Set to false to disable features for App Store submission or testing.
  */
 
+const parseEnvFlag = (value: string | undefined, fallback: boolean) => {
+  if (value === undefined) return fallback;
+  return value.toLowerCase() === "true";
+};
+
+// Allow overriding select flags via env vars (e.g., Cloudflare Pages Variables)
+const envEnableJudgeTimers = process.env.EXPO_PUBLIC_ENABLE_JUDGE_TIMERS;
+
 export const FEATURE_FLAGS = {
   // QR Scanner features
   ENABLE_QR_SCANNER: false,
@@ -21,7 +29,7 @@ export const FEATURE_FLAGS = {
 
   // Judging features
   ENABLE_JUDGING: true,
-  ENABLE_JUDGE_WEBSOCKET_TIMERS: true,
+  ENABLE_JUDGE_TIMERS: parseEnvFlag(envEnableJudgeTimers, true),
 
   // Other features
   ENABLE_PUSH_NOTIFICATIONS: true,

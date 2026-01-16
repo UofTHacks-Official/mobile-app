@@ -42,7 +42,7 @@ const deriveRemainingFromStartOrDuration = (
 };
 
 export const useJudgeTimerWebSocket = () => {
-  const featureEnabled = isFeatureEnabled("ENABLE_JUDGE_WEBSOCKET_TIMERS");
+  const featureEnabled = isFeatureEnabled("ENABLE_JUDGE_TIMERS");
   const { roomTimers, upsertRoomTimer } = useTimer();
   const roomTimersRef = useRef<Record<string, RoomTimer>>({});
   const durationByScheduleRef = useRef<
@@ -124,7 +124,7 @@ export const useJudgeTimerWebSocket = () => {
       reconnectTimeoutRef.current = null;
       connect();
     }, delay);
-  }, [featureEnabled, judgeId]);
+  }, [connect, featureEnabled, judgeId]);
 
   const handleTimerAction = useCallback(
     (data: JudgeSocketMessage["data"]) => {

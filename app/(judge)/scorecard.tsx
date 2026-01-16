@@ -4,6 +4,7 @@ import {
   computeRemainingSecondsFromTimer,
   useTimer,
 } from "@/context/timerContext";
+import { isFeatureEnabled } from "@/config/featureFlags";
 import { useJudgeSchedules } from "@/queries/judging";
 import { useSubmitScore } from "@/queries/scoring";
 import { SCORING_CRITERIA_INFO, ScoringCriteria } from "@/types/scoring";
@@ -31,6 +32,7 @@ const Scorecard = () => {
   const themeStyles = getThemeStyles(isDark);
   const params = useLocalSearchParams();
   const timerContext = useTimer();
+  const timerSyncEnabled = isFeatureEnabled("ENABLE_JUDGE_TIMERS");
 
   const [judgeId, setJudgeId] = useState<number | null>(null);
   const [scheduleId, setScheduleId] = useState<number | null>(null);
@@ -116,24 +118,29 @@ const Scorecard = () => {
   const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0);
   const maxScore = 27; // Design(3) + Completion(4) + Theme(3) + Innovation(5) + Tech(5) + Pitching(5) + Time(2)
 
-  const roomTimer = locationName
-    ? timerContext.roomTimers[locationName]
-    : undefined;
-  const remainingSeconds = computeRemainingSecondsFromTimer(roomTimer, nowTs);
+  const roomTimer =
+    timerSyncEnabled && locationName
+      ? timerContext.roomTimers[locationName]
+      : undefined;
+  const remainingSeconds = timerSyncEnabled
+    ? computeRemainingSecondsFromTimer(roomTimer, nowTs)
+    : null;
   const timerStatusLabel =
-    roomTimer?.status === "paused"
+    timerSyncEnabled && roomTimer?.status === "paused"
       ? "Timer paused by admin"
-      : roomTimer?.status === "stopped"
+      : timerSyncEnabled && roomTimer?.status === "stopped"
         ? "Timer ended by admin"
         : null;
-  const canEditScores =
-    !!roomTimer && roomTimer.status === "running" && !hasSubmitted;
-  const isSliderDisabled = !canEditScores; // Lock sliders when timer is paused/stopped or scores are submitted
-  const submitDisabled =
-    submitScoreMutation.isPending ||
-    hasSubmitted ||
-    !roomTimer ||
-    roomTimer.status !== "running";
+  const canEditScores = timerSyncEnabled
+    ? !!roomTimer && roomTimer.status === "running" && !hasSubmitted
+    : !hasSubmitted;
+  const isSliderDisabled = timerSyncEnabled ? !canEditScores : hasSubmitted; // Lock sliders when timer is paused/stopped or scores are submitted
+  const submitDisabled = timerSyncEnabled
+    ? submitScoreMutation.isPending ||
+      hasSubmitted ||
+      !roomTimer ||
+      roomTimer.status !== "running"
+    : submitScoreMutation.isPending || hasSubmitted;
 
   // Auto-submit when timer hits zero and not already submitted
   useEffect(() => {
@@ -252,9 +259,8 @@ const Scorecard = () => {
     if (
       !project ||
       !projectId ||
-      !roomTimer ||
-      roomTimer.status !== "running" ||
-      hasSubmitted
+      hasSubmitted ||
+      (timerSyncEnabled && (!roomTimer || roomTimer.status !== "running"))
     )
       return;
 
@@ -364,31 +370,39 @@ const Scorecard = () => {
 
         {/* Timer / status */}
         <View className="mb-4">
-          {roomTimer ? (
-            <View className="flex-row items-center justify-between">
+          {timerSyncEnabled ? (
+            roomTimer ? (
+              <View className="flex-row items-center justify-between">
+                <Text
+                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
+                >
+                  Time remaining
+                </Text>
+                <Text
+                  className={cn(
+                    "text-2xl font-onest-bold",
+                    themeStyles.primaryText
+                  )}
+                >
+                  {remainingSeconds !== null
+                    ? `${Math.floor((remainingSeconds || 0) / 60)
+                        .toString()
+                        .padStart(2, "0")}:${((remainingSeconds || 0) % 60)
+                        .toString()
+                        .padStart(2, "0")}`
+                    : "--:--"}
+                </Text>
+              </View>
+            ) : (
               <Text
                 className={cn("text-sm font-pp", themeStyles.secondaryText)}
               >
-                Time remaining
+                Waiting for admin to start the timer for this room.
               </Text>
-              <Text
-                className={cn(
-                  "text-2xl font-onest-bold",
-                  themeStyles.primaryText
-                )}
-              >
-                {remainingSeconds !== null
-                  ? `${Math.floor((remainingSeconds || 0) / 60)
-                      .toString()
-                      .padStart(2, "0")}:${((remainingSeconds || 0) % 60)
-                      .toString()
-                      .padStart(2, "0")}`
-                  : "--:--"}
-              </Text>
-            </View>
+            )
           ) : (
             <Text className={cn("text-sm font-pp", themeStyles.secondaryText)}>
-              Waiting for admin to start the timer for this room.
+              Timer sync is off; you can score whenever you are ready.
             </Text>
           )}
           {timerStatusLabel && (

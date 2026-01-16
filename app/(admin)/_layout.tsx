@@ -5,7 +5,6 @@ import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { getUserType } from "@/utils/tokens/secureStorage";
 import { Redirect, Tabs } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { Platform } from "react-native";
 
 export default function AdminLayout() {
   const { userToken, loading, isFirstSignIn } = useContext(AuthContext)!;
@@ -37,6 +36,8 @@ export default function AdminLayout() {
     return <Redirect href="/auth/onboarding" />;
   }
 
+  const timerSyncEnabled = FEATURE_FLAGS.ENABLE_JUDGE_TIMERS;
+
   return (
     <TimerProvider>
       <Tabs
@@ -67,8 +68,11 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide judging for hackers and volunteers
-            if (route.name === "judging" && (isHacker || isVolunteer)) {
+            // Hide judging for hackers and volunteers or when timer sync is off
+            if (
+              route.name === "judging" &&
+              (isHacker || isVolunteer || !timerSyncEnabled)
+            ) {
               return false;
             }
 
@@ -133,8 +137,11 @@ export default function AdminLayout() {
           name="judging"
           options={{
             title: "Judging",
-            // Hide tab if judging is disabled
-            href: FEATURE_FLAGS.ENABLE_JUDGING ? undefined : null,
+            // Hide tab if judging or timer sync is disabled
+            href:
+              FEATURE_FLAGS.ENABLE_JUDGING && timerSyncEnabled
+                ? undefined
+                : null,
           }}
         />
         <Tabs.Screen

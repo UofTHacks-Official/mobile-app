@@ -3,12 +3,11 @@ import {
   computeRemainingSecondsFromTimer,
   useTimer,
 } from "@/context/timerContext";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import {
   useJudgingScheduleById,
-  useStartJudgingTimer,
   useStartJudgingTimerByRoom,
   useTogglePauseJudgingTimerByRoom,
-  useStopJudgingTimerByRoom,
   useAllJudgingSchedules,
 } from "@/queries/judging";
 import { JudgingScheduleItem } from "@/types/judging";
@@ -19,13 +18,12 @@ import {
   ImpactFeedbackStyle,
   NotificationFeedbackType,
 } from "@/utils/haptics";
-import { formatLocationForDisplay, getFullLocationName } from "@/utils/judging";
+import { formatLocationForDisplay } from "@/utils/judging";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Pause, Play } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -41,6 +39,7 @@ const JudgingTimerScreen = () => {
   const { handleScroll } = useScrollNavBar();
   const params = useLocalSearchParams();
   const timerContext = useTimer();
+  const timerSyncEnabled = FEATURE_FLAGS.ENABLE_JUDGE_TIMERS;
 
   const initialScheduleId =
     typeof params.scheduleId === "string"
@@ -58,12 +57,9 @@ const JudgingTimerScreen = () => {
   );
   const [now, setNow] = useState(Date.now());
   const [hasInitialized, setHasInitialized] = useState(false);
+  const scheduleQueryId = timerSyncEnabled ? activeScheduleId : null;
 
   // Note: Pause tracking is now handled in timer context for persistence across screen exits
-
-  // Get full location name for API calls (includes table)
-  const getLocationName = (location: JudgingScheduleItem["location"]) =>
-    typeof location === "string" ? location : location.location_name;
 
   // Initialize from active timer if one exists, otherwise use route params
   useEffect(() => {
@@ -113,45 +109,43 @@ const JudgingTimerScreen = () => {
     data: scheduleData,
     isLoading,
     isError,
-  } = useJudgingScheduleById(activeScheduleId || 0, {
-    refetchInterval: activeScheduleId ? 3000 : undefined,
+  } = useJudgingScheduleById(scheduleQueryId || 0, {
+    refetchInterval: timerSyncEnabled && scheduleQueryId ? 3000 : undefined,
   });
-  const startTimerMutation = useStartJudgingTimer();
   const startTimerByRoomMutation = useStartJudgingTimerByRoom();
   const togglePauseTimerByRoomMutation = useTogglePauseJudgingTimerByRoom();
-  const stopTimerByRoomMutation = useStopJudgingTimerByRoom();
 
   // Log duration from backend
   useEffect(() => {
-    if (scheduleData) {
-      console.log("[DEBUG] Schedule data from backend:", {
-        judging_schedule_id: scheduleData.judging_schedule_id,
-        duration: scheduleData.duration,
-        durationInMinutes: scheduleData.duration,
-        timestamp: scheduleData.timestamp,
-        actual_timestamp: scheduleData.actual_timestamp,
-      });
+    if (!timerSyncEnabled || !scheduleData) return;
 
-      const calculatedStages = calculateStages(scheduleData.duration);
-      console.log("[DEBUG] Calculated stages:", {
-        pitching: calculatedStages.pitching,
-        qa: calculatedStages.qa,
-        buffer: calculatedStages.buffer,
-        total:
-          calculatedStages.pitching +
+    console.log("[DEBUG] Schedule data from backend:", {
+      judging_schedule_id: scheduleData.judging_schedule_id,
+      duration: scheduleData.duration,
+      durationInMinutes: scheduleData.duration,
+      timestamp: scheduleData.timestamp,
+      actual_timestamp: scheduleData.actual_timestamp,
+    });
+
+    const calculatedStages = calculateStages(scheduleData.duration);
+    console.log("[DEBUG] Calculated stages:", {
+      pitching: calculatedStages.pitching,
+      qa: calculatedStages.qa,
+      buffer: calculatedStages.buffer,
+      total:
+        calculatedStages.pitching +
+        calculatedStages.qa +
+        calculatedStages.buffer,
+      pitchingSeconds: calculatedStages.pitching * 60,
+      qaSeconds: calculatedStages.qa * 60,
+      bufferSeconds: calculatedStages.buffer * 60,
+      totalSeconds:
+        (calculatedStages.pitching +
           calculatedStages.qa +
-          calculatedStages.buffer,
-        pitchingSeconds: calculatedStages.pitching * 60,
-        qaSeconds: calculatedStages.qa * 60,
-        bufferSeconds: calculatedStages.buffer * 60,
-        totalSeconds:
-          (calculatedStages.pitching +
-            calculatedStages.qa +
-            calculatedStages.buffer) *
-          60,
-      });
-    }
-  }, [scheduleData]);
+          calculatedStages.buffer) *
+        60,
+    });
+  }, [scheduleData, timerSyncEnabled]);
 
   // Calculate timer stages dynamically based on total duration
   // All judging rounds: 1 min buffer + 1 min Q&A + remaining time for pitching
@@ -291,6 +285,8 @@ const JudgingTimerScreen = () => {
 
   // Tick to update the display while a timer source exists
   useEffect(() => {
+    if (!timerSyncEnabled) return;
+
     const hasTimerSource = !!roomTimer || !!scheduleData?.actual_timestamp;
     if (!hasTimerSource) return;
 
@@ -299,18 +295,27 @@ const JudgingTimerScreen = () => {
     }, 100); // Update every 100ms for smooth countdown
 
     return () => clearInterval(interval);
-  }, [roomTimer, scheduleData?.actual_timestamp]);
+  }, [roomTimer, scheduleData?.actual_timestamp, timerSyncEnabled]);
 
   // Update current stage based on total remaining
   useEffect(() => {
+    if (!timerSyncEnabled) return;
+
     const newStage = getCurrentStageFromRemaining(totalRemaining);
     if (newStage !== currentStage) {
       setCurrentStage(newStage);
     }
-  }, [totalRemaining]);
+  }, [
+    currentStage,
+    getCurrentStageFromRemaining,
+    timerSyncEnabled,
+    totalRemaining,
+  ]);
 
   // Handle side effects when stage changes
   useEffect(() => {
+    if (!timerSyncEnabled) return;
+
     if (previousStageRef.current !== currentStage) {
       // Stage has changed - trigger appropriate notifications
       if (currentStage === "qa") {
@@ -338,7 +343,7 @@ const JudgingTimerScreen = () => {
 
       previousStageRef.current = currentStage;
     }
-  }, [currentStage]);
+  }, [currentStage, timerSyncEnabled]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -586,6 +591,32 @@ const JudgingTimerScreen = () => {
       </View>
     );
   };
+
+  if (!timerSyncEnabled) {
+    return (
+      <SafeAreaView className={cn("flex-1", themeStyles.background)}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text
+            className={cn(
+              "text-lg font-onest-bold mb-2",
+              themeStyles.primaryText
+            )}
+          >
+            Judging timers disabled
+          </Text>
+          <Text
+            className={cn(
+              "text-base font-pp text-center",
+              themeStyles.secondaryText
+            )}
+          >
+            Timer sync is off. Enable the judging timer feature flag to control
+            rounds here.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className={cn("flex-1", themeStyles.background)}>
