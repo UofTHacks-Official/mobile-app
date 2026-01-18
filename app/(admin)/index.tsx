@@ -20,11 +20,16 @@ import {
   UserCheck,
   Coins,
   ChevronRight,
+  CheckCircle,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
 import { Pressable, Text, View, ScrollView, Image } from "react-native";
-import { getUserType, getJudgeId } from "@/utils/tokens/secureStorage";
+import {
+  getUserType,
+  getJudgeId,
+  getProjectScores,
+} from "@/utils/tokens/secureStorage";
 import { PlatformSafeArea } from "@/components/common/PlatformSafeArea";
 import UoftDeerBlack from "../../assets/images/icons/uoft-deer-black.svg";
 import UoftDeerWhite from "../../assets/images/icons/uoft-deer-white.svg";
@@ -34,11 +39,6 @@ import { useCurrentTime } from "@/queries/schedule/currentTime";
 import { useAnnouncementsData } from "@/queries/announcement/announcement";
 import { useJudgeSchedules } from "@/queries/judging";
 import { ScheduleType } from "@/types/schedule";
-
-// Event type icons
-const GoatSquare = require("../../assets/images/icons/goat-square.png");
-const LionSquare = require("../../assets/images/icons/lion-square.png");
-const AxSquare = require("../../assets/images/icons/ax-square.png");
 
 // Types
 interface DashboardItem {
@@ -500,6 +500,8 @@ const UpcomingEvents = ({
   const isJudge = userType === "judge";
   const isVolunteer = userType === "volunteer";
   const [judgeId, setJudgeId] = useState<number | null>(null);
+  const [scoredProjects, setScoredProjects] = useState<Set<number>>(new Set());
+  const { isDark } = useTheme();
 
   // Get judge ID for filtering
   useEffect(() => {
@@ -566,6 +568,7 @@ const UpcomingEvents = ({
               : schedule.location.location_name,
           teamId: schedule.team_id,
           scheduleId: schedule.judging_schedule_id,
+          projectId: project?.project_id,
         };
       });
     } else {
@@ -582,6 +585,37 @@ const UpcomingEvents = ({
         });
     }
   }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
+
+  // Check which projects have been scored (judges only)
+  useEffect(() => {
+    if (
+      !isJudge ||
+      !judgeId ||
+      !judgeSchedules ||
+      judgeSchedules.length === 0
+    ) {
+      setScoredProjects(new Set());
+      return;
+    }
+
+    const checkScoredProjects = async () => {
+      const scored = new Set<number>();
+
+      for (const schedule of judgeSchedules) {
+        const projectId = schedule.team?.project?.project_id;
+        if (projectId) {
+          const savedScores = await getProjectScores(judgeId, projectId);
+          if (savedScores) {
+            scored.add(projectId);
+          }
+        }
+      }
+
+      setScoredProjects(scored);
+    };
+
+    checkScoredProjects();
+  }, [isJudge, judgeId, judgeSchedules]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
@@ -619,42 +653,6 @@ const UpcomingEvents = ({
     return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
   };
 
-  const getEventTypeColor = (type: ScheduleType | string) => {
-    switch (type) {
-      case ScheduleType.FOOD:
-      case "food":
-        return "#FFD54F";
-      case ScheduleType.SPONSOR:
-      case "networking":
-        return "#75EDEF";
-      case ScheduleType.MINI:
-      case ScheduleType.WORKSHOP:
-      case ScheduleType.CEREMONIES:
-      case "activity":
-        return "#C8B6FF";
-      default:
-        return "#E0E0E0";
-    }
-  };
-
-  const getEventTypeIcon = (type: ScheduleType | string) => {
-    switch (type) {
-      case ScheduleType.FOOD:
-      case "food":
-        return LionSquare;
-      case ScheduleType.SPONSOR:
-      case "networking":
-        return GoatSquare;
-      case ScheduleType.MINI:
-      case ScheduleType.WORKSHOP:
-      case ScheduleType.CEREMONIES:
-      case "activity":
-        return AxSquare;
-      default:
-        return AxSquare;
-    }
-  };
-
   if (upcomingEvents.length === 0) {
     return null;
   }
@@ -675,108 +673,188 @@ const UpcomingEvents = ({
           : "Tap an event to view details"}
       </Text>
       <View className="gap-y-3">
-        {upcomingEvents.map((event) => (
-          <Pressable
-            key={event.id}
-            onPress={() => {
-              haptics.impactAsync(ImpactFeedbackStyle.Medium);
-              if (isJudge && "teamId" in event && "scheduleId" in event) {
-                // Navigate to specific project overview for judges
-                router.push({
-                  pathname: "/(judge)/projectOverview",
-                  params: {
-                    teamId: event.teamId,
-                    scheduleId: event.scheduleId,
-                  },
-                });
-              } else if (isJudge) {
-                // Fallback: navigate to judging schedule page
-                router.push("/(admin)/judging");
-              } else {
-                // Navigate to schedule detail for others
-                router.push({
-                  pathname: "/schedule-detail/[scheduleID]" as any,
-                  params: {
-                    scheduleID: event.id.toString(),
-                  },
-                });
-              }
-            }}
-            className="flex-row items-start"
-            android_ripple={null}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            {/* Square icon on the left */}
-            <View
-              className="w-20 h-20 rounded-lg items-center justify-center mr-4 overflow-hidden"
-              style={{ backgroundColor: getEventTypeColor(event.type) }}
-            >
-              <Image
-                source={getEventTypeIcon(event.type)}
-                style={{ width: 80, height: 80 }}
-                resizeMode="cover"
-              />
-            </View>
+        {upcomingEvents.map((event) => {
+          const isScored =
+            isJudge &&
+            "projectId" in event &&
+            event.projectId &&
+            scoredProjects.has(event.projectId);
 
-            {/* Event info stacked vertically */}
-            <View className="flex-1">
-              <Text
-                className={cn(
-                  "text-lg font-onest-bold mb-1",
-                  themeStyles.primaryText
-                )}
-                numberOfLines={1}
+          return (
+            <Pressable
+              key={event.id}
+              onPress={() => {
+                console.log("[DEBUG] Event card pressed:", event.title);
+                haptics.impactAsync(ImpactFeedbackStyle.Medium);
+                if (isJudge && "teamId" in event && "scheduleId" in event) {
+                  // Navigate to specific project overview for judges
+                  console.log(
+                    "[DEBUG] Navigating to project overview:",
+                    event.teamId,
+                    event.scheduleId
+                  );
+                  router.push({
+                    pathname: "/(judge)/projectOverview",
+                    params: {
+                      teamId: event.teamId,
+                      scheduleId: event.scheduleId,
+                    },
+                  });
+                } else if (isJudge) {
+                  // Fallback: navigate to judging schedule page
+                  console.log("[DEBUG] Navigating to judging page (fallback)");
+                  router.push("/(admin)/judging");
+                } else {
+                  // Navigate to schedule detail for others
+                  console.log(
+                    "[DEBUG] Navigating to schedule detail:",
+                    event.id
+                  );
+                  router.push({
+                    pathname: "/schedule-detail/[scheduleID]" as any,
+                    params: {
+                      scheduleID: event.id.toString(),
+                    },
+                  });
+                }
+              }}
+              className={cn(
+                "rounded-2xl p-4 border",
+                isDark
+                  ? "bg-[#303030] border-gray-700"
+                  : "bg-white border-gray-200"
+              )}
+              android_ripple={null}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              {/* Header row with title and scored badge */}
+              <View
+                className="flex-row items-start justify-between mb-3"
+                pointerEvents="none"
               >
-                {event.title}
-              </Text>
-              <View className="flex-row items-center gap-1 mb-0.5">
-                <Clock
-                  size={14}
+                <View className="flex-1 mr-2">
+                  <Text
+                    className={cn(
+                      "text-xl font-onest-bold mb-1",
+                      themeStyles.primaryText
+                    )}
+                    numberOfLines={2}
+                  >
+                    {event.title}
+                  </Text>
+                  {isScored && (
+                    <View
+                      className={cn(
+                        "flex-row items-center gap-1 px-3 py-1.5 rounded-full self-start mt-1",
+                        isDark ? "bg-green-900/30" : "bg-green-100"
+                      )}
+                    >
+                      <CheckCircle
+                        size={16}
+                        color={isDark ? "#4ade80" : "#16a34a"}
+                      />
+                      <Text
+                        className={cn(
+                          "text-sm font-pp font-semibold",
+                          isDark ? "text-green-400" : "text-green-700"
+                        )}
+                      >
+                        Scored
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <ChevronRight
+                  size={24}
                   color={
                     themeStyles.secondaryText === "text-gray-600"
-                      ? "#666"
-                      : "#A0A0A0"
+                      ? "#999"
+                      : "#666"
                   }
                 />
-                <Text
-                  className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                >
-                  {formatEventDate(event.startTime)} •{" "}
-                  {formatEventTime(event.startTime, event.endTime)}
-                </Text>
               </View>
-              {"location" in event && event.location && (
-                <View className="flex-row items-center gap-1">
-                  <MapPin
-                    size={14}
-                    color={
-                      themeStyles.secondaryText === "text-gray-600"
-                        ? "#666"
-                        : "#A0A0A0"
-                    }
-                  />
-                  <Text
-                    className={cn("text-sm font-pp", themeStyles.secondaryText)}
-                    numberOfLines={1}
+
+              {/* Time and location info */}
+              <View className="gap-y-2" pointerEvents="none">
+                <View className="flex-row items-center gap-2">
+                  <View
+                    className={cn(
+                      "p-2 rounded-lg",
+                      isDark ? "bg-[#404040]" : "bg-gray-100"
+                    )}
                   >
-                    {event.location}
+                    <Clock size={16} color={isDark ? "#75EDEF" : "#132B38"} />
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      className={cn(
+                        "text-xs font-pp",
+                        themeStyles.secondaryText
+                      )}
+                    >
+                      {formatEventDate(event.startTime)}
+                    </Text>
+                    <Text
+                      className={cn(
+                        "text-sm font-onest-bold",
+                        themeStyles.primaryText
+                      )}
+                    >
+                      {formatEventTime(event.startTime, event.endTime)}
+                    </Text>
+                  </View>
+                </View>
+
+                {"location" in event && event.location && (
+                  <View className="flex-row items-center gap-2">
+                    <View
+                      className={cn(
+                        "p-2 rounded-lg",
+                        isDark ? "bg-[#404040]" : "bg-gray-100"
+                      )}
+                    >
+                      <MapPin
+                        size={16}
+                        color={isDark ? "#75EDEF" : "#132B38"}
+                      />
+                    </View>
+                    <Text
+                      className={cn(
+                        "text-sm font-pp flex-1",
+                        themeStyles.primaryText
+                      )}
+                      numberOfLines={1}
+                    >
+                      {event.location}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Action hint for judges */}
+              {isJudge && !isScored && (
+                <View
+                  className={cn(
+                    "mt-3 pt-3 border-t",
+                    isDark ? "border-gray-700" : "border-gray-200"
+                  )}
+                  pointerEvents="none"
+                >
+                  <Text
+                    className={cn(
+                      "text-sm font-pp text-center",
+                      isDark ? "text-[#75EDEF]" : "text-[#132B38]"
+                    )}
+                  >
+                    Tap to view project and score →
                   </Text>
                 </View>
               )}
-            </View>
-
-            {/* Chevron to indicate clickability */}
-            <ChevronRight
-              size={24}
-              color={
-                themeStyles.secondaryText === "text-gray-600" ? "#999" : "#666"
-              }
-              style={{ marginLeft: 8 }}
-            />
-          </Pressable>
-        ))}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );

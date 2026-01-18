@@ -226,11 +226,9 @@ export const getProjectScores = async (
     const key = `JUDGE_${judgeId}_PROJECT_${projectId}_SCORES`;
     const scoresJson = await PlatformStorage.getItemAsync(key);
     if (!scoresJson) {
-      devLog(`No saved scores found for project ${projectId}`);
       return null;
     }
     const scores = JSON.parse(scoresJson);
-    devLog(`Successfully retrieved scores for project ${projectId}:`, scores);
     return scores;
   } catch (error) {
     devError("Error retrieving project scores:", error);
