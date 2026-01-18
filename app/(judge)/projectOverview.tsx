@@ -209,7 +209,7 @@ const ProjectOverview = () => {
         {/* Categories/Tags */}
         {project.categories && project.categories.length > 0 && (
           <View className="flex-row flex-wrap gap-2 mb-6">
-            {project.categories.slice(0, 3).map((category, index) => (
+            {project.categories.map((category, index) => (
               <View
                 key={index}
                 className={cn(
