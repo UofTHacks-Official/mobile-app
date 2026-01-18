@@ -201,6 +201,43 @@ export const getSponsorPin = async (): Promise<number | null> => {
   }
 };
 
+// Score storage utilities
+export const storeProjectScores = async (
+  judgeId: number,
+  projectId: number,
+  scores: any
+): Promise<void | null> => {
+  try {
+    const key = `JUDGE_${judgeId}_PROJECT_${projectId}_SCORES`;
+    const scoresJson = JSON.stringify(scores);
+    await PlatformStorage.setItemAsync(key, scoresJson);
+    devLog(`Successfully stored scores for project ${projectId}:`, scores);
+  } catch (error) {
+    devError("Error storing project scores:", error);
+    return null;
+  }
+};
+
+export const getProjectScores = async (
+  judgeId: number,
+  projectId: number
+): Promise<any | null> => {
+  try {
+    const key = `JUDGE_${judgeId}_PROJECT_${projectId}_SCORES`;
+    const scoresJson = await PlatformStorage.getItemAsync(key);
+    if (!scoresJson) {
+      devLog(`No saved scores found for project ${projectId}`);
+      return null;
+    }
+    const scores = JSON.parse(scoresJson);
+    devLog(`Successfully retrieved scores for project ${projectId}:`, scores);
+    return scores;
+  } catch (error) {
+    devError("Error retrieving project scores:", error);
+    return null;
+  }
+};
+
 export default {
   storeAuthTokens,
   getAuthTokens,
@@ -214,4 +251,6 @@ export default {
   getJudgeId,
   storeSponsorPin,
   getSponsorPin,
+  storeProjectScores,
+  getProjectScores,
 };
