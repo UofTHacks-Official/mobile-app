@@ -423,9 +423,44 @@ const StartJudgingButton = ({
   themeStyles: ReturnType<typeof getThemeStyles>;
   isDark: boolean;
 }) => {
+  const [judgeId, setJudgeId] = useState<number | null>(null);
+
+  // Get judge ID
+  useEffect(() => {
+    const loadJudgeId = async () => {
+      const id = await getJudgeId();
+      setJudgeId(id);
+    };
+    loadJudgeId();
+  }, []);
+
+  // Fetch judge's schedules
+  const { data: judgeSchedules } = useJudgeSchedules(judgeId, judgeId !== null);
+
   const handleStartJudging = () => {
     haptics.impactAsync(ImpactFeedbackStyle.Medium);
-    router.push("/(admin)/judging");
+
+    // Find the earliest/first assigned project
+    if (judgeSchedules && judgeSchedules.length > 0) {
+      // Schedules are already sorted by timestamp in the query
+      const sortedSchedules = [...judgeSchedules].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      const firstSchedule = sortedSchedules[0];
+
+      // Navigate directly to the first project
+      router.push({
+        pathname: "/(judge)/projectOverview",
+        params: {
+          teamId: firstSchedule.team_id,
+          scheduleId: firstSchedule.judging_schedule_id,
+        },
+      });
+    } else {
+      // Fallback to judging page if no schedules
+      router.push("/(admin)/judging");
+    }
   };
 
   return (
