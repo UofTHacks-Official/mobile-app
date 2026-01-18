@@ -19,6 +19,7 @@ import {
   BanknoteArrowDown,
   UserCheck,
   Coins,
+  ChevronRight,
 } from "lucide-react-native";
 import { Calendar, MoneyWavy } from "phosphor-react-native";
 import { useMemo, useEffect, useState } from "react";
@@ -661,9 +662,17 @@ const UpcomingEvents = ({
   return (
     <View className="mt-8">
       <Text
-        className={cn("text-2xl font-onest-bold mb-4", themeStyles.primaryText)}
+        className={cn("text-2xl font-onest-bold mb-1", themeStyles.primaryText)}
       >
         Upcoming Events
+      </Text>
+      <Text
+        className={cn("text-sm mb-4", themeStyles.secondaryText)}
+        style={{ opacity: 0.7 }}
+      >
+        {isJudge
+          ? "Tap a project to start scoring"
+          : "Tap an event to view details"}
       </Text>
       <View className="gap-y-3">
         {upcomingEvents.map((event) => (
@@ -757,6 +766,15 @@ const UpcomingEvents = ({
                 </View>
               )}
             </View>
+
+            {/* Chevron to indicate clickability */}
+            <ChevronRight
+              size={24}
+              color={
+                themeStyles.secondaryText === "text-gray-600" ? "#999" : "#666"
+              }
+              style={{ marginLeft: 8 }}
+            />
           </Pressable>
         ))}
       </View>
