@@ -609,7 +609,7 @@ const UpcomingEvents = ({
           ? "Tap a project to start scoring"
           : "Tap an event to view details"}
       </Text>
-      <View className="gap-y-3">
+      <View className="gap-y-3 pb-20">
         {upcomingEvents.map((event) => {
           const isScored =
             isJudge &&
