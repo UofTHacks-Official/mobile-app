@@ -68,8 +68,11 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide judging for hackers and volunteers
-            if (route.name === "judging" && (isHacker || isVolunteer)) {
+            // Hide judging for hackers, volunteers, and judges
+            if (
+              route.name === "judging" &&
+              (isHacker || isVolunteer || isJudge)
+            ) {
               return false;
             }
 

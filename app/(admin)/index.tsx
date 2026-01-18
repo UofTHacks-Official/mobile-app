@@ -417,79 +417,6 @@ const RecentAnnouncement = ({
   );
 };
 
-const StartJudgingButton = ({
-  themeStyles,
-  isDark,
-}: {
-  themeStyles: ReturnType<typeof getThemeStyles>;
-  isDark: boolean;
-}) => {
-  const [judgeId, setJudgeId] = useState<number | null>(null);
-
-  // Get judge ID
-  useEffect(() => {
-    const loadJudgeId = async () => {
-      const id = await getJudgeId();
-      setJudgeId(id);
-    };
-    loadJudgeId();
-  }, []);
-
-  // Fetch judge's schedules
-  const { data: judgeSchedules } = useJudgeSchedules(judgeId, judgeId !== null);
-
-  const handleStartJudging = () => {
-    haptics.impactAsync(ImpactFeedbackStyle.Medium);
-
-    // Find the earliest/first assigned project
-    if (judgeSchedules && judgeSchedules.length > 0) {
-      // Schedules are already sorted by timestamp in the query
-      const sortedSchedules = [...judgeSchedules].sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
-      const firstSchedule = sortedSchedules[0];
-
-      // Navigate directly to the first project
-      router.push({
-        pathname: "/(judge)/projectOverview",
-        params: {
-          teamId: firstSchedule.team_id,
-          scheduleId: firstSchedule.judging_schedule_id,
-        },
-      });
-    } else {
-      // Fallback to judging page if no schedules
-      router.push("/(admin)/judging");
-    }
-  };
-
-  return (
-    <View className="mt-6">
-      <Pressable
-        onPress={handleStartJudging}
-        className={cn(
-          "py-4 px-6 rounded-xl items-center justify-center",
-          isDark ? "bg-[#75EDEF]" : "bg-[#132B38]"
-        )}
-        android_ripple={null}
-        style={({ pressed }) => ({
-          opacity: pressed ? 0.8 : 1,
-        })}
-      >
-        <Text
-          className={cn(
-            "text-lg font-onest-bold",
-            isDark ? "text-black" : "text-white"
-          )}
-        >
-          Start Judging
-        </Text>
-      </Pressable>
-    </View>
-  );
-};
-
 const UpcomingEvents = ({
   themeStyles,
   userType,
@@ -586,6 +513,15 @@ const UpcomingEvents = ({
     }
   }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
 
+  // Create a stable key from schedule IDs to prevent infinite loops
+  const scheduleKey = useMemo(() => {
+    if (!judgeSchedules) return "";
+    return judgeSchedules
+      .map((s) => s.judging_schedule_id)
+      .sort()
+      .join(",");
+  }, [judgeSchedules]);
+
   // Check which projects have been scored (judges only)
   useEffect(() => {
     if (
@@ -615,7 +551,8 @@ const UpcomingEvents = ({
     };
 
     checkScoredProjects();
-  }, [isJudge, judgeId, judgeSchedules]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isJudge, judgeId, scheduleKey]);
 
   const formatEventTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
@@ -658,11 +595,11 @@ const UpcomingEvents = ({
   }
 
   return (
-    <View className="mt-8">
+    <View className="mt-4">
       <Text
         className={cn("text-2xl font-onest-bold mb-1", themeStyles.primaryText)}
       >
-        Upcoming Events
+        {isJudge ? "Judging Events" : "Upcoming Events"}
       </Text>
       <Text
         className={cn("text-sm mb-4", themeStyles.secondaryText)}
@@ -936,9 +873,6 @@ const AdminDashboard = () => {
         <DashboardGrid items={dashboardItems} />
         {userType && (
           <RecentAnnouncement themeStyles={themeStyles} userType={userType} />
-        )}
-        {userType === "judge" && (
-          <StartJudgingButton themeStyles={themeStyles} isDark={isDark} />
         )}
         {FEATURE_FLAGS.ENABLE_HACKERBUCKS &&
           (userType === "admin" || userType === "volunteer") && (
