@@ -547,7 +547,7 @@ const UpcomingEvents = ({
       );
 
       // Map each schedule to an event with project info
-      return sorted.slice(0, 10).map((schedule) => {
+      return sorted.map((schedule) => {
         const project = schedule.team?.project;
         const endTime = new Date(
           new Date(schedule.timestamp).getTime() + schedule.duration * 60000
@@ -578,8 +578,7 @@ const UpcomingEvents = ({
           const aTime = new Date(a.startTime).getTime();
           const bTime = new Date(b.startTime).getTime();
           return aTime - bTime;
-        })
-        .slice(0, 10);
+        });
     }
   }, [isJudge, judgeSchedules, hackerSchedules, currentTime]);
 
