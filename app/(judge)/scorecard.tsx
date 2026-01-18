@@ -11,7 +11,11 @@ import { SCORING_CRITERIA_INFO, ScoringCriteria } from "@/types/scoring";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import { formatLocationForDisplay } from "@/utils/judging";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { getJudgeId } from "@/utils/tokens/secureStorage";
+import {
+  getJudgeId,
+  getProjectScores,
+  storeProjectScores,
+} from "@/utils/tokens/secureStorage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Href, router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
@@ -68,11 +72,6 @@ const Scorecard = () => {
     loadData();
   }, [params]);
 
-  // Reset submission state when viewing a new schedule
-  useEffect(() => {
-    setHasSubmitted(false);
-  }, [scheduleId]);
-
   const {
     data: judgeSchedules,
     refetch: refetchJudgeSchedules,
@@ -110,6 +109,33 @@ const Scorecard = () => {
     }
     return null;
   }, [params.projectId, project?.project_id]);
+
+  // Load saved scores when component mounts or project changes
+  useEffect(() => {
+    const loadSavedScores = async () => {
+      if (!judgeId || !projectId) return;
+
+      const savedScores = await getProjectScores(judgeId, projectId);
+      if (savedScores) {
+        setScores(savedScores);
+        setHasSubmitted(true);
+      } else {
+        // Reset to default scores if no saved scores found
+        setScores({
+          design: 0,
+          completion: 0,
+          theme_relevance: 0,
+          idea_innovation: 0,
+          technology: 0,
+          pitching: 0,
+          time_management: 0,
+        });
+        setHasSubmitted(false);
+      }
+    };
+
+    loadSavedScores();
+  }, [judgeId, projectId]);
 
   const locationName = currentSchedule
     ? formatLocationForDisplay(currentSchedule.location)
@@ -170,7 +196,7 @@ const Scorecard = () => {
     setScores((prev) => ({ ...prev, [criterion]: value }));
   };
   const submitScores = async (isAuto: boolean) => {
-    if (!project || !projectId || hasSubmitted) return;
+    if (!project || !projectId || hasSubmitted || !judgeId) return;
 
     try {
       if (!isAuto) {
@@ -190,6 +216,9 @@ const Scorecard = () => {
 
       await submitScoreMutation.mutateAsync(submissionData);
       setHasSubmitted(true);
+
+      // Save scores to local storage
+      await storeProjectScores(judgeId, projectId, scores);
 
       Toast.show({
         type: "success",
