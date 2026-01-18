@@ -68,11 +68,8 @@ export default function AdminLayout() {
               return false;
             }
 
-            // Hide judging for hackers and volunteers or when timer sync is off
-            if (
-              route.name === "judging" &&
-              (isHacker || isVolunteer || !timerSyncEnabled)
-            ) {
+            // Hide judging for hackers and volunteers
+            if (route.name === "judging" && (isHacker || isVolunteer)) {
               return false;
             }
 
@@ -139,11 +136,8 @@ export default function AdminLayout() {
           name="judging"
           options={{
             title: "Judging",
-            // Hide tab if judging or timer sync is disabled
-            href:
-              FEATURE_FLAGS.ENABLE_JUDGING && timerSyncEnabled
-                ? undefined
-                : null,
+            // Hide tab if judging is disabled
+            href: FEATURE_FLAGS.ENABLE_JUDGING ? undefined : null,
           }}
         />
         <Tabs.Screen
