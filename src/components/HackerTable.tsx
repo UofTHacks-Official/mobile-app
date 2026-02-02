@@ -578,14 +578,11 @@ export const HackerTable = ({
 
             {/* Collapsible Filters Section */}
             {showFilters && (
-              <ScrollView
+              <View
                 className={cn(
                   "p-4 rounded-lg mb-2",
                   isDark ? "bg-neutral-800/50" : "bg-neutral-100"
                 )}
-                style={{ maxHeight: 400 }}
-                showsVerticalScrollIndicator={true}
-                nestedScrollEnabled={true}
               >
                 {/* Graduation Year Filter */}
                 <Text
@@ -1123,7 +1120,7 @@ export const HackerTable = ({
                     </View>
                   )}
                 </View>
-              </ScrollView>
+              </View>
             )}
           </View>
         )}
