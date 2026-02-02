@@ -264,12 +264,13 @@ export const HackerTable = ({
   const { data: projectCategories = [] } = useProjectCategories();
   const { data: allSchedules = [] } = useAllSchedules();
 
-  // Filter events to only show workshops and sponsor events
+  // Filter events to only show workshops, sponsor events, and mini events
   const attendableEvents = useMemo(() => {
     return allSchedules.filter(
       (schedule) =>
         schedule.type === ScheduleType.WORKSHOP ||
-        schedule.type === ScheduleType.SPONSOR
+        schedule.type === ScheduleType.SPONSOR ||
+        schedule.type === ScheduleType.MINI
     );
   }, [allSchedules]);
 
