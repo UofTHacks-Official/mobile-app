@@ -25,6 +25,13 @@ export async function fetchAllSchedules(): Promise<Schedule[]> {
   return response.data;
 }
 
+// Fetch all scheduled events (public - doesn't require user type check)
+export async function fetchAllSchedulesPublic(): Promise<Schedule[]> {
+  // Use hacker endpoint as it's the public-facing one
+  const response = await axios.get(scheduleEndpoints.hackers.fetchAllSchedules);
+  return response.data;
+}
+
 // Fetch a scheduled event by ID
 export async function fetchScheduleById(schedule: number): Promise<Schedule> {
   const userType = await getUserType();
