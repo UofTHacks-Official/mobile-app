@@ -71,11 +71,34 @@ const JudgingLocationScreen = () => {
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-  // Group schedules by room
+  // Group schedules by room (for admins)
   const roomGroups = useMemo(() => {
     if (!sortedSchedules) return [];
     return groupSchedulesByRoom(sortedSchedules);
   }, [sortedSchedules]);
+
+  // Group schedules by timestamp/round (for judges)
+  const judgeRoundGroups = useMemo(() => {
+    if (!sortedSchedules || !isJudge) return [];
+
+    const roundMap = new Map<string, JudgingScheduleItem[]>();
+
+    sortedSchedules.forEach((schedule) => {
+      // Use the timestamp as the round key
+      const roundKey = schedule.timestamp;
+      const existing = roundMap.get(roundKey) || [];
+      existing.push(schedule);
+      roundMap.set(roundKey, existing);
+    });
+
+    // Convert to array and sort by timestamp
+    return Array.from(roundMap.entries())
+      .map(([timestamp, schedules]) => ({ timestamp, schedules }))
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+  }, [sortedSchedules, isJudge]);
 
   // Get room status helper (check if ANY schedule in the room has started)
   const getRoomStatus = (roomSchedules: JudgingScheduleItem[]) => {
@@ -374,8 +397,17 @@ const JudgingLocationScreen = () => {
         {/* Judging Events List - Different view for judges */}
         {isJudge ? (
           <View className="mt-6">
-            {sortedSchedules && sortedSchedules.length > 0 && (
-              <JudgeScheduleView schedules={sortedSchedules} />
+            {judgeRoundGroups && judgeRoundGroups.length > 0 && (
+              <>
+                {judgeRoundGroups.map((round, index) => (
+                  <View
+                    key={`round-${round.timestamp}-${index}`}
+                    className="mb-4"
+                  >
+                    <JudgeScheduleView schedules={round.schedules} />
+                  </View>
+                ))}
+              </>
             )}
           </View>
         ) : (

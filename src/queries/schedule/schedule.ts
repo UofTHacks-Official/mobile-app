@@ -1,4 +1,7 @@
-import { fetchAllSchedules } from "@/requests/schedule";
+import {
+  fetchAllSchedules,
+  fetchAllSchedulesPublic,
+} from "@/requests/schedule";
 import { Schedule, ScheduleType } from "@/types/schedule";
 import { devError, devLog } from "@/utils/logger";
 import { useQuery } from "@tanstack/react-query";
@@ -104,5 +107,26 @@ export const useScheduleById = (scheduleId: number) => {
 
       return true;
     },
+  });
+};
+
+/**
+ * Hook to fetch all schedules without filtering (for filter dropdowns)
+ */
+export const useAllSchedules = () => {
+  return useQuery({
+    queryKey: ["allSchedules"],
+    queryFn: async () => {
+      try {
+        const data = await fetchAllSchedulesPublic();
+        return data.map(mapApiToSchedule);
+      } catch (error) {
+        devError("All schedules fetch error:", error);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
   });
 };

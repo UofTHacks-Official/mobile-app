@@ -82,6 +82,8 @@ export interface HackerQueryParams {
   page?: number;
   page_size?: number;
   has_rsvpd?: boolean;
+  attended_event_ids?: number[]; // Filter by event attendance (schedule IDs)
+  submitted_category_ids?: number[]; // Filter by project categories (category IDs)
 }
 
 export interface TokenPair {

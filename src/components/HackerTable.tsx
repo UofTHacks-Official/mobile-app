@@ -2,11 +2,14 @@ import { useTheme } from "@/context/themeContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useFetchHackers } from "@/queries/hacker";
 import { useSavedHackers } from "@/queries/judge";
+import { useProjectCategories } from "@/queries/project";
+import { useAllSchedules } from "@/queries/schedule/schedule";
 import type { HackerProfile } from "@/requests/hacker";
+import { ScheduleType } from "@/types/schedule";
 import { cn, getThemeStyles } from "@/utils/theme";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -199,23 +202,125 @@ export const HackerTable = ({
 }: HackerTableProps) => {
   const { isDark } = useTheme();
   const themeStyles = getThemeStyles(isDark);
+  const params = useLocalSearchParams();
 
-  const [activeTab, setActiveTab] = useState<"all" | "saved">("all");
-  const [searchInput, setSearchInput] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  // Parse URL params helper
+  const parseArrayParam = (param: string | string[] | undefined): string[] => {
+    if (!param) return [];
+    if (Array.isArray(param)) return param;
+    return param.split(",").filter(Boolean);
+  };
+
+  const parseNumberArrayParam = (
+    param: string | string[] | undefined
+  ): number[] => {
+    const arr = parseArrayParam(param);
+    return arr.map(Number).filter((n) => !isNaN(n));
+  };
+
+  // Initialize state from URL params
+  const [activeTab, setActiveTab] = useState<"all" | "saved">(
+    (params.tab as "all" | "saved") || "all"
+  );
+  const [searchInput, setSearchInput] = useState(
+    (params.search as string) || ""
+  );
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(
+    parseArrayParam(params.skills)
+  );
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(
+    parseArrayParam(params.interests)
+  );
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>(
+    parseArrayParam(params.companies)
+  );
+  const [selectedEvents, setSelectedEvents] = useState<number[]>(
+    parseNumberArrayParam(params.events)
+  );
+  const [selectedCategories, setSelectedCategories] = useState<number[]>(
+    parseNumberArrayParam(params.categories)
+  );
   const [companyInput, setCompanyInput] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [educationStartYear, setEducationStartYear] = useState<string>("");
-  const [educationEndYear, setEducationEndYear] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(
+    params.page ? parseInt(params.page as string, 10) : 1
+  );
+  const [educationStartYear, setEducationStartYear] = useState<string>(
+    (params.startYear as string) || ""
+  );
+  const [educationEndYear, setEducationEndYear] = useState<string>(
+    (params.endYear as string) || ""
+  );
   const [showStartYearDropdown, setShowStartYearDropdown] = useState(false);
   const [showEndYearDropdown, setShowEndYearDropdown] = useState(false);
+  const [showEventsDropdown, setShowEventsDropdown] = useState(false);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const debouncedSearch = useDebounce(searchInput, 600);
+
+  // Fetch project categories and schedules for filter dropdowns
+  const { data: projectCategories = [] } = useProjectCategories();
+  const { data: allSchedules = [] } = useAllSchedules();
+
+  // Filter events to only show workshops and sponsor events
+  const attendableEvents = useMemo(() => {
+    return allSchedules.filter(
+      (schedule) =>
+        schedule.type === ScheduleType.WORKSHOP ||
+        schedule.type === ScheduleType.SPONSOR
+    );
+  }, [allSchedules]);
+
+  // Sync state to URL params
+  useEffect(() => {
+    const newParams: Record<string, string> = {};
+
+    if (activeTab !== "all") {
+      newParams.tab = activeTab;
+    }
+    if (searchInput) {
+      newParams.search = searchInput;
+    }
+    if (selectedSkills.length > 0) {
+      newParams.skills = selectedSkills.join(",");
+    }
+    if (selectedInterests.length > 0) {
+      newParams.interests = selectedInterests.join(",");
+    }
+    if (selectedCompanies.length > 0) {
+      newParams.companies = selectedCompanies.join(",");
+    }
+    if (selectedEvents.length > 0) {
+      newParams.events = selectedEvents.join(",");
+    }
+    if (selectedCategories.length > 0) {
+      newParams.categories = selectedCategories.join(",");
+    }
+    if (currentPage > 1) {
+      newParams.page = currentPage.toString();
+    }
+    if (educationStartYear) {
+      newParams.startYear = educationStartYear;
+    }
+    if (educationEndYear) {
+      newParams.endYear = educationEndYear;
+    }
+
+    router.setParams(newParams);
+  }, [
+    activeTab,
+    searchInput,
+    selectedSkills,
+    selectedInterests,
+    selectedCompanies,
+    selectedEvents,
+    selectedCategories,
+    currentPage,
+    educationStartYear,
+    educationEndYear,
+  ]);
 
   // Handle scroll to show/hide search bar
   const handleScroll = (event: any) => {
@@ -235,15 +340,22 @@ export const HackerTable = ({
 
   // Check if any filters are active
   const hasActiveFilters =
-    selectedCompanies.length > 0 || educationStartYear || educationEndYear;
+    selectedCompanies.length > 0 ||
+    selectedEvents.length > 0 ||
+    selectedCategories.length > 0 ||
+    educationStartYear ||
+    educationEndYear;
 
   // Clear all filters
   const handleClearAllFilters = () => {
     setSearchInput("");
     setSelectedCompanies([]);
+    setSelectedEvents([]);
+    setSelectedCategories([]);
     setEducationStartYear("");
     setEducationEndYear("");
     setCompanyInput("");
+    setCurrentPage(1);
   };
 
   useEffect(() => {
@@ -252,6 +364,8 @@ export const HackerTable = ({
     selectedSkills,
     selectedInterests,
     selectedCompanies,
+    selectedEvents,
+    selectedCategories,
     educationStartYear,
     educationEndYear,
     debouncedSearch,
@@ -268,6 +382,9 @@ export const HackerTable = ({
     skills: selectedSkills.length > 0 ? selectedSkills : undefined,
     interests: selectedInterests.length > 0 ? selectedInterests : undefined,
     companies: selectedCompanies.length > 0 ? selectedCompanies : undefined,
+    attended_event_ids: selectedEvents.length > 0 ? selectedEvents : undefined,
+    submitted_category_ids:
+      selectedCategories.length > 0 ? selectedCategories : undefined,
     search_query: debouncedSearch || undefined,
     page: enablePagination ? currentPage : undefined,
     page_size: enablePagination ? itemsPerPage : undefined,
@@ -317,6 +434,7 @@ export const HackerTable = ({
 
   const handleClearSearch = () => {
     setSearchInput("");
+    setCurrentPage(1);
   };
 
   const currentYear = new Date().getFullYear();
@@ -333,7 +451,10 @@ export const HackerTable = ({
           )}
         >
           <Pressable
-            onPress={() => setActiveTab("all")}
+            onPress={() => {
+              setActiveTab("all");
+              setCurrentPage(1);
+            }}
             className={cn(
               "flex-1 py-3 rounded-lg",
               activeTab === "all"
@@ -357,7 +478,10 @@ export const HackerTable = ({
             </Text>
           </Pressable>
           <Pressable
-            onPress={() => setActiveTab("saved")}
+            onPress={() => {
+              setActiveTab("saved");
+              setCurrentPage(1);
+            }}
             className={cn(
               "flex-1 py-3 rounded-lg",
               activeTab === "saved"
@@ -432,6 +556,8 @@ export const HackerTable = ({
                 {hasActiveFilters &&
                   ` (${
                     selectedCompanies.length +
+                    selectedEvents.length +
+                    selectedCategories.length +
                     (educationStartYear ? 1 : 0) +
                     (educationEndYear ? 1 : 0)
                   })`}
@@ -693,6 +819,300 @@ export const HackerTable = ({
                         </Pressable>
                       </View>
                     ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Event Attendance Filter */}
+              <View style={{ zIndex: -2000 }} className="mt-4">
+                <Text
+                  className={cn(
+                    "text-sm font-semibold mb-3",
+                    themeStyles.primaryText
+                  )}
+                >
+                  EVENT ATTENDANCE
+                </Text>
+                <View className="relative">
+                  <Pressable
+                    onPress={() => setShowEventsDropdown(!showEventsDropdown)}
+                    className={cn(
+                      "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                      isDark
+                        ? "bg-neutral-800 border-neutral-700"
+                        : "bg-white border-neutral-300"
+                    )}
+                  >
+                    <Text
+                      className={cn(
+                        selectedEvents.length > 0
+                          ? themeStyles.primaryText
+                          : "text-neutral-500"
+                      )}
+                    >
+                      {selectedEvents.length > 0
+                        ? `${selectedEvents.length} event(s) selected`
+                        : "Select events"}
+                    </Text>
+                    <Text className={themeStyles.secondaryText}>▼</Text>
+                  </Pressable>
+                  {showEventsDropdown && (
+                    <View
+                      className={cn(
+                        "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
+                        isDark
+                          ? "bg-neutral-800 border-neutral-700"
+                          : "bg-white border-neutral-300"
+                      )}
+                      style={{ zIndex: 9999 }}
+                    >
+                      <ScrollView style={{ maxHeight: 192 }}>
+                        <Pressable
+                          onPress={() => {
+                            setSelectedEvents([]);
+                            setShowEventsDropdown(false);
+                          }}
+                          className="px-3 py-2 border-b border-neutral-700"
+                        >
+                          <Text className="text-neutral-500">Clear</Text>
+                        </Pressable>
+                        {attendableEvents.map((schedule) => {
+                          const scheduleId = Number(schedule.id);
+                          const isSelected =
+                            selectedEvents.includes(scheduleId);
+                          return (
+                            <Pressable
+                              key={schedule.id}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setSelectedEvents(
+                                    selectedEvents.filter(
+                                      (id) => id !== scheduleId
+                                    )
+                                  );
+                                } else {
+                                  setSelectedEvents([
+                                    ...selectedEvents,
+                                    scheduleId,
+                                  ]);
+                                }
+                              }}
+                              className={cn(
+                                "px-3 py-2 border-b flex-row items-center justify-between",
+                                isDark
+                                  ? "border-neutral-700"
+                                  : "border-neutral-200",
+                                isSelected &&
+                                  (isDark ? "bg-neutral-700" : "bg-neutral-100")
+                              )}
+                            >
+                              <Text
+                                className={cn(
+                                  themeStyles.primaryText,
+                                  "flex-1"
+                                )}
+                              >
+                                {schedule.title}
+                              </Text>
+                              {isSelected && (
+                                <Text className="text-green-500 ml-2">✓</Text>
+                              )}
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+                {selectedEvents.length > 0 && (
+                  <View className="flex-row flex-wrap gap-2 mt-3">
+                    {selectedEvents.map((eventId) => {
+                      const event = attendableEvents.find(
+                        (s) => Number(s.id) === eventId
+                      );
+                      return (
+                        <View
+                          key={eventId}
+                          className={cn(
+                            "flex-row items-center px-3 py-1.5 rounded-full",
+                            isDark
+                              ? "bg-purple-500/20 border border-purple-500/30"
+                              : "bg-purple-100 border border-purple-200"
+                          )}
+                        >
+                          <Text
+                            className={cn(
+                              "text-sm mr-2 font-medium",
+                              isDark ? "text-purple-400" : "text-purple-700"
+                            )}
+                          >
+                            {event?.title || `Event ${eventId}`}
+                          </Text>
+                          <Pressable
+                            onPress={() => {
+                              setSelectedEvents(
+                                selectedEvents.filter((id) => id !== eventId)
+                              );
+                            }}
+                          >
+                            <X
+                              size={14}
+                              color={isDark ? "#c084fc" : "#6b21a8"}
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+
+              {/* Project Categories Filter */}
+              <View style={{ zIndex: -3000 }} className="mt-4">
+                <Text
+                  className={cn(
+                    "text-sm font-semibold mb-3",
+                    themeStyles.primaryText
+                  )}
+                >
+                  PROJECT CATEGORIES
+                </Text>
+                <View className="relative">
+                  <Pressable
+                    onPress={() =>
+                      setShowCategoriesDropdown(!showCategoriesDropdown)
+                    }
+                    className={cn(
+                      "px-3 py-2 rounded-md border flex-row justify-between items-center",
+                      isDark
+                        ? "bg-neutral-800 border-neutral-700"
+                        : "bg-white border-neutral-300"
+                    )}
+                  >
+                    <Text
+                      className={cn(
+                        selectedCategories.length > 0
+                          ? themeStyles.primaryText
+                          : "text-neutral-500"
+                      )}
+                    >
+                      {selectedCategories.length > 0
+                        ? `${selectedCategories.length} category(ies) selected`
+                        : "Select categories"}
+                    </Text>
+                    <Text className={themeStyles.secondaryText}>▼</Text>
+                  </Pressable>
+                  {showCategoriesDropdown && (
+                    <View
+                      className={cn(
+                        "absolute top-full left-0 right-0 mt-1 rounded-md border max-h-48",
+                        isDark
+                          ? "bg-neutral-800 border-neutral-700"
+                          : "bg-white border-neutral-300"
+                      )}
+                      style={{ zIndex: 9999 }}
+                    >
+                      <ScrollView style={{ maxHeight: 192 }}>
+                        <Pressable
+                          onPress={() => {
+                            setSelectedCategories([]);
+                            setShowCategoriesDropdown(false);
+                          }}
+                          className="px-3 py-2 border-b border-neutral-700"
+                        >
+                          <Text className="text-neutral-500">Clear</Text>
+                        </Pressable>
+                        {projectCategories.map((category) => {
+                          const isSelected = selectedCategories.includes(
+                            category.project_category_id
+                          );
+                          return (
+                            <Pressable
+                              key={category.project_category_id}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setSelectedCategories(
+                                    selectedCategories.filter(
+                                      (id) =>
+                                        id !== category.project_category_id
+                                    )
+                                  );
+                                } else {
+                                  setSelectedCategories([
+                                    ...selectedCategories,
+                                    category.project_category_id,
+                                  ]);
+                                }
+                              }}
+                              className={cn(
+                                "px-3 py-2 border-b flex-row items-center justify-between",
+                                isDark
+                                  ? "border-neutral-700"
+                                  : "border-neutral-200",
+                                isSelected &&
+                                  (isDark ? "bg-neutral-700" : "bg-neutral-100")
+                              )}
+                            >
+                              <Text
+                                className={cn(
+                                  themeStyles.primaryText,
+                                  "flex-1"
+                                )}
+                              >
+                                {category.project_category_name}
+                              </Text>
+                              {isSelected && (
+                                <Text className="text-green-500 ml-2">✓</Text>
+                              )}
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+                {selectedCategories.length > 0 && (
+                  <View className="flex-row flex-wrap gap-2 mt-3">
+                    {selectedCategories.map((categoryId) => {
+                      const category = projectCategories.find(
+                        (c) => c.project_category_id === categoryId
+                      );
+                      return (
+                        <View
+                          key={categoryId}
+                          className={cn(
+                            "flex-row items-center px-3 py-1.5 rounded-full",
+                            isDark
+                              ? "bg-blue-500/20 border border-blue-500/30"
+                              : "bg-blue-100 border border-blue-200"
+                          )}
+                        >
+                          <Text
+                            className={cn(
+                              "text-sm mr-2 font-medium",
+                              isDark ? "text-blue-400" : "text-blue-700"
+                            )}
+                          >
+                            {category?.project_category_name ||
+                              `Category ${categoryId}`}
+                          </Text>
+                          <Pressable
+                            onPress={() => {
+                              setSelectedCategories(
+                                selectedCategories.filter(
+                                  (id) => id !== categoryId
+                                )
+                              );
+                            }}
+                          >
+                            <X
+                              size={14}
+                              color={isDark ? "#60a5fa" : "#1d4ed8"}
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
                   </View>
                 )}
               </View>

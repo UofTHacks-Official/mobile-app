@@ -17,3 +17,11 @@ export interface Project {
 export interface ProjectListResponse {
   projects: Project[];
 }
+
+export interface ProjectCategory {
+  project_category_id: number;
+  project_category_name: string;
+  category_description: string | null;
+  sponsor_id: number | null;
+  category_requirements: string | null;
+}

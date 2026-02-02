@@ -1,5 +1,6 @@
-import { Project, ProjectListResponse } from "@/types/project";
+import { Project, ProjectListResponse, ProjectCategory } from "@/types/project";
 import { getJudgeSchedules } from "./judge";
+import { axiosInstance } from "./axiosConfig";
 
 /**
  * Get all projects for a specific judge using their schedule assignments
@@ -29,4 +30,14 @@ export const getProjectByTeamId = async (
 ): Promise<Project | null> => {
   const response = await getProjectsForJudge(judgeId);
   return response.projects.find((p) => p.team_id === teamId) || null;
+};
+
+/**
+ * Get all available project categories
+ */
+export const getProjectCategories = async (): Promise<ProjectCategory[]> => {
+  const response = await axiosInstance.get<ProjectCategory[]>(
+    "/api/v13/projects/categories"
+  );
+  return response.data;
 };

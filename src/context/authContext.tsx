@@ -5,13 +5,14 @@ import type { Hacker } from "@/requests/hacker";
 import { getHackerProfile } from "@/requests/hacker";
 import { useUserTypeStore } from "@/reducers/userType";
 import { authEventEmitter } from "@/utils/eventEmitter";
-import { devError } from "@/utils/logger";
+import { devError, devLog } from "@/utils/logger";
 import {
   getAuthTokens,
   getUserType,
   removeAuthTokens,
   storeAuthTokens,
   storeUserType,
+  storeJudgeId,
 } from "@/utils/tokens/secureStorage";
 import { haptics, ImpactFeedbackStyle } from "@/utils/haptics";
 import {
@@ -23,6 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useLocalSearchParams } from "expo-router";
 
 interface AuthContextType {
   userToken: string | null;
@@ -62,6 +64,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
   const { userType, setUserType, clearUserType } = useUserTypeStore();
+  const params = useLocalSearchParams();
+  const hasProcessedUrlAuth = useRef(false);
 
   const updateFirstSignInStatus = useCallback((status: boolean) => {
     setIsFirstSignIn(status);
@@ -122,6 +126,45 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
     restoreSession();
   }, [setUserType]);
+
+  // Handle URL-based authentication (auto-login for judges via token in URL)
+  useEffect(() => {
+    const handleUrlAuth = async () => {
+      // Only process once and only if not already authenticated
+      if (hasProcessedUrlAuth.current || userToken) {
+        return;
+      }
+
+      const urlToken = params.token as string | undefined;
+      const urlJudgeId = params.judge_id as string | undefined;
+
+      // Judge auto-login requires token and judge_id
+      if (urlToken && urlJudgeId) {
+        hasProcessedUrlAuth.current = true;
+        devLog("Auto-login: Judge URL auth token detected, logging in...");
+
+        try {
+          // Set user type to judge
+          setUserType("judge");
+          await storeUserType("judge");
+
+          // Store judge ID
+          await storeJudgeId(parseInt(urlJudgeId, 10));
+
+          // Store token (use same token as refresh since it doesn't expire)
+          setUserToken(urlToken);
+          await storeAuthTokens(urlToken, urlToken);
+
+          devLog("Auto-login: Successfully authenticated judge via URL");
+        } catch (error) {
+          devError("Auto-login: Error during judge URL authentication:", error);
+          hasProcessedUrlAuth.current = false; // Allow retry on error
+        }
+      }
+    };
+
+    handleUrlAuth();
+  }, [params, userToken, setUserType]);
 
   // Function to fetch user profile data (admin or hacker based on userType)
   const fetchUserProfile = useCallback(
