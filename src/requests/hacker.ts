@@ -69,6 +69,8 @@ export interface HackerProfile extends Hacker {
   personalities?: any[];
   pronouns?: string | null;
   checked_in?: boolean;
+  team_name?: string | null;
+  project_name?: string | null;
   project?: {
     project_id: number;
     team_id: number;

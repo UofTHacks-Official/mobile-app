@@ -176,8 +176,31 @@ const HackerCard = ({
         </View>
       )}
 
-      {/* Project */}
-      {hacker.project?.project_name && (
+      {/* Team Name */}
+      {hacker.team_name && (
+        <View className="mb-2">
+          <Text
+            className={cn(
+              "text-xs font-semibold mb-2",
+              themeStyles.secondaryText
+            )}
+          >
+            TEAM
+          </Text>
+          <View className="bg-purple-400/20 px-3 py-2 rounded-lg">
+            <Text
+              className="text-purple-400 text-sm font-medium"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {hacker.team_name}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Project Name */}
+      {hacker.project_name && (
         <View className="mb-2">
           <Text
             className={cn(
@@ -188,8 +211,12 @@ const HackerCard = ({
             PROJECT
           </Text>
           <View className="bg-blue-400/20 px-3 py-2 rounded-lg">
-            <Text className="text-blue-400 text-sm font-medium">
-              {hacker.project.project_name}
+            <Text
+              className="text-blue-400 text-sm font-medium"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {hacker.project_name}
             </Text>
           </View>
         </View>
