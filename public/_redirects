@@ -22,7 +22,6 @@
 /judgingTimer /auth/signInJudge 302
 /judging /auth/signInJudge 302
 /photobooth /auth/signInJudge 302
-/profiles /auth/signInJudge 302
 /profile /auth/signInJudge 302
 /qr /auth/signInJudge 302
 /schedule /auth/signInJudge 302
