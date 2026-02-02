@@ -7,6 +7,7 @@ import { ProfileSkills } from "./ProfileSkills";
 import { ProfileInterests } from "./ProfileInterests";
 import { ProfileSocials } from "./ProfileSocials";
 import { ProfileResume } from "./ProfileResume";
+import { ProfileProject } from "./ProfileProject";
 
 interface ProfileDisplayProps {
   hacker: HackerProfile;
@@ -21,6 +22,7 @@ export const ProfileDisplay = ({ hacker }: ProfileDisplayProps) => {
     >
       <View className="py-6">
         <ProfileHeader hacker={hacker} />
+        <ProfileProject hacker={hacker} />
         <ProfileEducation hacker={hacker} />
         <ProfileExperience hacker={hacker} />
         <ProfileSkills hacker={hacker} />

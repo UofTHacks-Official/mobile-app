@@ -69,13 +69,15 @@ export interface HackerProfile extends Hacker {
   personalities?: any[];
   pronouns?: string | null;
   checked_in?: boolean;
-  team?: {
+  project?: {
+    project_id: number;
     team_id: number;
-    team_name?: string;
-    project?: {
-      project_id: number;
-      project_name: string;
-    };
+    project_name: string;
+    project_description?: string | null;
+    github_link?: string | null;
+    devpost_link?: string | null;
+    demo_link?: string | null;
+    status?: string;
   };
 }
 

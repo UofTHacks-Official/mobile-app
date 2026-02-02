@@ -177,7 +177,7 @@ const HackerCard = ({
       )}
 
       {/* Project */}
-      {hacker.team?.project?.project_name && (
+      {hacker.project?.project_name && (
         <View className="mb-2">
           <Text
             className={cn(
@@ -189,7 +189,7 @@ const HackerCard = ({
           </Text>
           <View className="bg-blue-400/20 px-3 py-2 rounded-lg">
             <Text className="text-blue-400 text-sm font-medium">
-              {hacker.team.project.project_name}
+              {hacker.project.project_name}
             </Text>
           </View>
         </View>
