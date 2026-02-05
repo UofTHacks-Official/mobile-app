@@ -24,7 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useGlobalSearchParams } from "expo-router";
 
 interface AuthContextType {
   userToken: string | null;
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isFirstSignIn, setIsFirstSignIn] = useState<boolean>(false);
   const fetchIdRef = useRef(0);
   const { userType, setUserType, clearUserType } = useUserTypeStore();
-  const params = useLocalSearchParams();
+  const params = useGlobalSearchParams();
   const hasProcessedUrlAuth = useRef(false);
 
   const updateFirstSignInStatus = useCallback((status: boolean) => {
@@ -136,7 +136,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       const urlToken = params.token as string | undefined;
-      const urlJudgeId = params.judge_id as string | undefined;
+      let urlJudgeId = params.judge_id as string | undefined;
+
+      // Fall back to extracting judge_id from the JWT payload
+      if (urlToken && !urlJudgeId) {
+        try {
+          const payloadB64 = urlToken.split(".")[1];
+          const payload = JSON.parse(
+            atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
+          );
+          if (payload.judge_id) {
+            urlJudgeId = String(payload.judge_id);
+          }
+        } catch {
+          // malformed token, will fail the check below
+        }
+      }
 
       // Judge auto-login requires token and judge_id
       if (urlToken && urlJudgeId) {
